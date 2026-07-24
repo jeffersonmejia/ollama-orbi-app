@@ -153,10 +153,9 @@
     if (!roleSelect || !roleSummary) return;
 
     const descriptions = {
-      Administrador: 'Acceso completo: administra todos los modulos, elimina registros y entra al panel administrador.',
-      Supervisor: 'Gestion parcial: lista actores, peliculas y categorias; puede crear y editar peliculas.',
-      Operador: 'Acceso operativo: lista peliculas y actores; puede crear actores.',
-      Consulta: 'Solo visualizacion: consulta peliculas, actores y categorias sin acciones de escritura.'
+      Usuario: 'Compra productos y consulta el estado de sus pedidos.',
+      Vendedor: 'Perfil para gestionar la operación comercial de una tienda.',
+      Repartidor: 'Consulta sus entregas asignadas y actualiza su estado.'
     };
 
     function updateRoleSummary() {

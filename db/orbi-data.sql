@@ -15,7 +15,7 @@ ON CONFLICT (delivery_product_id) DO NOTHING;
 INSERT INTO delivery_order
     (delivery_order_id, delivery_store_id, customer_email, delivery_person_email, delivery_address, status, total)
 VALUES
-    (1, 2, 'usuario@orbi.app', 'repartidor@orbi.app', 'Av. Los Jardines 45', 'En preparación', 7.90)
+    (1, 2, 'ana.torres@orbi.com', 'carlos.perez@orbi.com', 'Av. Los Jardines 45', 'En preparación', 7.90)
 ON CONFLICT (delivery_order_id) DO NOTHING;
 
 INSERT INTO delivery_order_item

@@ -15,7 +15,17 @@
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" style="display:grid;gap:1rem;">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 
-            <input asp-for="Input.Role" type="hidden" value="Usuario" />
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.Role"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">badge</span>
+                    <select asp-for="Input.Role" asp-items="Model.AvailableRoles" class="m3-text-field-input" style="padding-left:40px;" aria-required="true">
+                        <option value="">Selecciona un rol</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Input.Role" class="text-danger"></span>
+                <small id="roleSummary" style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);"></small>
+            </div>
 
             <div class="m3-text-field">
                 <label class="m3-text-field-label" asp-for="Input.Email"></label>

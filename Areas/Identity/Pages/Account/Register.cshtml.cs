@@ -24,6 +24,8 @@ namespace SakilaApp.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
+        private static readonly string[] PublicRoles = { "Usuario", "Vendedor", "Repartidor" };
+
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
@@ -114,6 +116,8 @@ namespace SakilaApp.Areas.Identity.Pages.Account
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            Input ??= new InputModel();
+            Input.Role ??= "Usuario";
             LoadRoles();
         }
 
@@ -121,12 +125,12 @@ namespace SakilaApp.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            Input.Role = "Usuario";
             LoadRoles();
 
-            if (!string.IsNullOrWhiteSpace(Input?.Role) && !await _roleManager.RoleExistsAsync(Input.Role))
+            if (!string.IsNullOrWhiteSpace(Input?.Role) &&
+                (!PublicRoles.Contains(Input.Role) || !await _roleManager.RoleExistsAsync(Input.Role)))
             {
-                ModelState.AddModelError("Input.Role", "El rol seleccionado no existe.");
+                ModelState.AddModelError("Input.Role", "El rol seleccionado no está permitido para el registro público.");
             }
 
             if (ModelState.IsValid)
@@ -176,14 +180,13 @@ namespace SakilaApp.Areas.Identity.Pages.Account
 
         private void LoadRoles()
         {
-            var roleOrder = new[] { "Usuario" };
             AvailableRoles = _roleManager.Roles
                 .AsEnumerable()
-                .Where(role => roleOrder.Contains(role.Name))
+                .Where(role => PublicRoles.Contains(role.Name))
                 .OrderBy(role =>
                 {
-                    var index = Array.IndexOf(roleOrder, role.Name);
-                    return index >= 0 ? index : roleOrder.Length;
+                    var index = Array.IndexOf(PublicRoles, role.Name);
+                    return index >= 0 ? index : PublicRoles.Length;
                 })
                 .ThenBy(role => role.Name)
                 .Select(role => new SelectListItem

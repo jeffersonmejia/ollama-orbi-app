@@ -55,7 +55,7 @@ public class DeliveryController : Controller
         {
             DeliveryStoreId = product.DeliveryStoreId,
             CustomerEmail = User.Identity!.Name!,
-            DeliveryPersonEmail = "repartidor@orbi.app",
+            DeliveryPersonEmail = "carlos.perez@orbi.com",
             DeliveryAddress = deliveryAddress.Trim(),
             Total = subtotal,
             Items = new List<DeliveryOrderItem>

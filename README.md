@@ -41,19 +41,19 @@ Seeded users:
 
 | User | Password | Role |
 |---|---|---|
-| admin1@orbi.app | Admin123* | Administrador |
-| admin2@orbi.app | Admin123* | Administrador |
-| usuario@orbi.app | Usuario123* | Usuario |
-| repartidor@orbi.app | Reparto123* | Repartidor |
+| jefferson.mejia@orbi.com | Admin123* | Administrador |
+| maria.lopez@orbi.com | Vendedor123* | Vendedor |
+| carlos.perez@orbi.com | Reparto123* | Repartidor |
+| ana.torres@orbi.com | Usuario123* | Usuario |
 
 Permission matrix:
 
-| Módulo / Acción | Administrador | Usuario | Repartidor |
-|---|---|---|---|
-| Ver tiendas y productos | Sí | Sí | Sí |
-| Crear y consultar pedidos propios | No | Sí | No |
-| Consultar y actualizar entregas asignadas | No | No | Sí |
-| Administrar tiendas y estados | Sí | No | No |
+| Módulo / Acción | Administrador | Vendedor | Usuario | Repartidor |
+|---|---|---|---|---|
+| Ver tiendas y productos | Sí | Sí | Sí | Sí |
+| Crear y consultar pedidos propios | No | No | Sí | No |
+| Consultar y actualizar entregas asignadas | No | No | No | Sí |
+| Administrar tiendas y estados | Sí | No | No | No |
 
 ## Installation
 
