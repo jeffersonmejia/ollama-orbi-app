@@ -72,6 +72,9 @@
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
     .orbi-chat-message-assistant { margin-right: auto; border-bottom-left-radius: 4px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+    .orbi-chat-speak { display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:6px 0 -2px auto;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer;opacity:.72; }
+    .orbi-chat-speak:hover { background:color-mix(in srgb,currentColor 10%,transparent);opacity:1; }
+    .orbi-chat-speak .material-symbols-outlined { font-size:18px; }
     .orbi-chat-suggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; padding: 2px 1px 10px; }
     .orbi-chat-suggestion { width:100%; min-width:0; padding: 7px 9px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; font-size: 12px; font-weight: 500; line-height: 1.3; cursor: pointer; white-space: normal; }
     .orbi-chat-suggestion:hover { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-primary-container); }
@@ -129,14 +132,42 @@
     const appLayout = document.querySelector('.orbi-chat-layout');
     let controller = null;
 
-    const addMessage = (text, user = false) => {
+    const resetSpeechButtons = () => document.querySelectorAll('.orbi-chat-speak').forEach(button => {
+        button.dataset.speaking = 'false';
+        button.querySelector('.material-symbols-outlined').textContent = 'volume_up';
+        button.setAttribute('aria-label', 'Escuchar respuesta');
+        button.title = 'Escuchar respuesta';
+    });
+
+    const addSpeakButton = (element, text) => {
+        if (!('speechSynthesis' in window) || !text || element.querySelector('.orbi-chat-speak')) return;
+        const speechButton = document.createElement('button');
+        speechButton.type = 'button'; speechButton.className = 'orbi-chat-speak'; speechButton.dataset.speaking = 'false';
+        speechButton.setAttribute('aria-label', 'Escuchar respuesta'); speechButton.title = 'Escuchar respuesta';
+        speechButton.innerHTML = '<span class="material-symbols-outlined">volume_up</span>';
+        speechButton.addEventListener('click', () => {
+            if (speechButton.dataset.speaking === 'true') { window.speechSynthesis.cancel(); resetSpeechButtons(); return; }
+            window.speechSynthesis.cancel(); resetSpeechButtons();
+            const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'es-EC'; utterance.rate = .95;
+            utterance.onend = resetSpeechButtons; utterance.onerror = resetSpeechButtons;
+            speechButton.dataset.speaking = 'true'; speechButton.querySelector('.material-symbols-outlined').textContent = 'stop_circle';
+            speechButton.setAttribute('aria-label', 'Detener lectura'); speechButton.title = 'Detener lectura';
+            window.speechSynthesis.speak(utterance);
+        });
+        element.appendChild(speechButton);
+    };
+
+    const addMessage = (text, user = false, withSpeech = !user) => {
         const element = document.createElement('div');
         element.className = `orbi-chat-message ${user ? 'orbi-chat-message-user' : 'orbi-chat-message-assistant'}`;
         element.textContent = text;
         messages.appendChild(element);
+        if (withSpeech) addSpeakButton(element, text);
         messages.scrollTop = messages.scrollHeight;
         return element;
     };
+
+    document.querySelectorAll('.orbi-chat-message-assistant:not(.orbi-chat-typing)').forEach(message => addSpeakButton(message, message.textContent.trim()));
 
     const resize = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 112) + 'px'; };
     input.addEventListener('input', resize);
@@ -156,7 +187,7 @@
     });
 
     document.getElementById('orbi-chat-new').addEventListener('click', () => {
-        controller?.abort(); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);
+        controller?.abort(); window.speechSynthesis?.cancel(); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);
         input.value = ''; resize(); send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false;
     });
 
@@ -166,7 +197,7 @@
         const text = input.value.trim(); if (text.length < 2) return;
         const data = new FormData(form); addMessage(text, true); input.value = ''; resize();
         controller = new AbortController(); send.type = 'button'; sendIcon.textContent = 'stop'; input.disabled = true;
-        const typing = addMessage('•••'); typing.classList.add('orbi-chat-typing');
+        const typing = addMessage('•••', false, false); typing.classList.add('orbi-chat-typing');
         try {
             const response = await fetch(form.action, { method: 'POST', body: data, signal: controller.signal });
             const result = await response.json(); typing.remove(); addMessage(result.message || 'No pude responder.');
