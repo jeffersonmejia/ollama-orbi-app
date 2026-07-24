@@ -1,0 +1,58 @@
+@using SakilaApp.Models.Commerce
+@model PaginatedList<FilmStock>
+
+@{
+    ViewData["Title"] = "Inventario";
+    var totalRegistros = ViewData["TotalRegistros"] ?? Model.TotalCount;
+}
+
+<div class="m3-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+            <h1 class="m3-page-title" style="margin:0;">Inventario de películas</h1>
+            <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:2px 0 0;">@totalRegistros registros</p>
+        </div>
+        <a class="m3-filled-button" asp-action="Inicializar">Inicializar inventario desde Sakila</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="m3-card" style="text-align:center;padding:3rem 2rem;color:var(--md-sys-color-on-surface-variant);">
+            <p style="font-size:var(--md-sys-typescale-body-large-size);margin:0;">No hay inventario. Haz clic en "Inicializar" para cargar datos desde Sakila.</p>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="m3-data-table">
+                <thead>
+                    <tr>
+                        <th>Película</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th style="text-align:center;">Agregar stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="font-weight:500;">@item.Title</td>
+                            <td>@item.UnitPrice.ToString("C")</td>
+                            <td>@item.Stock</td>
+                            <td style="text-align:center;">
+                                <form asp-action="AumentarStock" method="post" style="display:flex;gap:8px;justify-content:center;">
+                                    <input type="hidden" name="id" value="@item.FilmStockId" />
+                                    <input type="number" name="cantidad" value="1" min="1" style="width:70px;height:36px;border:1px solid var(--md-sys-color-outline-variant);border-radius:var(--md-sys-shape-corner-small);padding:0 8px;font-family:inherit;text-align:center;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);" />
+                                    <button type="submit" class="m3-filled-button" style="height:36px;font-size:14px;padding:0 16px;">Aumentar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" />
+    }
+</div>

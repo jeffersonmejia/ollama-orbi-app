@@ -1,0 +1,32 @@
+@model IReadOnlyList<SakilaApp.Models.AdminPanelMetric>
+
+@{
+    ViewData["Title"] = "Panel del Administrador";
+    var index = 0;
+}
+
+<div class="m3-anim-fade-in-up">
+    <div style="text-align:center;margin-bottom:24px;">
+        <h1 class="m3-headline">Panel del Administrador</h1>
+        <p style="color:var(--md-sys-color-on-surface-variant);margin:0;">Resumen operativo de tiendas, pedidos y entregas de Orbi App.</p>
+    </div>
+
+    <div class="m3-metric-grid">
+        @foreach (var item in Model)
+        {
+            index++;
+            <article class="m3-metric-card m3-anim-card-enter m3-stagger-@index">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <div class="m3-metric-label">@item.Label</div>
+                        <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin-top:2px;">@item.Detail</div>
+                    </div>
+                    <span class="m3-metric-value">@item.Value</span>
+                </div>
+                <div class="m3-metric-bar">
+                    <div class="m3-metric-bar-fill" style="width: @item.Percent%"></div>
+                </div>
+            </article>
+        }
+    </div>
+</div>

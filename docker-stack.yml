@@ -1,0 +1,141 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: orbi_app
+      POSTGRES_USER: cruduser
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    
+    volumes:
+      - type: volume
+        source: postgres_data_v18
+        target: /var/lib/postgresql
+
+    networks:
+      - sakila_overlay
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cruduser -d orbi_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sakila.postgres-data == true
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+      update_config:
+        parallelism: 1
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+  orbiapp:
+    image: "${ORBI_APP_IMAGE:-orbiapp:latest}"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        export ConnectionStrings__DefaultConnection="Host=$${POSTGRES_HOST:-postgres};Port=$${POSTGRES_PORT:-5432};Database=orbi_app;Username=cruduser;Password=$$(cat /run/secrets/postgres_password)";
+        export PayPal__ClientId="$$(cat /run/secrets/paypal_client_id)";
+        export PayPal__ClientSecret="$$(cat /run/secrets/paypal_client_secret)";
+        export PayPhone__Token="$$(cat /run/secrets/payphone_token)";
+        export PayPhone__StoreId="$$(cat /run/secrets/payphone_store_id)";
+        export Authentication__Google__ClientId="$$(cat /run/secrets/google_client_id)";
+        export Authentication__Google__ClientSecret="$$(cat /run/secrets/google_client_secret)";
+        export EmailSettings__SenderEmail="$$(cat /run/secrets/email_sender_email)";
+        export EmailSettings__Password="$$(cat /run/secrets/email_password)";
+        exec dotnet SakilaApp.dll
+    ports:
+      - target: 8080
+        published: 5164
+        protocol: tcp
+        mode: "${SAKILA_PUBLISH_MODE:-ingress}"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      POSTGRES_HOST: "${POSTGRES_HOST:-postgres}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+      Ollama__BaseUrl: "http://host.docker.internal:11434"
+      Ollama__Model: "qwen2.5:0.5b"
+      PayPal__BaseUrl: "https://api-m.sandbox.paypal.com"
+      PayPal__ReturnUrl: "http://localhost:5164/Payment/Success"
+      PayPal__CancelUrl: "http://localhost:5164/Payment/Cancel"
+      PayPal__CurrencyCode: "USD"
+      EmailSettings__SmtpServer: "smtp.gmail.com"
+      EmailSettings__SmtpPort: "587"
+      EmailSettings__SenderName: "Orbi App"
+      DataProtection__KeysPath: "/app/DataProtectionKeys"
+    secrets:
+      - postgres_password
+      - paypal_client_id
+      - paypal_client_secret
+      - payphone_token
+      - payphone_store_id
+      - source: google_client_id_v3
+        target: google_client_id
+      - source: google_client_secret_v3
+        target: google_client_secret
+      - email_sender_email
+      - email_password
+    volumes:
+      - orbi_keys:/app/DataProtectionKeys
+    networks:
+      - sakila_overlay
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+      placement:
+        max_replicas_per_node: 1
+        preferences:
+          - spread: node.hostname
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+networks:
+  sakila_overlay:
+    driver: overlay
+    attachable: true
+
+volumes:
+  postgres_data_v18:
+  orbi_keys:
+
+secrets:
+  postgres_password:
+    external: true
+  paypal_client_id:
+    external: true
+  paypal_client_secret:
+    external: true
+  payphone_token:
+    external: true
+  payphone_store_id:
+    external: true
+  google_client_id_v3:
+    external: true
+  google_client_secret_v3:
+    external: true
+  email_sender_email:
+    external: true
+  email_password:
+    external: true

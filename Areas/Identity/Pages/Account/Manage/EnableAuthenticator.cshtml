@@ -1,0 +1,49 @@
+﻿@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["Title"] = "Configure authenticator app";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div style="display:grid;gap:16px;">
+    <h3 style="font-size:var(--md-sys-typescale-title-large-size);color:var(--md-sys-color-on-surface);margin:0;">@ViewData["Title"]</h3>
+    <p style="font-size:var(--md-sys-typescale-body-medium-size);color:var(--md-sys-color-on-surface-variant);margin:0;">To use an authenticator app go through the following steps:</p>
+
+    <ol style="display:grid;gap:20px;padding-left:20px;margin:0;font-size:var(--md-sys-typescale-body-medium-size);color:var(--md-sys-color-on-surface);line-height:1.5;">
+        <li>
+            <p>Download a two-factor authenticator app like Google Authenticator for
+            <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> or
+            <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.</p>
+        </li>
+        <li>
+            <p>Scan the QR Code or enter this key <kbd style="padding:4px 8px;background:var(--md-sys-color-surface-container-highest);border-radius:var(--md-sys-shape-corner-extra-small);font-size:var(--md-sys-typescale-body-medium-size);">@Model.SharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
+            <div id="qrCode" style="display:flex;justify-content:center;margin:16px 0;"></div>
+            <div id="qrCodeData" data-url="@Model.AuthenticatorUri"></div>
+        </li>
+        <li>
+            <p>Once you have scanned the QR code or input the key above, your two factor authentication app will provide you with a unique code. Enter the code in the confirmation box below.</p>
+            <form id="send-code" method="post" style="display:grid;gap:12px;max-width:360px;">
+                <div class="m3-text-field">
+                    <input asp-for="Input.Code" class="m3-text-field-input" autocomplete="off" placeholder="Verification Code" />
+                    <span asp-validation-for="Input.Code" class="text-danger"></span>
+                </div>
+                <button type="submit" class="m3-filled-button">Verify</button>
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            </form>
+        </li>
+    </ol>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        new QRCode(document.getElementById("qrCode"), {
+            text: "@Html.Raw(Model.AuthenticatorUri)",
+            width: 180,
+            height: 180
+        });
+    </script>
+}

@@ -1,0 +1,29 @@
+@model SakilaApp.Models.Actor
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Create</h1>
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div style="display:grid;gap:16px;">
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="FirstName"></label>
+                <input asp-for="FirstName" class="m3-text-field-input" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="LastName"></label>
+                <input asp-for="LastName" class="m3-text-field-input" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            <button type="submit" class="m3-filled-button">Create</button>
+            <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+        </div>
+    </form>
+</div>
+

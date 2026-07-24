@@ -1,0 +1,43 @@
+@{
+    var paginatedList = ViewData["PaginatedList"] as SakilaApp.Models.IPaginatedList;
+    if (paginatedList == null) { return; }
+
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    Func<int, string> pageUrl = (page) =>
+    {
+        var query = new List<string>();
+        if (page > 1) query.Add($"page={page}");
+        if (!string.IsNullOrEmpty(ViewBag.Buscar as string))
+            query.Add($"buscar={Uri.EscapeDataString(ViewBag.Buscar)}");
+        return $"/{controller}/{action}" + (query.Count > 0 ? "?" + string.Join("&", query) : "");
+    };
+}
+
+@if (paginatedList.TotalPages > 1)
+{
+    <nav class="m3-pagination" aria-label="Pagination">
+        <button class="m3-pagination-btn" onclick="location.href='@pageUrl(1)'" disabled="@(!paginatedList.HasPreviousPage)">&laquo;</button>
+        <button class="m3-pagination-btn" onclick="location.href='@pageUrl(paginatedList.PageIndex - 1)'" disabled="@(!paginatedList.HasPreviousPage)">&lsaquo;</button>
+
+        @for (int i = 1; i <= paginatedList.TotalPages; i++)
+        {
+            if (i == paginatedList.PageIndex)
+            {
+                <span class="m3-pagination-btn active">@i</span>
+            }
+            else if (i == 1 || i == paginatedList.TotalPages || Math.Abs(i - paginatedList.PageIndex) <= 2)
+            {
+                <button class="m3-pagination-btn" onclick="location.href='@pageUrl(i)'">@i</button>
+            }
+            else if (Math.Abs(i - paginatedList.PageIndex) == 3)
+            {
+                <span style="padding:0 4px;color:var(--md-sys-color-on-surface-variant);font-size:var(--md-sys-typescale-label-large-size);">...</span>
+            }
+        }
+
+        <button class="m3-pagination-btn" onclick="location.href='@pageUrl(paginatedList.PageIndex + 1)'" disabled="@(!paginatedList.HasNextPage)">&rsaquo;</button>
+        <button class="m3-pagination-btn" onclick="location.href='@pageUrl(paginatedList.TotalPages)'" disabled="@(!paginatedList.HasNextPage)">&raquo;</button>
+    </nav>
+}

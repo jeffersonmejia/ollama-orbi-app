@@ -1,0 +1,60 @@
+@model SakilaApp.Models.Film
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Create</h1>
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div style="display:grid;gap:16px;">
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Title"></label>
+                <input asp-for="Title" class="m3-text-field-input" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Description"></label>
+                <input asp-for="Description" class="m3-text-field-input" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="ReleaseYear"></label>
+                <input asp-for="ReleaseYear" class="m3-text-field-input" />
+                <span asp-validation-for="ReleaseYear" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="LanguageId"></label>
+                <select asp-for="LanguageId" class="m3-select" asp-items="ViewBag.LanguageId"></select>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="OriginalLanguageId"></label>
+                <select asp-for="OriginalLanguageId" class="m3-select" asp-items="ViewBag.OriginalLanguageId"></select>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Length"></label>
+                <input asp-for="Length" class="m3-text-field-input" />
+                <span asp-validation-for="Length" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="SpecialFeatures"></label>
+                <input asp-for="SpecialFeatures" class="m3-text-field-input" />
+                <span asp-validation-for="SpecialFeatures" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Fulltext"></label>
+                <input asp-for="Fulltext" class="m3-text-field-input" />
+                <span asp-validation-for="Fulltext" class="text-danger"></span>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            <button type="submit" class="m3-filled-button">Create</button>
+            <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

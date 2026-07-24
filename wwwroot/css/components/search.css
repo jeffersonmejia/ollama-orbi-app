@@ -1,0 +1,10 @@
+.search-form {
+  margin: 1rem auto;
+  width: 95%;
+}
+
+.search-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

@@ -1,0 +1,43 @@
+﻿@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
+    {
+        Layout = parentLayout.ToString();
+    }
+    else
+    {
+        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+    }
+}
+
+<div style="max-width:960px;margin:0 auto;display:grid;gap:16px;">
+    <div class="m3-card" style="display:flex;align-items:center;gap:16px;padding:16px;animation: m3-fade-in-down var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;">
+        <div style="width:48px;height:48px;border-radius:var(--md-sys-shape-corner-medium);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0;">
+            ID
+        </div>
+        <div>
+            <h1 style="font-size:var(--md-sys-typescale-title-large-size);font-weight:var(--md-sys-typescale-title-large-weight);color:var(--md-sys-color-on-surface);margin:0;">Perfil</h1>
+            <p style="font-size:var(--md-sys-typescale-body-medium-size);color:var(--md-sys-color-on-surface-variant);margin:2px 0 0;">Gestiona tu identidad, seguridad y datos de cuenta.</p>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start;">
+        <nav class="m3-card" style="padding:8px;">
+            <partial name="_ManageNav" />
+        </nav>
+        <section class="m3-card m3-anim-fade-in-up">
+            @RenderBody()
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}
+
+<style>
+    @@media (max-width: 720px) {
+        .m3-main > div > div:last-child {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>

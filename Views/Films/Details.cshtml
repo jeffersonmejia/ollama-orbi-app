@@ -1,0 +1,63 @@
+@model SakilaApp.Models.Film
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Details</h1>
+    <div style="display:grid;gap:12px;">
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Title)</strong>
+            <div>@Html.DisplayFor(model => model.Title)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Description)</strong>
+            <div>@Html.DisplayFor(model => model.Description)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.ReleaseYear)</strong>
+            <div>@Html.DisplayFor(model => model.ReleaseYear)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.RentalDuration)</strong>
+            <div>@Html.DisplayFor(model => model.RentalDuration)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.RentalRate)</strong>
+            <div>@Html.DisplayFor(model => model.RentalRate)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Length)</strong>
+            <div>@Html.DisplayFor(model => model.Length)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.ReplacementCost)</strong>
+            <div>@Html.DisplayFor(model => model.ReplacementCost)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.LastUpdate)</strong>
+            <div>@Html.DisplayFor(model => model.LastUpdate)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.SpecialFeatures)</strong>
+            <div>@Html.DisplayFor(model => model.SpecialFeatures)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Fulltext)</strong>
+            <div>@Html.DisplayFor(model => model.Fulltext)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Language)</strong>
+            <div>@Html.DisplayFor(model => model.Language.LanguageId)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.OriginalLanguage)</strong>
+            <div>@(Model.OriginalLanguage?.LanguageId.ToString() ?? "")</div>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+        <a asp-action="Edit" asp-route-id="@Model?.FilmId" class="m3-filled-button">Edit</a>
+        <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+    </div>
+</div>

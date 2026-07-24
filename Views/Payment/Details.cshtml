@@ -1,0 +1,64 @@
+@model SakilaApp.Models.Commerce.PaymentTransaction
+
+<div class="m3-page">
+    <h1 class="m3-page-title">Payment Generated</h1>
+
+    <div class="m3-card" style="margin-bottom:1.5rem;">
+        <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+            <div>
+                <div style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Order</div>
+                <div style="font-size:var(--md-sys-typescale-body-large-size);color:var(--md-sys-color-on-surface);font-weight:500;">#@Model.PurchaseOrderId</div>
+            </div>
+            <div>
+                <div style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Provider</div>
+                <div style="font-size:var(--md-sys-typescale-body-large-size);color:var(--md-sys-color-on-surface);font-weight:500;">@Model.Provider</div>
+            </div>
+            <div>
+                <div style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Status</div>
+                <div style="font-size:var(--md-sys-typescale-body-large-size);color:var(--md-sys-color-on-surface);font-weight:500;">@Model.Status</div>
+            </div>
+            <div>
+                <div style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Total</div>
+                <div style="font-size:var(--md-sys-typescale-body-large-size);color:var(--md-sys-color-on-surface);font-weight:600;">@((Model.AmountInCents / 100m).ToString("C"))</div>
+            </div>
+            <div>
+                <div style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Client Transaction</div>
+                <div style="font-size:var(--md-sys-typescale-body-medium-size);color:var(--md-sys-color-on-surface);">@Model.ClientTransactionId</div>
+            </div>
+        </div>
+
+        @if (Model.Provider == "PayPhone" && !string.IsNullOrWhiteSpace(Model.PayphonePaymentUrl))
+        {
+            <div style="margin-top:1rem;">
+                <a class="m3-filled-button" href="@Model.PayphonePaymentUrl" target="_blank" style="width:100%;">
+                    Open PayPhone Payment Link
+                </a>
+            </div>
+        }
+
+        @if ((Model.Provider == "PayPal" || Model.Provider == "PayPalButton") && Model.Status == "Pending" && !string.IsNullOrWhiteSpace(Model.PayPalApprovalUrl))
+        {
+            <div style="margin-top:1rem;">
+                <a class="m3-filled-button" href="@Model.PayPalApprovalUrl" target="_blank" style="width:100%;">
+                    Open PayPal Sandbox
+                </a>
+            </div>
+        }
+
+        @if (Model.Status == "Paid")
+        {
+            <div style="margin-top:1rem;padding:12px 16px;border-radius:12px;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);font-size:var(--md-sys-typescale-body-medium-size);">
+                Payment confirmed successfully.
+            </div>
+        }
+
+        @if (User.IsInRole("Administrador") && Model.Status == "Pending")
+        {
+            <div style="margin-top:1rem;">
+                <a class="m3-tonal-button" asp-action="MarkAsPaid" asp-route-id="@Model.PaymentTransactionId">
+                    Mark as paid (demo)
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,45 @@
+# IDE
+.idea/
+.vs/
+.vscode/
+*.suo
+*.user
+secrets.txt
+*.userosscache
+*.sln.docstates
+
+# Build
+bin/
+obj/
+publish/
+
+# Logs
+*.log
+*.err
+*.out
+cookies.txt
+
+# Config - sensitive
+appsettings.Development.json
+.env
+.env.*
+!.env.example
+DataProtectionKeys/
+secrets.json
+cmds.txt
+.docker/secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PID
+*.pid
+
+# Sensitive
+admin.md
+
+# Local database artifacts and backups
+*.dump
+*.tar
+backups/

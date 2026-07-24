@@ -1,0 +1,30 @@
+@model SakilaApp.Models.Language
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Edit</h1>
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="LanguageId" />
+        <div style="display:grid;gap:16px;">
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Name"></label>
+                <input asp-for="Name" class="m3-text-field-input" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="LastUpdate"></label>
+                <input asp-for="LastUpdate" class="m3-text-field-input" />
+                <span asp-validation-for="LastUpdate" class="text-danger"></span>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            <button type="submit" class="m3-filled-button">Save</button>
+            <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+        </div>
+    </form>
+</div>
+

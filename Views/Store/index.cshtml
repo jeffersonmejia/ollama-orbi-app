@@ -1,0 +1,105 @@
+@using SakilaApp.Models.Commerce
+@model PaginatedList<FilmStock>
+
+@{
+    ViewData["Title"] = "Store";
+    var totalRegistros = ViewData["TotalRegistros"] ?? Model.TotalCount;
+}
+
+<div class="m3-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+            <h1 class="m3-page-title" style="margin:0;">Film Catalog</h1>
+            <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:2px 0 0;">@totalRegistros records</p>
+        </div>
+    </div>
+
+    <div id="add-toast" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:none;padding:12px 20px;border-radius:12px;font-size:var(--md-sys-typescale-body-medium-size);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s;">
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="m3-card" style="text-align:center;padding:3rem 2rem;color:var(--md-sys-color-on-surface-variant);">
+            <p style="font-size:var(--md-sys-typescale-body-large-size);margin:0;">No films available at this time.</p>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="m3-data-table">
+                <thead>
+                    <tr>
+                        <th>Film</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th style="text-align:center;">Buy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="font-weight:500;">@item.Title</td>
+                            <td>@item.UnitPrice.ToString("C")</td>
+                            <td>@item.Stock</td>
+                            <td style="text-align:center;">
+                                <form class="add-to-cart-form" style="display:flex;gap:8px;justify-content:center;" data-stock="@item.Stock">
+                                    <input type="hidden" name="filmStockId" value="@item.FilmStockId" />
+                                    <input type="number" name="quantity" value="1" min="1" max="@item.Stock" style="width:70px;height:36px;border:1px solid var(--md-sys-color-outline-variant);border-radius:var(--md-sys-shape-corner-small);padding:0 8px;font-family:inherit;text-align:center;background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface);" />
+                                    <button type="submit" class="m3-filled-button add-btn" style="height:36px;font-size:14px;padding:0 16px;">Add</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" />
+    }
+</div>
+
+<script>
+    function showToast(message) {
+        const t = document.getElementById('add-toast');
+        t.textContent = message;
+        t.style.display = 'block';
+        t.style.opacity = '1';
+        setTimeout(() => { t.style.opacity = '0'; }, 2000);
+        setTimeout(() => { t.style.display = 'none'; }, 2400);
+    }
+
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = this.querySelector('.add-btn');
+            const original = btn.textContent;
+            btn.textContent = '...';
+            btn.disabled = true;
+
+            const data = new FormData(this);
+            try {
+                const resp = await fetch('/Store/AddToCart', {
+                    method: 'POST',
+                    body: data
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    showToast('Added to cart (' + result.totalItems + ' items)');
+                    const badge = document.getElementById('cart-badge');
+                    if (badge) {
+                        badge.textContent = result.totalItems;
+                        badge.style.display = 'flex';
+                    }
+                } else {
+                    showToast(result.message || 'Error adding item');
+                }
+            } catch {
+                showToast('Connection error');
+            } finally {
+                btn.textContent = original;
+                btn.disabled = false;
+            }
+        });
+    });
+</script>

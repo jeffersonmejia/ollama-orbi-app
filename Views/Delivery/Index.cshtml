@@ -1,0 +1,38 @@
+@using SakilaApp.Models.Delivery
+@model IReadOnlyList<DeliveryProduct>
+
+@{
+    ViewData["Title"] = "Tiendas Orbi";
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title">Tiendas y productos</h1>
+    <p style="color:var(--md-sys-color-on-surface-variant);">Elige un producto y recíbelo en tu dirección.</p>
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="m3-card" style="padding:16px;margin-bottom:16px;">@error</div>
+    }
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+        @foreach (var product in Model)
+        {
+            <article class="m3-card" style="padding:24px;">
+                <div style="color:var(--md-sys-color-primary);font-weight:500;">@product.Store.Name · @product.Store.Category</div>
+                <h2 style="margin:8px 0 4px;">@product.Name</h2>
+                <p style="margin:0 0 16px;color:var(--md-sys-color-on-surface-variant);">@product.Store.Address</p>
+                <strong>@product.Price.ToString("C")</strong>
+
+                @if (User.IsInRole("Usuario"))
+                {
+                    <form asp-action="CreateOrder" method="post" style="display:grid;gap:10px;margin-top:16px;">
+                        <input type="hidden" name="productId" value="@product.DeliveryProductId" />
+                        <input type="number" name="quantity" value="1" min="1" max="20" aria-label="Cantidad" />
+                        <input type="text" name="deliveryAddress" required maxlength="180" placeholder="Dirección de entrega" aria-label="Dirección de entrega" />
+                        <button type="submit" class="m3-filled-button">Pedir ahora</button>
+                    </form>
+                }
+            </article>
+        }
+    </div>
+</div>

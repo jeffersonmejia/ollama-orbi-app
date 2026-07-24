@@ -1,0 +1,67 @@
+@model SakilaApp.Models.PaginatedList<SakilaApp.Models.Address>
+
+@{
+    ViewData["Title"] = "Address";
+}
+
+<div class="m3-anim-fade-in-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+            <h1 class="m3-headline" style="margin:0;">@ViewData["Title"]</h1>
+            <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:2px 0 0;">@ViewData["TotalRegistros"] registros</p>
+        </div>
+        @if (User.IsInRole("Administrador"))
+        {
+            <a asp-action="Create" class="m3-filled-button">Create New</a>
+        }
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="m3-data-table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.First().Address1)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Address2)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().District)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().PostalCode)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Phone)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().LastUpdate)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().City)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Address1)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Address2)</td>
+                        <td>@Html.DisplayFor(modelItem => item.District)</td>
+                        <td>@Html.DisplayFor(modelItem => item.PostalCode)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                        <td>@Html.DisplayFor(modelItem => item.LastUpdate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.City.CityId)</td>
+                        <td>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.AddressId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;">Edit</a>
+                                }
+                                <a asp-action="Details" asp-route-id="@item.AddressId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;">Details</a>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.AddressId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;color:var(--md-sys-color-error);">Delete</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @{
+        ViewData["PaginatedList"] = Model;
+    }
+    <partial name="_Pagination" />
+</div>

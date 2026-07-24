@@ -1,0 +1,69 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Ingresar";
+}
+
+<div style="display:flex;gap:2rem;align-items:center;justify-content:center;min-height:calc(100vh - 140px);max-width:960px;margin:0 auto;padding:1rem;flex-wrap:wrap;">
+    <div class="m3-cover-wrapper" style="flex:1 1 400px;min-width:280px;max-width:520px;margin:0;">
+        <partial name="_CoverLogin" />
+    </div>
+    <div style="flex:0 0 400px;">
+        <div class="m3-card" style="padding:2rem;">
+        <h1 style="font-size:var(--md-sys-typescale-headline-small-size);font-weight:var(--md-sys-typescale-headline-small-weight);color:var(--md-sys-color-on-surface);margin:0 0 1.5rem;text-align:center;">@ViewData["Title"]</h1>
+
+        @if (Request.Query["oauthError"] == "google")
+        {
+            <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-error);margin:0 0 16px;padding:12px;background:var(--md-sys-color-error-container);border-radius:var(--md-sys-shape-corner-small);">
+                No fue posible ingresar con Google. Verifica las credenciales OAuth e inténtalo nuevamente.
+            </div>
+        }
+
+        <form id="account" method="post" style="display:grid;gap:1rem;">
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.Email"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon m3-text-field-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">mail</span>
+                    <input asp-for="Input.Email" class="m3-text-field-input" style="padding-left:40px;" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                </div>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.Password"></label>
+                <div class="m3-password-wrapper" style="position:relative;display:flex;align-items:center;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">lock</span>
+                    <input asp-for="Input.Password" class="m3-text-field-input" style="flex:1;padding-left:40px;padding-right:44px;" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <button type="button" class="m3-password-toggle m3-icon-btn" style="position:absolute;right:4px;" tabindex="-1" aria-label="Toggle password visibility">
+                        <svg class="m3-eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="m3-eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            @if (ViewData["LoginFailed"] is true)
+            {
+                <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-error);margin:0;padding:0;">Invalid login attempt.</div>
+            }
+
+            <label class="m3-checkbox">
+                <input asp-for="Input.RememberMe" />
+                @Html.DisplayNameFor(m => m.Input.RememberMe)
+            </label>
+
+            <button id="login-submit" type="submit" class="m3-filled-button" style="width:100%;">Ingresar</button>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;">
+                <a class="m3-text-button" id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+                <a class="m3-text-button" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Sign up as a new user</a>
+            </div>
+        </form>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

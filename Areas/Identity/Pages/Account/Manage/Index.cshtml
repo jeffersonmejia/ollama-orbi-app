@@ -1,0 +1,40 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div style="display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--md-sys-color-outline-variant);margin-bottom:16px;">
+    <div style="width:56px;height:56px;border-radius:var(--md-sys-shape-corner-medium);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;">
+        @((Model.Username ?? "U").Substring(0, 1).ToUpperInvariant())
+    </div>
+    <div>
+        <div style="font-size:var(--md-sys-typescale-label-small-size);font-weight:var(--md-sys-typescale-label-small-weight);color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:0.04em;">Cuenta activa</div>
+        <h2 style="font-size:var(--md-sys-typescale-title-large-size);color:var(--md-sys-color-on-surface);margin:2px 0;">@Model.Username</h2>
+        <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">@Model.RoleSummary</p>
+    </div>
+</div>
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<form id="profile-form" method="post" style="display:grid;gap:16px;max-width:480px;">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+    <div class="m3-text-field">
+        <label class="m3-text-field-label">Usuario</label>
+        <input asp-for="Username" class="m3-text-field-input" placeholder="Usuario" disabled style="opacity:0.6;" />
+    </div>
+
+    <div class="m3-text-field">
+        <label class="m3-text-field-label" asp-for="Input.PhoneNumber"></label>
+        <input asp-for="Input.PhoneNumber" class="m3-text-field-input" placeholder="Agrega un numero de contacto" />
+        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+    </div>
+
+    <button id="update-profile-button" type="submit" class="m3-filled-button" style="align-self:start;">Guardar cambios</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,65 @@
+name: orbi-app
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  sakila_net:
+    driver: bridge
+    internal: false
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sakila-postgres
+    restart: unless-stopped
+    networks:
+      sakila_net:
+        ipv4_address: 172.28.0.10
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: orbi_app
+      POSTGRES_USER: jef_db_first
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
+      - ./db/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jef_db_first -d orbi_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID
+
+secrets:
+  postgres_password:
+    file: ./.docker/secrets/postgres_password

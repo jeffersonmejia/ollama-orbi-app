@@ -1,0 +1,60 @@
+.table-container {
+  margin: 1.5rem auto;
+  width: 95%;
+}
+
+main .table {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-bg);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  border-collapse: separate;
+  border-radius: 1.35rem;
+  border-spacing: 0;
+  overflow: hidden;
+  width: 100%;
+  vertical-align: middle;
+}
+
+main .table thead th {
+  background: var(--glass-card-strong);
+  color: var(--glass-green-dark);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  padding: 0.85rem 0.75rem;
+}
+
+main .table thead th:first-child {
+  border-top-left-radius: 1.35rem;
+}
+
+main .table thead th:last-child {
+  border-top-right-radius: 1.35rem;
+}
+
+main .table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 1.35rem;
+}
+
+main .table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 1.35rem;
+}
+
+main .table tbody tr:nth-child(odd) {
+  background: var(--color-table-odd);
+}
+
+main .table tbody tr:nth-child(even) {
+  background: var(--color-table-even);
+}
+
+main .table tbody tr:hover {
+  background: var(--color-table-hover);
+}
+
+main .table td {
+  padding: 0.65rem 0.75rem;
+  vertical-align: middle;
+}

@@ -1,0 +1,51 @@
+@using SakilaApp.Models.Delivery
+@model IReadOnlyList<DeliveryOrder>
+
+@{
+    ViewData["Title"] = User.IsInRole("Repartidor") ? "Mis entregas" : "Mis pedidos";
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title">@ViewData["Title"]</h1>
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="m3-card" style="padding:16px;margin-bottom:16px;">@success</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="m3-card" style="padding:24px;">No hay pedidos para mostrar.</div>
+    }
+
+    <div style="display:grid;gap:16px;">
+        @foreach (var order in Model)
+        {
+            <article class="m3-card" style="padding:24px;">
+                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <h2 style="margin:0;">Pedido #@order.DeliveryOrderId · @order.Store.Name</h2>
+                        <p style="color:var(--md-sys-color-on-surface-variant);">@order.DeliveryAddress</p>
+                    </div>
+                    <strong>@order.Status</strong>
+                </div>
+                <ul>
+                    @foreach (var item in order.Items)
+                    {
+                        <li>@item.Quantity × @item.ProductName — @item.Subtotal.ToString("C")</li>
+                    }
+                </ul>
+                <strong>Total: @order.Total.ToString("C")</strong>
+
+                @if (User.IsInRole("Repartidor") && order.Status != "Entregado")
+                {
+                    <form asp-action="UpdateStatus" method="post" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+                        <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
+                        <button class="m3-filled-button" name="status" value="En camino">Marcar en camino</button>
+                        <button class="m3-filled-button" name="status" value="Entregado">Marcar entregado</button>
+                    </form>
+                }
+            </article>
+        }
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@model SakilaApp.Models.City
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Delete</h1>
+    <h3>Are you sure you want to delete this?</h3>
+    <div style="display:grid;gap:12px;">
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.City1)</strong>
+            <div>@Html.DisplayFor(model => model.City1)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.LastUpdate)</strong>
+            <div>@Html.DisplayFor(model => model.LastUpdate)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Country)</strong>
+            <div>@Html.DisplayFor(model => model.Country.CountryId)</div>
+        </div>
+    </div>
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="CityId" />
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-error)">Delete</button>
+            <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+        </div>
+    </form>
+</div>

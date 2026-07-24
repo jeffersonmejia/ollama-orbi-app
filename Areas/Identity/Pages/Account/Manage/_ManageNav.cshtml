@@ -1,0 +1,16 @@
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+<nav class="m3-list" style="gap:2px;">
+    <a class="m3-list-item @(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "active" : "")" id="profile" asp-page="./Index">Perfil</a>
+    <a class="m3-list-item @(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "active" : "")" id="email" asp-page="./Email">Correo</a>
+    <a class="m3-list-item @(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "active" : "")" id="change-password" asp-page="./ChangePassword">Clave</a>
+    @if (hasExternalLogins)
+    {
+        <a class="m3-list-item @(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active" ? "active" : "")" id="external-login" asp-page="./ExternalLogins">Accesos externos</a>
+    }
+    <a class="m3-list-item @(ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext) == "active" ? "active" : "")" id="two-factor" asp-page="./TwoFactorAuthentication">Doble factor</a>
+    <a class="m3-list-item @(ManageNavPages.PersonalDataNavClass(ViewContext) == "active" ? "active" : "")" id="personal-data" asp-page="./PersonalData">Datos</a>
+</nav>

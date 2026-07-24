@@ -1,0 +1,55 @@
+@using SakilaApp.Models.Delivery
+@model IReadOnlyList<DeliveryOrder>
+
+@{
+    ViewData["Title"] = "Administración Orbi";
+    var stores = ViewBag.Stores as IReadOnlyList<DeliveryStore> ?? new List<DeliveryStore>();
+    var statuses = new[] { "Pendiente", "En preparación", "En camino", "Entregado", "Cancelado" };
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title">Administración de delivery</h1>
+    <h2>Tiendas</h2>
+    <div style="display:grid;gap:12px;margin-bottom:28px;">
+        @foreach (var store in stores)
+        {
+            <div class="m3-card" style="padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                <span><strong>@store.Name</strong> · @(store.IsActive ? "Activa" : "Inactiva")</span>
+                <form asp-action="ToggleStore" method="post">
+                    <input type="hidden" name="storeId" value="@store.DeliveryStoreId" />
+                    <button class="m3-filled-button" type="submit">@(store.IsActive ? "Desactivar" : "Activar")</button>
+                </form>
+            </div>
+        }
+    </div>
+
+    <h2>Pedidos</h2>
+    <div style="overflow-x:auto;">
+        <table class="m3-data-table">
+            <thead><tr><th>Pedido</th><th>Cliente</th><th>Repartidor</th><th>Total</th><th>Estado</th></tr></thead>
+            <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>#@order.DeliveryOrderId · @order.Store.Name</td>
+                    <td>@order.CustomerEmail</td>
+                    <td>@order.DeliveryPersonEmail</td>
+                    <td>@order.Total.ToString("C")</td>
+                    <td>
+                        <form asp-action="UpdateStatus" method="post" style="display:flex;gap:8px;">
+                            <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
+                            <select name="status" aria-label="Estado del pedido">
+                                @foreach (var status in statuses)
+                                {
+                                    <option value="@status" selected="@(order.Status == status)">@status</option>
+                                }
+                            </select>
+                            <button class="m3-filled-button" type="submit">Guardar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

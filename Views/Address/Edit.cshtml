@@ -1,0 +1,55 @@
+@model SakilaApp.Models.Address
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Edit</h1>
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="AddressId" />
+        <div style="display:grid;gap:16px;">
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Address1"></label>
+                <input asp-for="Address1" class="m3-text-field-input" />
+                <span asp-validation-for="Address1" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Address2"></label>
+                <input asp-for="Address2" class="m3-text-field-input" />
+                <span asp-validation-for="Address2" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="District"></label>
+                <input asp-for="District" class="m3-text-field-input" />
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="CityId"></label>
+                <select asp-for="CityId" class="m3-select" asp-items="ViewBag.CityId"></select>
+                <span asp-validation-for="CityId" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="PostalCode"></label>
+                <input asp-for="PostalCode" class="m3-text-field-input" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Phone"></label>
+                <input asp-for="Phone" class="m3-text-field-input" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="LastUpdate"></label>
+                <input asp-for="LastUpdate" class="m3-text-field-input" />
+                <span asp-validation-for="LastUpdate" class="text-danger"></span>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            <button type="submit" class="m3-filled-button">Save</button>
+            <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+        </div>
+    </form>
+</div>
+

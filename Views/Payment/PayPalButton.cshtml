@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "PayPal Checkout";
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title">PayPal Checkout</h1>
+
+    <div class="m3-card" style="max-width:480px;margin:0 auto;padding:2rem;text-align:center;">
+        <p style="font-size:var(--md-sys-typescale-body-large-size);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">
+            Complete your payment securely with PayPal or credit/debit card.
+        </p>
+        <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0 0 1.5rem;">
+            Your card details are processed directly by PayPal. The store never stores or sees them.
+        </p>
+
+        <div id="paypal-button-container" style="min-height:50px;margin-bottom:1rem;"></div>
+        <div id="card-fields-container" style="min-height:80px;"></div>
+
+        <div id="payment-result" style="margin-top:1.5rem;display:none;"></div>
+
+        <div style="margin-top:1.5rem;">
+            <a class="m3-text-button" href="javascript:history.back()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;margin-right:4px;"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back to cart
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://www.paypal.com/sdk/js?client-id=@ViewBag.ClientId&currency=USD&components=buttons,card-fields"></script>
+    <script>
+        const orderId = '@ViewBag.OrderId';
+        const total = '@ViewBag.Total';
+        let savedPaymentTransactionId = null;
+
+        function showResult(message, isError) {
+            const el = document.getElementById('payment-result');
+            el.style.display = 'block';
+            el.style.padding = '12px 16px';
+            el.style.borderRadius = '12px';
+            el.style.fontSize = 'var(--md-sys-typescale-body-medium-size)';
+            if (isError) {
+                el.style.background = 'var(--md-sys-color-error-container, #fdecea)';
+                el.style.color = 'var(--md-sys-color-on-error-container, #b3261e)';
+            } else {
+                el.style.background = 'var(--md-sys-color-primary-container, #e8def8)';
+                el.style.color = 'var(--md-sys-color-on-primary-container, #1d1b20)';
+            }
+            el.textContent = message;
+        }
+
+        async function createServerOrder() {
+            const resp = await fetch('/Payment/CreatePayPalButtonOrderJson?orderId=' + orderId, { method: 'POST' });
+            const data = await resp.json();
+            if (!data.success) throw new Error(data.message);
+            savedPaymentTransactionId = data.paymentTransactionId;
+            return data.paypalOrderId;
+        }
+
+        async function captureServerOrder(paypalOrderId) {
+            const resp = await fetch('/Payment/CapturePayPalButtonOrderJson', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paypalOrderId: paypalOrderId,
+                    paymentTransactionId: savedPaymentTransactionId
+                })
+            });
+            return await resp.json();
+        }
+
+        paypal.Buttons({
+            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay' },
+            createOrder: async function() {
+                return await createServerOrder();
+            },
+            onApprove: async function(data) {
+                try {
+                    showResult('Processing payment...', false);
+                    const result = await captureServerOrder(data.orderID);
+                    if (result.success) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        showResult(result.message || 'Payment capture failed.', true);
+                    }
+                } catch (err) {
+                    showResult('Error: ' + err.message, true);
+                }
+            },
+            onCancel: function() {
+                window.location.href = '/Payment/Cancel?token=' + (savedPaymentTransactionId || '');
+            },
+            onError: function(err) {
+                showResult('Payment error: ' + err.message, true);
+            }
+        }).render('#paypal-button-container');
+
+        const cardFields = paypal.CardFields({
+            style: { input: { 'font-size': '16px', 'font-family': 'system-ui, sans-serif' } },
+            createOrder: async function() {
+                return await createServerOrder();
+            },
+            onApprove: async function(data) {
+                try {
+                    showResult('Processing payment...', false);
+                    const result = await captureServerOrder(data.orderID);
+                    if (result.success) {
+                        window.location.href = result.redirectUrl;
+                    } else {
+                        showResult(result.message || 'Payment capture failed.', true);
+                    }
+                } catch (err) {
+                    showResult('Error: ' + err.message, true);
+                }
+            },
+            onError: function(err) {
+                showResult('Card payment error: ' + err.message, true);
+            }
+        });
+
+        if (cardFields.isEligible()) {
+            cardFields.render('#card-fields-container');
+        } else {
+            document.getElementById('card-fields-container').innerHTML =
+                '<p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">Card payment is not available in this region. Please use PayPal.</p>';
+        }
+    </script>
+}

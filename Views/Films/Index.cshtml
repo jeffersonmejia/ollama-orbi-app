@@ -1,0 +1,84 @@
+@model SakilaApp.Models.PaginatedList<SakilaApp.Models.Film>
+
+@{
+    ViewData["Title"] = "Films";
+    var totalRegistros = ViewData["TotalRegistros"] ?? Model.TotalCount;
+}
+
+<div class="m3-anim-fade-in-up">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+            <h1 class="m3-headline" style="margin:0;">@ViewData["Title"]</h1>
+            <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:2px 0 0;">@totalRegistros registros</p>
+        </div>
+        @if (User.IsInRole("Administrador") || User.IsInRole("Supervisor"))
+        {
+            <a asp-action="Create" class="m3-filled-button">Create New</a>
+        }
+    </div>
+
+    <form asp-action="Index" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" style="flex:1;min-width:200px;" placeholder="Buscar pelicula por titulo" />
+        <button type="submit" class="m3-filled-button">Buscar</button>
+        <a asp-action="Index" class="m3-outlined-button">Limpiar</a>
+    </form>
+
+    <div style="overflow-x:auto;">
+        <table class="m3-data-table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.First().Title)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Description)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().ReleaseYear)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().RentalDuration)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().RentalRate)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Length)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().ReplacementCost)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().LastUpdate)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().SpecialFeatures)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Fulltext)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().Language)</th>
+                    <th>@Html.DisplayNameFor(model => model.First().OriginalLanguage)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ReleaseYear)</td>
+                        <td>@Html.DisplayFor(modelItem => item.RentalDuration)</td>
+                        <td>@Html.DisplayFor(modelItem => item.RentalRate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Length)</td>
+                        <td>@Html.DisplayFor(modelItem => item.ReplacementCost)</td>
+                        <td>@Html.DisplayFor(modelItem => item.LastUpdate)</td>
+                        <td>@Html.DisplayFor(modelItem => item.SpecialFeatures)</td>
+                        <td class="text-wrap-column">@Html.DisplayFor(modelItem => item.Fulltext)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Language.LanguageId)</td>
+                        <td>@(item.OriginalLanguage?.LanguageId.ToString() ?? "")</td>
+                        <td>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                @if (User.IsInRole("Administrador") || User.IsInRole("Supervisor"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.FilmId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;">Edit</a>
+                                }
+                                <a asp-action="Details" asp-route-id="@item.FilmId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;">Details</a>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.FilmId" class="m3-text-button" style="font-size:var(--md-sys-typescale-body-small-size);height:32px;padding:0 12px;color:var(--md-sys-color-error);">Delete</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @{
+        ViewData["PaginatedList"] = Model;
+    }
+    <partial name="_Pagination" />
+</div>

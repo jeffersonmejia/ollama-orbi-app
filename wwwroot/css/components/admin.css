@@ -1,0 +1,129 @@
+.admin-panel {
+  width: min(1100px, 94vw);
+  margin: 0 auto;
+  display: grid;
+  gap: 1.4rem;
+}
+
+.admin-panel-header {
+  display: grid;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.admin-panel-header p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.admin-metric {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-card);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-metric-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.admin-metric h2 {
+  margin: 0 0 0.25rem;
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.admin-metric p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.admin-metric strong {
+  color: var(--glass-green);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.admin-bar {
+  width: 100%;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-overlay-input);
+}
+
+.admin-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--glass-green);
+}
+
+.access-denied-panel {
+  width: min(680px, 94vw);
+  margin: 2rem auto;
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-bg-strong);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: 1.3rem;
+  padding: 1.4rem;
+  display: grid;
+  gap: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.access-denied-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.access-denied-copy span {
+  color: var(--color-danger-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.access-denied-copy h1 {
+  margin: 0.25rem 0;
+  color: var(--color-text);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+}
+
+.access-denied-copy p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.access-denied-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}

@@ -1,0 +1,23 @@
+@model SakilaApp.Models.Language
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="m3-card" style="max-width:600px;margin:0 auto;padding:24px;">
+    <h1 class="m3-headline">Details</h1>
+    <div style="display:grid;gap:12px;">
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.Name)</strong>
+            <div>@Html.DisplayFor(model => model.Name)</div>
+        </div>
+        <div>
+            <strong>@Html.DisplayNameFor(model => model.LastUpdate)</strong>
+            <div>@Html.DisplayFor(model => model.LastUpdate)</div>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+        <a asp-action="Edit" asp-route-id="@Model?.LanguageId" class="m3-filled-button">Edit</a>
+        <a asp-action="Index" class="m3-outlined-button">Back to List</a>
+    </div>
+</div>
