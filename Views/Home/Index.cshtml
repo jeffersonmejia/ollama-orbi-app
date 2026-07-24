@@ -13,7 +13,7 @@
     }
 
     .orbi-home-layout.chat-collapsed {
-        padding-right: 56px;
+        padding-right: 0;
     }
 
     .orbi-chat-typing span {
@@ -36,12 +36,25 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
-        transition: width 220ms var(--md-sys-motion-easing-standard), padding 220ms var(--md-sys-motion-easing-standard);
+        box-sizing: border-box;
+        transition:
+            width 220ms var(--md-sys-motion-easing-standard),
+            height 220ms var(--md-sys-motion-easing-standard),
+            padding 220ms var(--md-sys-motion-easing-standard),
+            border-radius 220ms var(--md-sys-motion-easing-standard),
+            box-shadow 220ms var(--md-sys-motion-easing-standard);
     }
 
     .orbi-chat-panel.collapsed {
         width: 56px;
-        padding: 12px 6px;
+        height: 56px;
+        inset: 16px 16px auto auto;
+        padding: 7px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 18px;
+        background: var(--md-sys-color-surface-container-high);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
     }
 
     .orbi-chat-panel.collapsed .orbi-chat-brand,
@@ -51,6 +64,16 @@
 
     .orbi-chat-panel.collapsed .orbi-chat-header {
         justify-content: center;
+        gap: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .orbi-chat-panel.collapsed #orbi-chat-toggle {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        color: var(--md-sys-color-on-primary-container);
+        background: var(--md-sys-color-primary-container);
     }
 
     .orbi-chat-body {
@@ -154,7 +177,10 @@
         .orbi-chat-panel {
             width: min(380px, 100vw);
         }
-        .orbi-chat-panel.collapsed { width: 56px; }
+        .orbi-chat-panel.collapsed {
+            width: 56px;
+            height: 56px;
+        }
     }
 
     @@media (prefers-reduced-motion: reduce) {
@@ -404,8 +430,9 @@
         toggle.addEventListener('click', function () {
             const expanded = toggle.getAttribute('aria-expanded') === 'true';
             toggle.setAttribute('aria-expanded', String(!expanded));
-            toggle.setAttribute('aria-label', expanded ? 'Expandir chat' : 'Contraer chat');
-            toggleIcon.textContent = expanded ? 'chevron_left' : 'chevron_right';
+            toggle.setAttribute('aria-label', expanded ? 'Abrir asistente' : 'Contraer chat');
+            toggle.title = expanded ? 'Abrir asistente' : 'Contraer chat';
+            toggleIcon.textContent = expanded ? 'smart_toy' : 'chevron_right';
             chatBody.hidden = expanded;
             panel.classList.toggle('collapsed', expanded);
             homeLayout.classList.toggle('chat-collapsed', expanded);
