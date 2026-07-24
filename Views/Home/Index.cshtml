@@ -5,31 +5,31 @@
     ViewData["Title"] = "Orbi App";
     var chatContext = "public_home";
     var chatWelcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
-    string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?", "¿Cómo creo una cuenta?" };
+    string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
 
     if (User.IsInRole("Administrador"))
     {
         chatContext = "administrador";
         chatWelcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
-        chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?", "¿Dónde administro las tiendas?" };
+        chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
     }
     else if (User.IsInRole("Vendedor"))
     {
         chatContext = "vendedor";
         chatWelcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
-        chatSuggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?", "¿Qué puede hacer un vendedor?" };
+        chatSuggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?" };
     }
     else if (User.IsInRole("Repartidor"))
     {
         chatContext = "repartidor";
         chatWelcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
-        chatSuggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?", "¿Qué estados existen?" };
+        chatSuggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?" };
     }
     else if (User.IsInRole("Usuario"))
     {
         chatContext = "usuario";
         chatWelcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
-        chatSuggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Dónde veo mis pedidos?" };
+        chatSuggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?" };
     }
 }
 
@@ -137,25 +137,25 @@
     }
 
     .orbi-chat-suggestions {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
-        overflow-x: auto;
         padding: 2px 1px 10px;
-        scrollbar-width: thin;
     }
 
     .orbi-chat-suggestion {
-        flex: 0 0 auto;
-        max-width: 230px;
+        width: 100%;
+        min-width: 0;
         padding: 7px 11px;
         border: 1px solid var(--md-sys-color-outline-variant);
         border-radius: 16px;
         background: var(--md-sys-color-surface-container);
         color: var(--md-sys-color-on-surface);
         font: inherit;
-        font-size: 12px;
+        font-size: 10px;
+        line-height: 1.25;
         cursor: pointer;
-        white-space: nowrap;
+        white-space: normal;
     }
 
     .orbi-chat-suggestion:hover {
@@ -227,10 +227,10 @@
     }
 
     @@media (max-width: 900px) {
-        .orbi-home-layout,
+        .orbi-home-layout { padding-right: min(380px, calc(100vw - 80px)); }
         .orbi-home-layout.chat-collapsed { padding-right: 0; }
         .orbi-chat-panel {
-            width: min(380px, 100vw);
+            width: min(380px, calc(100vw - 80px));
         }
         .orbi-chat-panel.collapsed {
             width: 56px;

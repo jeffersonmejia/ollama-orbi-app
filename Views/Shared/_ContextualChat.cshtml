@@ -2,25 +2,25 @@
     var page = ViewContext.RouteData.Values["page"]?.ToString() ?? string.Empty;
     var contextKey = "public_home";
     var welcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
-    string[] suggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?", "¿Cómo creo una cuenta?" };
+    string[] suggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
 
     if (page.EndsWith("/Login", StringComparison.OrdinalIgnoreCase))
     {
         contextKey = "login";
         welcome = "¿Tienes problemas para iniciar sesión? Cuéntame qué ocurre y te ayudo.";
-        suggestions = new[] { "Olvidé mi contraseña", "No puedo ingresar", "¿Cómo creo una cuenta?" };
+        suggestions = new[] { "Olvidé mi contraseña", "No puedo ingresar" };
     }
     else if (page.EndsWith("/Register", StringComparison.OrdinalIgnoreCase))
     {
         contextKey = "register";
         welcome = "Puedo ayudarte a crear tu cuenta y elegir el rol adecuado.";
-        suggestions = new[] { "¿Qué rol debo elegir?", "¿Qué contraseña necesito?", "¿Puedo ser administrador?" };
+        suggestions = new[] { "¿Qué rol debo elegir?", "¿Qué contraseña necesito?" };
     }
     else if (page.EndsWith("/Logout", StringComparison.OrdinalIgnoreCase))
     {
         contextKey = "logout";
         welcome = "¿Necesitas ayuda para cerrar sesión o volver a ingresar? Cuéntame.";
-        suggestions = new[] { "¿Cómo cierro mi sesión?", "Quiero cambiar de cuenta", "Volver al inicio" };
+        suggestions = new[] { "¿Cómo cierro mi sesión?", "Quiero cambiar de cuenta" };
     }
     else if (User.Identity?.IsAuthenticated == true)
     {
@@ -28,25 +28,25 @@
         {
             contextKey = "administrador";
             welcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
-            suggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?", "¿Dónde administro las tiendas?" };
+            suggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
         }
         else if (User.IsInRole("Vendedor"))
         {
             contextKey = "vendedor";
             welcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
-            suggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?", "¿Qué puede hacer un vendedor?" };
+            suggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?" };
         }
         else if (User.IsInRole("Repartidor"))
         {
             contextKey = "repartidor";
             welcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
-            suggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?", "¿Qué estados existen?" };
+            suggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?" };
         }
         else
         {
             contextKey = "usuario";
             welcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
-            suggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Dónde veo mis pedidos?" };
+            suggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?" };
         }
     }
 }
@@ -58,6 +58,8 @@
         background: var(--md-sys-color-surface); display: flex; flex-direction: column; min-width: 0;
         transition: width 220ms var(--md-sys-motion-easing-standard), height 220ms var(--md-sys-motion-easing-standard), padding 220ms var(--md-sys-motion-easing-standard), border-radius 220ms var(--md-sys-motion-easing-standard);
     }
+    .orbi-chat-layout .m3-content-area { padding-right: 380px; transition: padding-right 220ms var(--md-sys-motion-easing-standard); }
+    .orbi-chat-layout.chat-collapsed .m3-content-area { padding-right: 0; }
     .orbi-chat-panel.collapsed {
         width: 56px; height: 56px; inset: 16px 16px auto auto; padding: 7px; overflow: hidden;
         border: 1px solid var(--md-sys-color-outline-variant); border-radius: 18px;
@@ -70,8 +72,8 @@
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
     .orbi-chat-message-assistant { margin-right: auto; border-bottom-left-radius: 4px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
-    .orbi-chat-suggestions { display: flex; gap: 7px; overflow-x: auto; padding: 2px 1px 10px; scrollbar-width: thin; }
-    .orbi-chat-suggestion { flex: 0 0 auto; max-width: 230px; padding: 7px 11px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .orbi-chat-suggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; padding: 2px 1px 10px; }
+    .orbi-chat-suggestion { width:100%; min-width:0; padding: 7px 9px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; font-size: 10px; line-height: 1.25; cursor: pointer; white-space: normal; }
     .orbi-chat-suggestion:hover { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-primary-container); }
     .orbi-chat-typing span { display: inline-block; animation: orbi-chat-dot 1.2s infinite ease-in-out; }
     .orbi-chat-typing span:nth-child(2) { animation-delay: .15s; } .orbi-chat-typing span:nth-child(3) { animation-delay: .3s; }
@@ -79,7 +81,12 @@
     .orbi-chat-composer:focus-within { border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 1px var(--md-sys-color-primary); }
     .orbi-chat-input { flex: 1; min-width: 0; max-height: 112px; padding: 8px 2px; border: 0; outline: 0; resize: none; overflow-y: auto; background: transparent; color: var(--md-sys-color-on-surface); font: inherit; line-height: 1.4; }
     @@keyframes orbi-chat-dot { 0%,60%,100% { transform:translateY(0);opacity:.35 } 30% { transform:translateY(-3px);opacity:1 } }
-    @@media (max-width: 900px) { .orbi-chat-panel { width: min(380px,100vw); } .orbi-chat-panel.collapsed { width:56px;height:56px; } }
+    @@media (max-width: 900px) {
+        .orbi-chat-layout .m3-content-area { padding-right: min(380px, calc(100vw - 80px)); }
+        .orbi-chat-layout.chat-collapsed .m3-content-area { padding-right: 0; }
+        .orbi-chat-panel { width: min(380px, calc(100vw - 80px)); }
+        .orbi-chat-panel.collapsed { width:56px;height:56px; }
+    }
 </style>
 
 <aside id="orbi-chat-panel" class="orbi-chat-panel" data-welcome="@welcome" aria-label="Asistente Orbi">
@@ -119,6 +126,7 @@
     const toggle = document.getElementById('orbi-chat-toggle');
     const toggleIcon = toggle.querySelector('.material-symbols-outlined');
     const body = document.getElementById('orbi-chat-body');
+    const appLayout = document.querySelector('.orbi-chat-layout');
     let controller = null;
 
     const addMessage = (text, user = false) => {
@@ -143,6 +151,7 @@
         toggleIcon.textContent = expanded ? 'smart_toy' : 'chevron_right';
         body.hidden = expanded;
         panel.classList.toggle('collapsed', expanded);
+        appLayout?.classList.toggle('chat-collapsed', expanded);
         if (!expanded) input.focus();
     });
 

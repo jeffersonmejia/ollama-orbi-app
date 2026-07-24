@@ -15,11 +15,12 @@
 
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var hasSharedChat = !string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
 }
 
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-<div class="m3-app-layout">
+<div class="m3-app-layout @(hasSharedChat ? "orbi-chat-layout" : string.Empty)">
     <nav class="m3-nav-rail">
         <div class="m3-nav-rail-header"></div>
 
@@ -279,7 +280,7 @@
     </div>
 </div>
 
-@if (!string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase))
+@if (hasSharedChat)
 {
     <partial name="_ContextualChat" />
 }
