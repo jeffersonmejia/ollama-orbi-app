@@ -72,9 +72,9 @@
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
     .orbi-chat-message-assistant { margin-right: auto; border-bottom-left-radius: 4px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
-    .orbi-chat-speak { display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:6px 0 -2px auto;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer;opacity:.72; }
-    .orbi-chat-speak:hover { background:color-mix(in srgb,currentColor 10%,transparent);opacity:1; }
-    .orbi-chat-speak .material-symbols-outlined { font-size:18px; }
+    .orbi-chat-voice.listening { color:var(--md-sys-color-error);animation:orbi-voice-pulse 1s infinite ease-in-out; }
+    .orbi-chat-voice-mode.active { color:var(--md-sys-color-on-primary-container);background:var(--md-sys-color-primary-container); }
+    .orbi-chat-voice-mode.listening { animation:orbi-voice-pulse 1s infinite ease-in-out; }
     .orbi-chat-suggestions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; padding: 2px 1px 10px; }
     .orbi-chat-suggestion { width:100%; min-width:0; padding: 7px 9px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; font-size: 12px; font-weight: 500; line-height: 1.3; cursor: pointer; white-space: normal; }
     .orbi-chat-suggestion:hover { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-primary-container); }
@@ -84,6 +84,7 @@
     .orbi-chat-composer:focus-within { border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 1px var(--md-sys-color-primary); }
     .orbi-chat-input { flex: 1; min-width: 0; max-height: 112px; padding: 8px 2px; border: 0; outline: 0; resize: none; overflow-y: auto; background: transparent; color: var(--md-sys-color-on-surface); font: inherit; line-height: 1.4; }
     @@keyframes orbi-chat-dot { 0%,60%,100% { transform:translateY(0);opacity:.35 } 30% { transform:translateY(-3px);opacity:1 } }
+    @@keyframes orbi-voice-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
     @@media (max-width: 900px) {
         .orbi-chat-layout .m3-content-area { padding-right: min(380px, calc(100vw - 80px)); }
         .orbi-chat-layout.chat-collapsed .m3-content-area { padding-right: 0; }
@@ -112,6 +113,8 @@
         <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-area="" asp-controller="Home" asp-action="ProductChat">
             <input type="hidden" name="context" value="@contextKey" />
             <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="300" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
+            <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Dictar mensaje" title="Dictar mensaje"><span class="material-symbols-outlined">mic</span></button>
+            <button id="orbi-chat-voice-mode" class="m3-icon-btn orbi-chat-voice-mode" type="button" aria-pressed="false" aria-label="Iniciar modo voz" title="Modo voz"><span class="material-symbols-outlined">headset_mic</span></button>
             <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;"><span class="material-symbols-outlined">arrow_upward</span></button>
         </form>
     </div>
@@ -126,53 +129,87 @@
     const messages = document.getElementById('orbi-chat-messages');
     const send = document.getElementById('orbi-chat-send');
     const sendIcon = send.querySelector('.material-symbols-outlined');
+    const voiceButton = document.getElementById('orbi-chat-voice');
+    const voiceIcon = voiceButton.querySelector('.material-symbols-outlined');
+    const voiceModeButton = document.getElementById('orbi-chat-voice-mode');
+    const voiceModeIcon = voiceModeButton.querySelector('.material-symbols-outlined');
     const toggle = document.getElementById('orbi-chat-toggle');
     const toggleIcon = toggle.querySelector('.material-symbols-outlined');
     const body = document.getElementById('orbi-chat-body');
     const appLayout = document.querySelector('.orbi-chat-layout');
     let controller = null;
+    let recognition = null;
+    let isListening = false;
+    let voiceMode = false;
+    let isSpeaking = false;
 
-    const resetSpeechButtons = () => document.querySelectorAll('.orbi-chat-speak').forEach(button => {
-        button.dataset.speaking = 'false';
-        button.querySelector('.material-symbols-outlined').textContent = 'volume_up';
-        button.setAttribute('aria-label', 'Escuchar respuesta');
-        button.title = 'Escuchar respuesta';
-    });
-
-    const addSpeakButton = (element, text) => {
-        if (!('speechSynthesis' in window) || !text || element.querySelector('.orbi-chat-speak')) return;
-        const speechButton = document.createElement('button');
-        speechButton.type = 'button'; speechButton.className = 'orbi-chat-speak'; speechButton.dataset.speaking = 'false';
-        speechButton.setAttribute('aria-label', 'Escuchar respuesta'); speechButton.title = 'Escuchar respuesta';
-        speechButton.innerHTML = '<span class="material-symbols-outlined">volume_up</span>';
-        speechButton.addEventListener('click', () => {
-            if (speechButton.dataset.speaking === 'true') { window.speechSynthesis.cancel(); resetSpeechButtons(); return; }
-            window.speechSynthesis.cancel(); resetSpeechButtons();
-            const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'es-EC'; utterance.rate = .95;
-            utterance.onend = resetSpeechButtons; utterance.onerror = resetSpeechButtons;
-            speechButton.dataset.speaking = 'true'; speechButton.querySelector('.material-symbols-outlined').textContent = 'stop_circle';
-            speechButton.setAttribute('aria-label', 'Detener lectura'); speechButton.title = 'Detener lectura';
-            window.speechSynthesis.speak(utterance);
-        });
-        element.appendChild(speechButton);
-    };
-
-    const addMessage = (text, user = false, withSpeech = !user) => {
+    const addMessage = (text, user = false) => {
         const element = document.createElement('div');
         element.className = `orbi-chat-message ${user ? 'orbi-chat-message-user' : 'orbi-chat-message-assistant'}`;
         element.textContent = text;
         messages.appendChild(element);
-        if (withSpeech) addSpeakButton(element, text);
         messages.scrollTop = messages.scrollHeight;
         return element;
     };
-
-    document.querySelectorAll('.orbi-chat-message-assistant:not(.orbi-chat-typing)').forEach(message => addSpeakButton(message, message.textContent.trim()));
 
     const resize = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 112) + 'px'; };
     input.addEventListener('input', resize);
     input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (!controller) form.requestSubmit(); } });
     document.querySelectorAll('.orbi-chat-suggestion').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.question; resize(); form.requestSubmit(); }));
+
+    const startListening = () => {
+        if (!recognition || isListening || isSpeaking || controller) return;
+        try { recognition.start(); } catch { }
+    };
+
+    const setVoiceMode = enabled => {
+        voiceMode = enabled;
+        voiceModeButton.classList.toggle('active', enabled);
+        voiceModeButton.setAttribute('aria-pressed', String(enabled));
+        voiceModeButton.setAttribute('aria-label', enabled ? 'Detener modo voz' : 'Iniciar modo voz');
+        voiceModeButton.title = enabled ? 'Detener modo voz' : 'Modo voz';
+        voiceModeIcon.textContent = 'headset_mic';
+        if (!enabled) {
+            window.speechSynthesis?.cancel(); isSpeaking = false;
+            if (isListening) recognition?.stop();
+            return;
+        }
+        input.value = ''; resize(); startListening();
+    };
+
+    const speakInVoiceMode = text => {
+        if (!voiceMode || !('speechSynthesis' in window)) { if (voiceMode) startListening(); return; }
+        window.speechSynthesis.cancel(); isSpeaking = true; voiceModeIcon.textContent = 'spatial_audio';
+        const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'es-EC'; utterance.rate = .95;
+        const resume = () => { isSpeaking = false; voiceModeIcon.textContent = 'headset_mic'; if (voiceMode) setTimeout(startListening, 350); };
+        utterance.onend = resume; utterance.onerror = resume; window.speechSynthesis.speak(utterance);
+    };
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition(); recognition.lang = 'es-EC'; recognition.interimResults = true; recognition.continuous = false;
+        recognition.addEventListener('start', () => {
+            isListening = true;
+            if (voiceMode) { voiceModeButton.classList.add('listening'); voiceModeIcon.textContent = 'graphic_eq'; }
+            else { voiceButton.classList.add('listening'); voiceIcon.textContent = 'graphic_eq'; }
+        });
+        recognition.addEventListener('result', event => { input.value = Array.from(event.results).map(result => result[0].transcript).join(''); resize(); });
+        recognition.addEventListener('end', () => {
+            isListening = false; voiceButton.classList.remove('listening'); voiceModeButton.classList.remove('listening');
+            voiceIcon.textContent = 'mic'; voiceModeIcon.textContent = 'headset_mic';
+            if (voiceMode && !controller && !isSpeaking && input.value.trim().length >= 2) form.requestSubmit();
+            else if (voiceMode && !controller && !isSpeaking) setTimeout(startListening, 350);
+        });
+        recognition.addEventListener('error', event => {
+            isListening = false; voiceButton.classList.remove('listening'); voiceModeButton.classList.remove('listening');
+            voiceIcon.textContent = 'mic'; voiceModeIcon.textContent = 'headset_mic';
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') setVoiceMode(false);
+        });
+        voiceButton.addEventListener('click', () => { if (voiceMode) setVoiceMode(false); if (isListening) recognition.stop(); else startListening(); });
+        voiceModeButton.addEventListener('click', () => setVoiceMode(!voiceMode));
+    } else {
+        voiceButton.hidden = true; voiceModeButton.hidden = true;
+    }
 
     toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
@@ -183,11 +220,12 @@
         body.hidden = expanded;
         panel.classList.toggle('collapsed', expanded);
         appLayout?.classList.toggle('chat-collapsed', expanded);
+        if (expanded && voiceMode) setVoiceMode(false);
         if (!expanded) input.focus();
     });
 
     document.getElementById('orbi-chat-new').addEventListener('click', () => {
-        controller?.abort(); window.speechSynthesis?.cancel(); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);
+        controller?.abort(); setVoiceMode(false); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);
         input.value = ''; resize(); send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false;
     });
 
@@ -196,15 +234,15 @@
         event.preventDefault();
         const text = input.value.trim(); if (text.length < 2) return;
         const data = new FormData(form); addMessage(text, true); input.value = ''; resize();
-        controller = new AbortController(); send.type = 'button'; sendIcon.textContent = 'stop'; input.disabled = true;
-        const typing = addMessage('•••', false, false); typing.classList.add('orbi-chat-typing');
+        controller = new AbortController(); send.type = 'button'; sendIcon.textContent = 'stop'; input.disabled = true; voiceButton.disabled = true;
+        const typing = addMessage('•••'); typing.classList.add('orbi-chat-typing');
         try {
             const response = await fetch(form.action, { method: 'POST', body: data, signal: controller.signal });
-            const result = await response.json(); typing.remove(); addMessage(result.message || 'No pude responder.');
+            const result = await response.json(); typing.remove(); const answer = result.message || 'No pude responder.'; addMessage(answer); speakInVoiceMode(answer);
         } catch (error) {
-            typing.remove(); addMessage(error.name === 'AbortError' ? 'Respuesta detenida.' : 'No pude conectar con el asistente.');
+            typing.remove(); const errorText = error.name === 'AbortError' ? 'Respuesta detenida.' : 'No pude conectar con el asistente.'; addMessage(errorText); speakInVoiceMode(errorText);
         } finally {
-            controller = null; send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false; input.focus();
+            controller = null; send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false; voiceButton.disabled = false; if (!voiceMode) input.focus();
         }
     });
 })();

@@ -136,29 +136,6 @@
         color: var(--md-sys-color-on-secondary-container);
     }
 
-    .orbi-chat-speak {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        margin: 6px 0 -2px auto;
-        padding: 0;
-        border: 0;
-        border-radius: 50%;
-        background: transparent;
-        color: inherit;
-        cursor: pointer;
-        opacity: .72;
-    }
-
-    .orbi-chat-speak:hover {
-        background: color-mix(in srgb, currentColor 10%, transparent);
-        opacity: 1;
-    }
-
-    .orbi-chat-speak .material-symbols-outlined { font-size: 18px; }
-
     .orbi-chat-suggestions {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -232,6 +209,15 @@
 
     .orbi-chat-voice.listening {
         color: var(--md-sys-color-error);
+        animation: orbi-voice-pulse 1s infinite ease-in-out;
+    }
+
+    .orbi-chat-voice-mode.active {
+        color: var(--md-sys-color-on-primary-container);
+        background: var(--md-sys-color-primary-container);
+    }
+
+    .orbi-chat-voice-mode.listening {
         animation: orbi-voice-pulse 1s infinite ease-in-out;
     }
 
@@ -389,6 +375,9 @@
             <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Hablar por voz" title="Hablar por voz">
                 <span class="material-symbols-outlined">mic</span>
             </button>
+            <button id="orbi-chat-voice-mode" class="m3-icon-btn orbi-chat-voice-mode" type="button" aria-pressed="false" aria-label="Iniciar modo voz" title="Modo voz">
+                <span class="material-symbols-outlined">headset_mic</span>
+            </button>
             <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;">
                 <span class="material-symbols-outlined">arrow_upward</span>
             </button>
@@ -406,6 +395,8 @@
         const buttonIcon = button.querySelector('.material-symbols-outlined');
         const voiceButton = document.getElementById('orbi-chat-voice');
         const voiceIcon = voiceButton.querySelector('.material-symbols-outlined');
+        const voiceModeButton = document.getElementById('orbi-chat-voice-mode');
+        const voiceModeIcon = voiceModeButton.querySelector('.material-symbols-outlined');
         const panel = document.getElementById('orbi-chat-panel');
         const homeLayout = document.getElementById('orbi-home-layout');
         const chatBody = document.getElementById('orbi-chat-body');
@@ -418,6 +409,8 @@
         let chatGeneration = 0;
         let recognition = null;
         let isListening = false;
+        let voiceMode = false;
+        let isSpeaking = false;
 
         function resizeInput() {
             input.style.height = 'auto';
@@ -441,9 +434,15 @@
 
             recognition.addEventListener('start', function () {
                 isListening = true;
-                voiceButton.classList.add('listening');
-                voiceIcon.textContent = 'graphic_eq';
-                voiceButton.setAttribute('aria-label', 'Detener dictado');
+                const activeVoiceControl = voiceMode ? voiceModeButton : voiceButton;
+                activeVoiceControl.classList.add('listening');
+                if (voiceMode) {
+                    voiceModeIcon.textContent = 'graphic_eq';
+                    voiceModeButton.setAttribute('aria-label', 'Modo voz escuchando; pulsar para detener');
+                } else {
+                    voiceIcon.textContent = 'graphic_eq';
+                    voiceButton.setAttribute('aria-label', 'Detener dictado');
+                }
             });
 
             recognition.addEventListener('result', function (event) {
@@ -456,23 +455,88 @@
             recognition.addEventListener('end', function () {
                 isListening = false;
                 voiceButton.classList.remove('listening');
+                voiceModeButton.classList.remove('listening');
                 voiceIcon.textContent = 'mic';
-                voiceButton.setAttribute('aria-label', 'Hablar por voz');
-                input.focus();
+                voiceButton.setAttribute('aria-label', 'Dictar mensaje');
+                if (voiceMode) {
+                    voiceModeIcon.textContent = 'headset_mic';
+                    if (!activeController && !isSpeaking && input.value.trim().length >= 2) {
+                        form.requestSubmit();
+                    } else if (!activeController && !isSpeaking) {
+                        setTimeout(startListening, 350);
+                    }
+                } else {
+                    input.focus();
+                }
             });
 
-            recognition.addEventListener('error', function () {
+            recognition.addEventListener('error', function (event) {
                 isListening = false;
                 voiceButton.classList.remove('listening');
+                voiceModeButton.classList.remove('listening');
                 voiceIcon.textContent = 'mic';
+                voiceModeIcon.textContent = 'headset_mic';
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    setVoiceMode(false);
+                }
             });
 
             voiceButton.addEventListener('click', function () {
+                if (voiceMode) setVoiceMode(false);
                 if (isListening) recognition.stop();
-                else recognition.start();
+                else startListening();
+            });
+
+            voiceModeButton.addEventListener('click', function () {
+                setVoiceMode(!voiceMode);
             });
         } else {
             voiceButton.hidden = true;
+            voiceModeButton.hidden = true;
+        }
+
+        function startListening() {
+            if (!recognition || isListening || isSpeaking || activeController) return;
+            try { recognition.start(); } catch { }
+        }
+
+        function setVoiceMode(enabled) {
+            voiceMode = enabled;
+            voiceModeButton.classList.toggle('active', enabled);
+            voiceModeButton.setAttribute('aria-pressed', String(enabled));
+            voiceModeButton.setAttribute('aria-label', enabled ? 'Detener modo voz' : 'Iniciar modo voz');
+            voiceModeButton.title = enabled ? 'Detener modo voz' : 'Modo voz';
+            voiceModeIcon.textContent = 'headset_mic';
+            if (!enabled) {
+                window.speechSynthesis?.cancel();
+                isSpeaking = false;
+                if (isListening) recognition?.stop();
+                return;
+            }
+            input.value = '';
+            resizeInput();
+            startListening();
+        }
+
+        function speakInVoiceMode(text) {
+            if (!voiceMode || !('speechSynthesis' in window)) {
+                if (voiceMode) startListening();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            isSpeaking = true;
+            voiceModeIcon.textContent = 'spatial_audio';
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-EC';
+            utterance.rate = .95;
+            const resumeListening = function () {
+                isSpeaking = false;
+                voiceModeIcon.textContent = 'headset_mic';
+                if (voiceMode) setTimeout(startListening, 350);
+            };
+            utterance.onend = resumeListening;
+            utterance.onerror = resumeListening;
+            window.speechSynthesis.speak(utterance);
         }
 
         function setBusy(busy) {
@@ -484,56 +548,11 @@
             voiceButton.disabled = busy;
         }
 
-        function resetSpeechButtons() {
-            document.querySelectorAll('.orbi-chat-speak').forEach(function (speechButton) {
-                speechButton.dataset.speaking = 'false';
-                speechButton.querySelector('.material-symbols-outlined').textContent = 'volume_up';
-                speechButton.setAttribute('aria-label', 'Escuchar respuesta');
-                speechButton.title = 'Escuchar respuesta';
-            });
-        }
-
-        function addSpeakButton(element, text) {
-            if (!('speechSynthesis' in window) || !text || element.querySelector('.orbi-chat-speak')) return;
-            const speechButton = document.createElement('button');
-            speechButton.type = 'button';
-            speechButton.className = 'orbi-chat-speak';
-            speechButton.dataset.speaking = 'false';
-            speechButton.setAttribute('aria-label', 'Escuchar respuesta');
-            speechButton.title = 'Escuchar respuesta';
-            speechButton.innerHTML = '<span class="material-symbols-outlined">volume_up</span>';
-            speechButton.addEventListener('click', function () {
-                if (speechButton.dataset.speaking === 'true') {
-                    window.speechSynthesis.cancel();
-                    resetSpeechButtons();
-                    return;
-                }
-                window.speechSynthesis.cancel();
-                resetSpeechButtons();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-EC';
-                utterance.rate = .95;
-                utterance.onend = resetSpeechButtons;
-                utterance.onerror = resetSpeechButtons;
-                speechButton.dataset.speaking = 'true';
-                speechButton.querySelector('.material-symbols-outlined').textContent = 'stop_circle';
-                speechButton.setAttribute('aria-label', 'Detener lectura');
-                speechButton.title = 'Detener lectura';
-                window.speechSynthesis.speak(utterance);
-            });
-            element.appendChild(speechButton);
-        }
-
-        document.querySelectorAll('.orbi-chat-message-assistant:not(.orbi-chat-typing)').forEach(function (message) {
-            addSpeakButton(message, message.textContent.trim());
-        });
-
         function addWelcomeMessage() {
             const welcome = document.createElement('div');
             welcome.className = 'orbi-chat-message orbi-chat-message-assistant';
             welcome.textContent = panel.dataset.welcome;
             messages.appendChild(welcome);
-            addSpeakButton(welcome, panel.dataset.welcome);
         }
 
         document.querySelectorAll('.orbi-chat-suggestion').forEach(function (suggestion) {
@@ -554,13 +573,12 @@
             chatGeneration++;
             stopTyping = true;
             activeController?.abort();
-            window.speechSynthesis?.cancel();
+            setVoiceMode(false);
             activeController = null;
             messages.replaceChildren();
             addWelcomeMessage();
             input.value = '';
             resizeInput();
-            if (isListening) recognition?.stop();
             setBusy(false);
             if (chatBody.hidden) toggle.click();
             input.focus();
@@ -575,13 +593,13 @@
             chatBody.hidden = expanded;
             panel.classList.toggle('collapsed', expanded);
             homeLayout.classList.toggle('chat-collapsed', expanded);
+            if (expanded && voiceMode) setVoiceMode(false);
             if (!expanded) input.focus();
         });
 
         async function typeMessage(element, text, generation) {
             if (reducedMotion) {
                 element.textContent = text;
-                addSpeakButton(element, text);
                 return;
             }
 
@@ -594,7 +612,6 @@
                 await new Promise(resolve => setTimeout(resolve, 14));
             }
             element.classList.remove('orbi-chat-cursor');
-            addSpeakButton(element, element.textContent);
         }
 
         form.addEventListener('submit', async function (event) {
@@ -633,7 +650,9 @@
                 const assistantMessage = document.createElement('div');
                 assistantMessage.className = 'orbi-chat-message orbi-chat-message-assistant';
                 messages.appendChild(assistantMessage);
-                await typeMessage(assistantMessage, data.message || 'No pude responder.', generation);
+                const answer = data.message || 'No pude responder.';
+                await typeMessage(assistantMessage, answer, generation);
+                speakInVoiceMode(answer);
             } catch (error) {
                 if (generation !== chatGeneration) return;
                 typingMessage.remove();
@@ -643,13 +662,13 @@
                     ? 'Respuesta detenida.'
                     : 'No pude conectar con el asistente.';
                 messages.appendChild(errorMessage);
-                addSpeakButton(errorMessage, errorMessage.textContent);
+                speakInVoiceMode(errorMessage.textContent);
             } finally {
                 if (generation !== chatGeneration) return;
                 activeController = null;
                 setBusy(false);
                 messages.scrollTop = messages.scrollHeight;
-                input.focus();
+                if (!voiceMode) input.focus();
             }
         });
     })();
