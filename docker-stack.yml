@@ -68,10 +68,6 @@ services:
       POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       Ollama__BaseUrl: "http://host.docker.internal:11434"
       Ollama__Model: "qwen2.5:0.5b"
-      Voice__BaseUrl: "http://speaches:8000"
-      Voice__TranscriptionModel: "Systran/faster-whisper-small"
-      Voice__SpeechModel: "speaches-ai/Kokoro-82M-v1.0-ONNX"
-      Voice__Voice: "ef_dora"
       PayPal__BaseUrl: "https://api-m.sandbox.paypal.com"
       PayPal__ReturnUrl: "http://localhost:5164/Payment/Success"
       PayPal__CancelUrl: "http://localhost:5164/Payment/Cancel"
@@ -115,47 +111,6 @@ services:
         parallelism: 1
         order: stop-first
 
-  speaches:
-    image: ghcr.io/speaches-ai/speaches:latest-cpu
-    command:
-      - sh
-      - -lc
-      - |
-        uvicorn --factory speaches.main:create_app &
-        server_pid=$$!
-        trap 'kill "$$server_pid"; wait "$$server_pid"' TERM INT
-        until curl -fsS http://localhost:8000/health >/dev/null; do sleep 1; done
-        curl -fsS -X POST http://localhost:8000/v1/models/Systran%2Ffaster-whisper-small
-        curl -fsS -X POST http://localhost:8000/v1/models/speaches-ai%2FKokoro-82M-v1.0-ONNX
-        wait "$$server_pid"
-    environment:
-      STT_MODEL_TTL: "-1"
-      TTS_MODEL_TTL: "-1"
-      LOG_LEVEL: "info"
-      ENABLE_UI: "false"
-    volumes:
-      - voice_models:/home/ubuntu/.cache/huggingface/hub
-    networks:
-      - sakila_overlay
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
-      start_period: 300s
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      resources:
-        limits:
-          cpus: "3"
-          memory: 4G
-        reservations:
-          cpus: "0.5"
-          memory: 1G
-
 networks:
   sakila_overlay:
     driver: overlay
@@ -164,7 +119,6 @@ networks:
 volumes:
   postgres_data_v18:
   orbi_keys:
-  voice_models:
 
 secrets:
   postgres_password:
