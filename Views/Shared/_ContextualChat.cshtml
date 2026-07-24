@@ -1,0 +1,171 @@
+@{
+    var page = ViewContext.RouteData.Values["page"]?.ToString() ?? string.Empty;
+    var contextKey = "public_home";
+    var welcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
+    string[] suggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?", "¿Cómo creo una cuenta?" };
+
+    if (page.EndsWith("/Login", StringComparison.OrdinalIgnoreCase))
+    {
+        contextKey = "login";
+        welcome = "¿Tienes problemas para iniciar sesión? Cuéntame qué ocurre y te ayudo.";
+        suggestions = new[] { "Olvidé mi contraseña", "No puedo ingresar", "¿Cómo creo una cuenta?" };
+    }
+    else if (page.EndsWith("/Register", StringComparison.OrdinalIgnoreCase))
+    {
+        contextKey = "register";
+        welcome = "Puedo ayudarte a crear tu cuenta y elegir el rol adecuado.";
+        suggestions = new[] { "¿Qué rol debo elegir?", "¿Qué contraseña necesito?", "¿Puedo ser administrador?" };
+    }
+    else if (page.EndsWith("/Logout", StringComparison.OrdinalIgnoreCase))
+    {
+        contextKey = "logout";
+        welcome = "¿Necesitas ayuda para cerrar sesión o volver a ingresar? Cuéntame.";
+        suggestions = new[] { "¿Cómo cierro mi sesión?", "Quiero cambiar de cuenta", "Volver al inicio" };
+    }
+    else if (User.Identity?.IsAuthenticated == true)
+    {
+        if (User.IsInRole("Administrador"))
+        {
+            contextKey = "administrador";
+            welcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
+            suggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?", "¿Dónde administro las tiendas?" };
+        }
+        else if (User.IsInRole("Vendedor"))
+        {
+            contextKey = "vendedor";
+            welcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
+            suggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?", "¿Qué puede hacer un vendedor?" };
+        }
+        else if (User.IsInRole("Repartidor"))
+        {
+            contextKey = "repartidor";
+            welcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
+            suggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?", "¿Qué estados existen?" };
+        }
+        else
+        {
+            contextKey = "usuario";
+            welcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
+            suggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Dónde veo mis pedidos?" };
+        }
+    }
+}
+
+<style>
+    .orbi-chat-panel {
+        position: fixed; inset: 0 0 0 auto; z-index: 1100; width: 380px; height: 100vh;
+        padding: 20px; box-sizing: border-box; border-left: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface); display: flex; flex-direction: column; min-width: 0;
+        transition: width 220ms var(--md-sys-motion-easing-standard), height 220ms var(--md-sys-motion-easing-standard), padding 220ms var(--md-sys-motion-easing-standard), border-radius 220ms var(--md-sys-motion-easing-standard);
+    }
+    .orbi-chat-panel.collapsed {
+        width: 56px; height: 56px; inset: 16px 16px auto auto; padding: 7px; overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant); border-radius: 18px;
+        background: var(--md-sys-color-surface-container-high); box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    }
+    .orbi-chat-panel.collapsed .orbi-chat-brand, .orbi-chat-panel.collapsed #orbi-chat-new { display: none; }
+    .orbi-chat-panel.collapsed .orbi-chat-header { justify-content: center; gap: 0; margin-bottom: 0 !important; }
+    .orbi-chat-panel.collapsed #orbi-chat-toggle { width: 40px; height: 40px; flex: 0 0 40px; color: var(--md-sys-color-on-primary-container); background: var(--md-sys-color-primary-container); }
+    .orbi-chat-body { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+    .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+    .orbi-chat-message-assistant { margin-right: auto; border-bottom-left-radius: 4px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+    .orbi-chat-suggestions { display: flex; gap: 7px; overflow-x: auto; padding: 2px 1px 10px; scrollbar-width: thin; }
+    .orbi-chat-suggestion { flex: 0 0 auto; max-width: 230px; padding: 7px 11px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .orbi-chat-suggestion:hover { border-color: var(--md-sys-color-primary); background: var(--md-sys-color-primary-container); }
+    .orbi-chat-typing span { display: inline-block; animation: orbi-chat-dot 1.2s infinite ease-in-out; }
+    .orbi-chat-typing span:nth-child(2) { animation-delay: .15s; } .orbi-chat-typing span:nth-child(3) { animation-delay: .3s; }
+    .orbi-chat-composer { display: flex; align-items: flex-end; gap: 4px; padding: 6px 7px 6px 14px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 24px; background: var(--md-sys-color-surface-container); }
+    .orbi-chat-composer:focus-within { border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 1px var(--md-sys-color-primary); }
+    .orbi-chat-input { flex: 1; min-width: 0; max-height: 112px; padding: 8px 2px; border: 0; outline: 0; resize: none; overflow-y: auto; background: transparent; color: var(--md-sys-color-on-surface); font: inherit; line-height: 1.4; }
+    @@keyframes orbi-chat-dot { 0%,60%,100% { transform:translateY(0);opacity:.35 } 30% { transform:translateY(-3px);opacity:1 } }
+    @@media (max-width: 900px) { .orbi-chat-panel { width: min(380px,100vw); } .orbi-chat-panel.collapsed { width:56px;height:56px; } }
+</style>
+
+<aside id="orbi-chat-panel" class="orbi-chat-panel" data-welcome="@welcome" aria-label="Asistente Orbi">
+    <div class="orbi-chat-header" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
+        <strong class="orbi-chat-brand" style="flex:1;">Asistente Orbi</strong>
+        <button id="orbi-chat-new" type="button" class="m3-icon-btn" aria-label="Nuevo chat" title="Nuevo chat"><span class="material-symbols-outlined">add_comment</span></button>
+        <button id="orbi-chat-toggle" type="button" class="m3-icon-btn" aria-expanded="true" aria-controls="orbi-chat-body" aria-label="Contraer chat" title="Contraer chat"><span class="material-symbols-outlined">chevron_right</span></button>
+    </div>
+    <div id="orbi-chat-body" class="orbi-chat-body">
+        <div id="orbi-chat-messages" aria-live="polite" style="flex:1;min-height:180px;overflow-y:auto;padding:8px 4px;font-size:var(--md-sys-typescale-body-small-size);margin-bottom:8px;">
+            <div class="orbi-chat-message orbi-chat-message-assistant">@welcome</div>
+        </div>
+        <div class="orbi-chat-suggestions" aria-label="Preguntas sugeridas">
+            @foreach (var suggestion in suggestions)
+            {
+                <button type="button" class="orbi-chat-suggestion" data-question="@suggestion">@suggestion</button>
+            }
+        </div>
+        <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-area="" asp-controller="Home" asp-action="ProductChat">
+            <input type="hidden" name="context" value="@contextKey" />
+            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="300" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
+            <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;"><span class="material-symbols-outlined">arrow_upward</span></button>
+        </form>
+    </div>
+</aside>
+
+<script>
+(() => {
+    const panel = document.getElementById('orbi-chat-panel');
+    const form = document.getElementById('orbi-chat-form');
+    if (!panel || !form) return;
+    const input = document.getElementById('orbi-chat-input');
+    const messages = document.getElementById('orbi-chat-messages');
+    const send = document.getElementById('orbi-chat-send');
+    const sendIcon = send.querySelector('.material-symbols-outlined');
+    const toggle = document.getElementById('orbi-chat-toggle');
+    const toggleIcon = toggle.querySelector('.material-symbols-outlined');
+    const body = document.getElementById('orbi-chat-body');
+    let controller = null;
+
+    const addMessage = (text, user = false) => {
+        const element = document.createElement('div');
+        element.className = `orbi-chat-message ${user ? 'orbi-chat-message-user' : 'orbi-chat-message-assistant'}`;
+        element.textContent = text;
+        messages.appendChild(element);
+        messages.scrollTop = messages.scrollHeight;
+        return element;
+    };
+
+    const resize = () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 112) + 'px'; };
+    input.addEventListener('input', resize);
+    input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (!controller) form.requestSubmit(); } });
+    document.querySelectorAll('.orbi-chat-suggestion').forEach(button => button.addEventListener('click', () => { input.value = button.dataset.question; resize(); form.requestSubmit(); }));
+
+    toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        toggle.setAttribute('aria-label', expanded ? 'Abrir asistente' : 'Contraer chat');
+        toggle.title = expanded ? 'Abrir asistente' : 'Contraer chat';
+        toggleIcon.textContent = expanded ? 'smart_toy' : 'chevron_right';
+        body.hidden = expanded;
+        panel.classList.toggle('collapsed', expanded);
+        if (!expanded) input.focus();
+    });
+
+    document.getElementById('orbi-chat-new').addEventListener('click', () => {
+        controller?.abort(); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);
+        input.value = ''; resize(); send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false;
+    });
+
+    send.addEventListener('click', () => { if (controller) controller.abort(); });
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const text = input.value.trim(); if (text.length < 2) return;
+        const data = new FormData(form); addMessage(text, true); input.value = ''; resize();
+        controller = new AbortController(); send.type = 'button'; sendIcon.textContent = 'stop'; input.disabled = true;
+        const typing = addMessage('•••'); typing.classList.add('orbi-chat-typing');
+        try {
+            const response = await fetch(form.action, { method: 'POST', body: data, signal: controller.signal });
+            const result = await response.json(); typing.remove(); addMessage(result.message || 'No pude responder.');
+        } catch (error) {
+            typing.remove(); addMessage(error.name === 'AbortError' ? 'Respuesta detenida.' : 'No pude conectar con el asistente.');
+        } finally {
+            controller = null; send.type = 'submit'; sendIcon.textContent = 'arrow_upward'; input.disabled = false; input.focus();
+        }
+    });
+})();
+</script>

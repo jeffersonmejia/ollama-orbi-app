@@ -3,6 +3,34 @@
 
 @{
     ViewData["Title"] = "Orbi App";
+    var chatContext = "public_home";
+    var chatWelcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
+    string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?", "¿Cómo creo una cuenta?" };
+
+    if (User.IsInRole("Administrador"))
+    {
+        chatContext = "administrador";
+        chatWelcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
+        chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?", "¿Dónde administro las tiendas?" };
+    }
+    else if (User.IsInRole("Vendedor"))
+    {
+        chatContext = "vendedor";
+        chatWelcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
+        chatSuggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?", "¿Qué puede hacer un vendedor?" };
+    }
+    else if (User.IsInRole("Repartidor"))
+    {
+        chatContext = "repartidor";
+        chatWelcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
+        chatSuggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?", "¿Qué estados existen?" };
+    }
+    else if (User.IsInRole("Usuario"))
+    {
+        chatContext = "usuario";
+        chatWelcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
+        chatSuggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Dónde veo mis pedidos?" };
+    }
 }
 
 <style>
@@ -106,6 +134,33 @@
         border-bottom-left-radius: 4px;
         background: var(--md-sys-color-secondary-container);
         color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .orbi-chat-suggestions {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 2px 1px 10px;
+        scrollbar-width: thin;
+    }
+
+    .orbi-chat-suggestion {
+        flex: 0 0 auto;
+        max-width: 230px;
+        padding: 7px 11px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .orbi-chat-suggestion:hover {
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-primary-container);
     }
 
     .orbi-chat-cursor::after {
@@ -281,12 +336,11 @@
     }
 </section>
 
-<aside id="orbi-chat-panel" class="orbi-chat-panel" aria-label="Asistente de compras Orbi">
+<aside id="orbi-chat-panel" class="orbi-chat-panel" data-welcome="@chatWelcome" aria-label="Asistente Orbi">
     <div class="orbi-chat-header" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
         <div class="orbi-chat-brand" style="flex:1;">
             <strong>Asistente Orbi</strong>
-            <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">Recomendaciones con Ollama</div>
         </div>
         <button id="orbi-chat-new" type="button" class="m3-icon-btn" aria-label="Nuevo chat" title="Nuevo chat">
             <span class="material-symbols-outlined">add_comment</span>
@@ -297,9 +351,16 @@
     </div>
     <div id="orbi-chat-body" class="orbi-chat-body">
         <div id="orbi-chat-messages" aria-live="polite" style="flex:1;min-height:240px;overflow-y:auto;padding:8px 4px;font-size:var(--md-sys-typescale-body-small-size);margin-bottom:12px;">
-            <div class="orbi-chat-message orbi-chat-message-assistant">Hola, cuéntame qué buscas y te recomendaré productos disponibles.</div>
+            <div class="orbi-chat-message orbi-chat-message-assistant">@chatWelcome</div>
+        </div>
+        <div class="orbi-chat-suggestions" aria-label="Preguntas sugeridas">
+            @foreach (var suggestion in chatSuggestions)
+            {
+                <button type="button" class="orbi-chat-suggestion" data-question="@suggestion">@suggestion</button>
+            }
         </div>
         <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-controller="Home" asp-action="ProductChat">
+            <input type="hidden" name="context" value="@chatContext" />
             <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="300" required placeholder="Escribe o habla..." aria-label="Mensaje para el asistente"></textarea>
             <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Hablar por voz" title="Hablar por voz">
                 <span class="material-symbols-outlined">mic</span>
@@ -402,9 +463,17 @@
         function addWelcomeMessage() {
             const welcome = document.createElement('div');
             welcome.className = 'orbi-chat-message orbi-chat-message-assistant';
-            welcome.textContent = 'Hola, cuéntame qué buscas y te recomendaré productos disponibles.';
+            welcome.textContent = panel.dataset.welcome;
             messages.appendChild(welcome);
         }
+
+        document.querySelectorAll('.orbi-chat-suggestion').forEach(function (suggestion) {
+            suggestion.addEventListener('click', function () {
+                input.value = suggestion.dataset.question;
+                resizeInput();
+                form.requestSubmit();
+            });
+        });
 
         button.addEventListener('click', function () {
             if (!activeController) return;

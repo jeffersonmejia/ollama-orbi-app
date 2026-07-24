@@ -35,11 +35,17 @@ public class HomeController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ProductChat(string message, CancellationToken cancellationToken)
+    public async Task<IActionResult> ProductChat(string message, string? context, CancellationToken cancellationToken)
     {
         message = message?.Trim() ?? string.Empty;
         if (message.Length is < 2 or > 300)
             return BadRequest(new { message = "Escribe una consulta de entre 2 y 300 caracteres." });
+
+        var normalizedMessage = message.ToLowerInvariant();
+        var contextKey = context?.ToLowerInvariant() ?? "public_home";
+        var quickAnswer = GetQuickAnswer(contextKey, normalizedMessage);
+        if (quickAnswer != null)
+            return Json(new { message = quickAnswer });
 
         var products = await _identityContext.DeliveryProducts
             .AsNoTracking()
@@ -57,10 +63,6 @@ public class HomeController : Controller
             })
             .ToListAsync(cancellationToken);
 
-        if (products.Count == 0)
-            return Json(new { message = "En este momento no hay productos disponibles." });
-
-        var normalizedMessage = message.ToLowerInvariant();
         var asksForCatalog =
             (normalizedMessage.Contains("product") &&
              (normalizedMessage.Contains("disponib") || normalizedMessage.Contains("tiene") || normalizedMessage.Contains("hay"))) ||
@@ -71,6 +73,9 @@ public class HomeController : Controller
 
         if (asksForCatalog)
         {
+            if (products.Count == 0)
+                return Json(new { message = "En este momento no hay productos disponibles." });
+
             var productList = string.Join("\n", products.Select(item =>
                 $"• {item.Product} — {item.Store} — ${item.Price:0.00}"));
             return Json(new { message = $"Estos son los productos disponibles:\n{productList}" });
@@ -81,9 +86,11 @@ public class HomeController : Controller
             : string.Join("\n", products.Select(item =>
                 $"- Producto: {item.Product}; Tienda: {item.Store}; Categoría: {item.Category}; Dirección: {item.Address}; Precio: ${item.Price:0.00}; Disponible: sí"));
 
+        var assistantContext = GetAssistantContext(context);
+
         try
         {
-            var answer = await _ollama.SuggestAsync(message, catalog, cancellationToken);
+            var answer = await _ollama.SuggestAsync(message, catalog, assistantContext, cancellationToken);
             return Json(new { message = answer });
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
@@ -91,6 +98,85 @@ public class HomeController : Controller
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { message = "El asistente no está disponible. Verifica que Ollama esté encendido." });
         }
+    }
+
+    private static string GetAssistantContext(string? context) => context?.ToLowerInvariant() switch
+    {
+        "login" => "La persona está en el inicio de sesión. Ayuda con acceso, contraseña olvidada, ingreso con Google y creación de cuenta. Nunca solicites contraseñas.",
+        "register" => "La persona está creando una cuenta. Explica los roles públicos: Usuario compra y revisa pedidos; Vendedor tiene perfil comercial; Repartidor gestiona entregas. Administrador no está disponible en el registro público. Recuerda los requisitos de contraseña cuando sea útil.",
+        "logout" => "La persona está cerrando sesión o ya salió. Ayuda a confirmar la salida, volver al inicio o ingresar con otra cuenta.",
+        "administrador" => "La persona tiene rol Administrador. Ayuda con tiendas, productos, pedidos, estados, usuarios, roles y el panel administrativo.",
+        "vendedor" => "La persona tiene rol Vendedor. Prioriza consultas sobre tiendas, catálogo, productos y operación comercial.",
+        "repartidor" => "La persona tiene rol Repartidor. Ayuda a consultar entregas asignadas y actualizar estados de entrega.",
+        "usuario" => "La persona tiene rol Usuario. Ayuda a explorar tiendas y productos, crear pedidos y revisar su estado.",
+        _ => "La persona está en la página pública de Orbi. Explica brevemente qué ofrece la aplicación, cómo ingresar o registrarse y qué tiendas o productos están disponibles."
+    };
+
+    private static string? GetQuickAnswer(string context, string message)
+    {
+        if (context == "login")
+        {
+            if (message.Contains("olvid") && message.Contains("contraseña"))
+                return "Selecciona “¿Olvidaste tu contraseña?” en el formulario de ingreso, escribe tu correo y sigue el enlace de recuperación que recibirás.";
+            if (message.Contains("no puedo") || message.Contains("problema") || message.Contains("iniciar sesión"))
+                return "Verifica que el correo y la contraseña estén bien escritos. Si aún no funciona, usa “¿Olvidaste tu contraseña?”; también puedes ingresar con Google o crear una cuenta nueva.";
+            if (message.Contains("crear") && message.Contains("cuenta"))
+                return "Selecciona “Registro” en la navegación. Allí podrás crear una cuenta como Usuario, Vendedor o Repartidor.";
+        }
+
+        if (context == "register")
+        {
+            if (message.Contains("rol"))
+                return "Elige Usuario para comprar y revisar pedidos, Vendedor para el perfil comercial o Repartidor para gestionar entregas.";
+            if (message.Contains("contraseña"))
+                return "La contraseña debe tener al menos 6 caracteres e incluir mayúscula, minúscula y número.";
+            if (message.Contains("administrador"))
+                return "No. El rol Administrador no está disponible en el registro público; solo se crea mediante la configuración interna de Orbi.";
+        }
+
+        if (context == "logout")
+        {
+            if (message.Contains("cierro") || message.Contains("cerrar"))
+                return "Usa el botón “Salir” de la navegación. Tu sesión se cerrará y volverás al inicio público.";
+            if (message.Contains("cambiar") && message.Contains("cuenta"))
+                return "Cierra la sesión actual con “Salir” y luego selecciona “Ingresar” para acceder con otra cuenta.";
+            if (message.Contains("inicio"))
+                return "Selecciona “Home” en la navegación para volver a la página principal.";
+        }
+
+        if (context == "administrador")
+        {
+            if (message.Contains("pedido")) return "Abre “Admin” en la navegación para revisar pedidos y actualizar sus estados.";
+            if (message.Contains("rol")) return "Orbi tiene cuatro roles: Administrador, Vendedor, Repartidor y Usuario.";
+            if (message.Contains("tienda")) return "Abre “Tiendas” para consultar el catálogo y “Admin” para supervisar la operación de pedidos.";
+        }
+
+        if (context == "vendedor")
+        {
+            if (message.Contains("puede hacer")) return "El perfil Vendedor está orientado a consultar tiendas, catálogo y productos disponibles para la operación comercial.";
+            if (message.Contains("tienda") && message.Contains("activ")) return "Abre “Tiendas” para consultar las tiendas activas y sus productos.";
+        }
+
+        if (context == "repartidor")
+        {
+            if (message.Contains("dónde veo") || message.Contains("donde veo")) return "Abre “Entregas” en la navegación para ver los pedidos que tienes asignados.";
+            if (message.Contains("marco") || message.Contains("actualiz")) return "En “Entregas”, abre el pedido asignado y usa la acción disponible para avanzar su estado.";
+            if (message.Contains("estado")) return "Los estados operativos son En preparación, En camino y Entregado.";
+        }
+
+        if (context == "usuario")
+        {
+            if (message.Contains("hago un pedido")) return "Abre “Tiendas”, elige los productos que deseas y continúa con el proceso del pedido.";
+            if (message.Contains("mis pedidos") || message.Contains("veo mis pedidos")) return "Abre “Pedidos” en la navegación para consultar tus pedidos y su estado.";
+        }
+
+        if (context == "public_home")
+        {
+            if (message.Contains("qué puedo hacer") || message.Contains("que puedo hacer")) return "En Orbi puedes explorar tiendas y productos, crear pedidos, seguir entregas y acceder a funciones específicas según tu rol.";
+            if (message.Contains("crear") && message.Contains("cuenta")) return "Selecciona “Crear cuenta” y elige entre Usuario, Vendedor o Repartidor. El rol Administrador no se ofrece en el registro público.";
+        }
+
+        return null;
     }
 
     [Authorize(Roles = "Administrador")]
