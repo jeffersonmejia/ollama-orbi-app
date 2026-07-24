@@ -13,11 +13,13 @@ public class HomeController : Controller
 {
     private readonly ApplicationDbContext _identityContext;
     private readonly OllamaProductService _ollama;
+    private readonly LocalVoiceService _voice;
 
-    public HomeController(ApplicationDbContext identityContext, OllamaProductService ollama)
+    public HomeController(ApplicationDbContext identityContext, OllamaProductService ollama, LocalVoiceService voice)
     {
         _identityContext = identityContext;
         _ollama = ollama;
+        _voice = voice;
     }
 
     [AllowAnonymous]
@@ -99,6 +101,53 @@ public class HomeController : Controller
                 new { message = "El asistente no está disponible. Verifica que Ollama esté encendido." });
         }
     }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> TranscribeAudio(IFormFile? audio, CancellationToken cancellationToken)
+    {
+        if (audio is null || audio.Length == 0)
+            return BadRequest(new { message = "No se recibió audio para transcribir." });
+        if (audio.Length > 10 * 1024 * 1024)
+            return BadRequest(new { message = "El audio supera el límite de 10 MB." });
+
+        try
+        {
+            await using var stream = audio.OpenReadStream();
+            var text = await _voice.TranscribeAsync(stream, audio.FileName, audio.ContentType, cancellationToken);
+            return Json(new { text });
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "El servicio local de transcripción no está disponible." });
+        }
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SynthesizeSpeech([FromBody] SpeechRequest? request, CancellationToken cancellationToken)
+    {
+        var text = request?.Text?.Trim() ?? string.Empty;
+        if (text.Length is < 1 or > 1200)
+            return BadRequest(new { message = "El texto de voz debe tener entre 1 y 1200 caracteres." });
+
+        try
+        {
+            var result = await _voice.SynthesizeAsync(text, cancellationToken);
+            return File(result.Audio, result.ContentType);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "El servicio local de voz no está disponible." });
+        }
+    }
+
+    public sealed record SpeechRequest(string? Text);
 
     private static string GetAssistantContext(string? context) => context?.ToLowerInvariant() switch
     {

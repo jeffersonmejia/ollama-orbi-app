@@ -30,6 +30,12 @@ builder.Services.AddHttpClient<OllamaProductService>(client =>
     client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
     client.Timeout = TimeSpan.FromSeconds(45);
 });
+builder.Services.AddHttpClient<LocalVoiceService>(client =>
+{
+    var baseUrl = builder.Configuration["Voice:BaseUrl"] ?? "http://localhost:8000";
+    client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromMinutes(3);
+});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

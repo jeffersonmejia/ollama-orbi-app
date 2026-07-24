@@ -386,6 +386,7 @@
 </aside>
 </div>
 
+<script src="~/js/orbi-voice.js" asp-append-version="true"></script>
 <script>
     (function () {
         const form = document.getElementById('orbi-chat-form');
@@ -394,9 +395,7 @@
         const button = document.getElementById('orbi-chat-send');
         const buttonIcon = button.querySelector('.material-symbols-outlined');
         const voiceButton = document.getElementById('orbi-chat-voice');
-        const voiceIcon = voiceButton.querySelector('.material-symbols-outlined');
         const voiceModeButton = document.getElementById('orbi-chat-voice-mode');
-        const voiceModeIcon = voiceModeButton.querySelector('.material-symbols-outlined');
         const panel = document.getElementById('orbi-chat-panel');
         const homeLayout = document.getElementById('orbi-home-layout');
         const chatBody = document.getElementById('orbi-chat-body');
@@ -407,10 +406,7 @@
         let activeController = null;
         let stopTyping = false;
         let chatGeneration = 0;
-        let recognition = null;
-        let isListening = false;
-        let voiceMode = false;
-        let isSpeaking = false;
+        let localVoice = null;
 
         function resizeInput() {
             input.style.height = 'auto';
@@ -425,119 +421,21 @@
             }
         });
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'es-EC';
-            recognition.interimResults = true;
-            recognition.continuous = false;
-
-            recognition.addEventListener('start', function () {
-                isListening = true;
-                const activeVoiceControl = voiceMode ? voiceModeButton : voiceButton;
-                activeVoiceControl.classList.add('listening');
-                if (voiceMode) {
-                    voiceModeIcon.textContent = 'graphic_eq';
-                    voiceModeButton.setAttribute('aria-label', 'Modo voz escuchando; pulsar para detener');
-                } else {
-                    voiceIcon.textContent = 'graphic_eq';
-                    voiceButton.setAttribute('aria-label', 'Detener dictado');
-                }
-            });
-
-            recognition.addEventListener('result', function (event) {
-                input.value = Array.from(event.results)
-                    .map(result => result[0].transcript)
-                    .join('');
-                resizeInput();
-            });
-
-            recognition.addEventListener('end', function () {
-                isListening = false;
-                voiceButton.classList.remove('listening');
-                voiceModeButton.classList.remove('listening');
-                voiceIcon.textContent = 'mic';
-                voiceButton.setAttribute('aria-label', 'Dictar mensaje');
-                if (voiceMode) {
-                    voiceModeIcon.textContent = 'headset_mic';
-                    if (!activeController && !isSpeaking && input.value.trim().length >= 2) {
-                        form.requestSubmit();
-                    } else if (!activeController && !isSpeaking) {
-                        setTimeout(startListening, 350);
-                    }
-                } else {
-                    input.focus();
-                }
-            });
-
-            recognition.addEventListener('error', function (event) {
-                isListening = false;
-                voiceButton.classList.remove('listening');
-                voiceModeButton.classList.remove('listening');
-                voiceIcon.textContent = 'mic';
-                voiceModeIcon.textContent = 'headset_mic';
-                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                    setVoiceMode(false);
-                }
-            });
-
-            voiceButton.addEventListener('click', function () {
-                if (voiceMode) setVoiceMode(false);
-                if (isListening) recognition.stop();
-                else startListening();
-            });
-
-            voiceModeButton.addEventListener('click', function () {
-                setVoiceMode(!voiceMode);
-            });
-        } else {
-            voiceButton.hidden = true;
-            voiceModeButton.hidden = true;
-        }
-
-        function startListening() {
-            if (!recognition || isListening || isSpeaking || activeController) return;
-            try { recognition.start(); } catch { }
-        }
-
-        function setVoiceMode(enabled) {
-            voiceMode = enabled;
-            voiceModeButton.classList.toggle('active', enabled);
-            voiceModeButton.setAttribute('aria-pressed', String(enabled));
-            voiceModeButton.setAttribute('aria-label', enabled ? 'Detener modo voz' : 'Iniciar modo voz');
-            voiceModeButton.title = enabled ? 'Detener modo voz' : 'Modo voz';
-            voiceModeIcon.textContent = 'headset_mic';
-            if (!enabled) {
-                window.speechSynthesis?.cancel();
-                isSpeaking = false;
-                if (isListening) recognition?.stop();
-                return;
+        localVoice = window.createOrbiVoiceController({
+            form,
+            input,
+            micButton: voiceButton,
+            modeButton: voiceModeButton,
+            resize: resizeInput,
+            isBusy: () => !!activeController,
+            onError: function (text) {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'orbi-chat-message orbi-chat-message-assistant';
+                errorMessage.textContent = text;
+                messages.appendChild(errorMessage);
+                messages.scrollTop = messages.scrollHeight;
             }
-            input.value = '';
-            resizeInput();
-            startListening();
-        }
-
-        function speakInVoiceMode(text) {
-            if (!voiceMode || !('speechSynthesis' in window)) {
-                if (voiceMode) startListening();
-                return;
-            }
-            window.speechSynthesis.cancel();
-            isSpeaking = true;
-            voiceModeIcon.textContent = 'spatial_audio';
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'es-EC';
-            utterance.rate = .95;
-            const resumeListening = function () {
-                isSpeaking = false;
-                voiceModeIcon.textContent = 'headset_mic';
-                if (voiceMode) setTimeout(startListening, 350);
-            };
-            utterance.onend = resumeListening;
-            utterance.onerror = resumeListening;
-            window.speechSynthesis.speak(utterance);
-        }
+        });
 
         function setBusy(busy) {
             button.type = busy ? 'button' : 'submit';
@@ -573,7 +471,7 @@
             chatGeneration++;
             stopTyping = true;
             activeController?.abort();
-            setVoiceMode(false);
+            localVoice?.stop();
             activeController = null;
             messages.replaceChildren();
             addWelcomeMessage();
@@ -593,7 +491,7 @@
             chatBody.hidden = expanded;
             panel.classList.toggle('collapsed', expanded);
             homeLayout.classList.toggle('chat-collapsed', expanded);
-            if (expanded && voiceMode) setVoiceMode(false);
+            if (expanded) localVoice?.stop();
             if (!expanded) input.focus();
         });
 
@@ -652,7 +550,7 @@
                 messages.appendChild(assistantMessage);
                 const answer = data.message || 'No pude responder.';
                 await typeMessage(assistantMessage, answer, generation);
-                speakInVoiceMode(answer);
+                localVoice?.playResponse(answer);
             } catch (error) {
                 if (generation !== chatGeneration) return;
                 typingMessage.remove();
@@ -662,13 +560,13 @@
                     ? 'Respuesta detenida.'
                     : 'No pude conectar con el asistente.';
                 messages.appendChild(errorMessage);
-                speakInVoiceMode(errorMessage.textContent);
+                localVoice?.playResponse(errorMessage.textContent);
             } finally {
                 if (generation !== chatGeneration) return;
                 activeController = null;
                 setBusy(false);
                 messages.scrollTop = messages.scrollHeight;
-                if (!voiceMode) input.focus();
+                if (!localVoice?.isModeActive) input.focus();
             }
         });
     })();
