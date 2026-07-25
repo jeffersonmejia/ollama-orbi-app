@@ -12,6 +12,7 @@ secrets.txt
 bin/
 obj/
 publish/
+/src/bin*/
 
 # Logs
 *.log
