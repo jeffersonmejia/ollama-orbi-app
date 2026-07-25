@@ -66,6 +66,7 @@ builder.Services.Configure<EmailSettings>(
 
 builder.Services.AddTransient<IEmailSender<IdentityUser>, GmailEmailSender>();
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, GmailEmailSender>();
+builder.Services.AddHostedService<EmailQueueWorker>();
 
 builder.Services
     .AddAuthentication()

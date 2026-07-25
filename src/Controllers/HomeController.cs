@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using SakilaApp.Data;
 using SakilaApp.Models;
+using SakilaApp.Models.Operations;
 using SakilaApp.Services;
 
 namespace SakilaApp.Controllers;
@@ -101,8 +103,22 @@ public class HomeController : Controller
 
         try
         {
-            var answer = await _ollama.SuggestAsync(message, catalog, assistantContext, cancellationToken);
-            return Json(new { message = answer });
+            var suggestion = await _ollama.SuggestAsync(message, catalog, assistantContext, cancellationToken);
+            _identityContext.AiConsumptionLogs.Add(new AiConsumptionLog
+            {
+                UserId = User.Identity?.IsAuthenticated == true
+                    ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    : null,
+                ModelName = suggestion.ModelName,
+                Operation = "ProductChat",
+                PromptTokens = suggestion.PromptTokens,
+                CompletionTokens = suggestion.CompletionTokens,
+                TotalTokens = suggestion.PromptTokens + suggestion.CompletionTokens,
+                DurationMilliseconds = suggestion.DurationMilliseconds,
+                MetadataJson = JsonSerializer.Serialize(new { Context = contextKey })
+            });
+            await _identityContext.SaveChangesAsync(cancellationToken);
+            return Json(new { message = suggestion.Response });
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
@@ -201,6 +217,10 @@ public class HomeController : Controller
             ("Pedidos", "Pedidos creados", await _identityContext.DeliveryOrders.CountAsync()),
             ("En camino", "Entregas en curso", await _identityContext.DeliveryOrders.CountAsync(x => x.Status == "En camino")),
             ("Entregados", "Pedidos completados", await _identityContext.DeliveryOrders.CountAsync(x => x.Status == "Entregado")),
+            ("Reservas", "Reservas de stock activas", await _identityContext.StockReservations.CountAsync(x => x.Status == "Activa")),
+            ("Incidencias", "Incidencias abiertas", await _identityContext.DeliveryIncidents.CountAsync(x => x.Status == "Abierto" || x.Status == "En revisión")),
+            ("Correos", "Mensajes pendientes en cola", await _identityContext.EmailQueue.CountAsync(x => x.Status == "Pendiente")),
+            ("Solicitudes IA", "Interacciones registradas", await _identityContext.AiConsumptionLogs.CountAsync()),
             ("Usuarios", "Cuentas de acceso", await _identityContext.Users.CountAsync()),
             ("Roles", "Perfiles de Orbi", await _identityContext.Roles.CountAsync())
         };

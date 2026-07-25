@@ -1,0 +1,24 @@
+@model SakilaApp.Models.Operations.DeliveryIncidentsViewModel
+@{
+    ViewData["Title"] = "Incidencias de entrega";
+    var severities = new[] { "Baja", "Media", "Alta", "Crítica" };
+    var statuses = new[] { "Abierto", "En revisión", "Resuelto", "Cerrado" };
+}
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header"><div><h1>Incidencias de entrega</h1><p>Reporta y da seguimiento a novedades relacionadas con pedidos.</p></div></header>
+    <partial name="_OperationsNav" /><partial name="_Alerts" />
+    <section class="m3-card orbi-operation-section"><h2>Reportar incidencia</h2>
+        <form class="orbi-operation-form" asp-action="CreateDeliveryIncident" method="post">
+            <div class="m3-text-field"><label class="m3-text-field-label" for="deliveryOrderId">Pedido</label><select class="m3-text-field-input" id="deliveryOrderId" name="deliveryOrderId" required><option value="">Selecciona</option>@foreach(var order in Model.Orders){<option value="@order.DeliveryOrderId">#@order.DeliveryOrderId · @order.Store.Name · @order.Status</option>}</select></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="incidentType">Tipo</label><input class="m3-text-field-input" id="incidentType" name="incidentType" maxlength="60" required placeholder="Ej. Dirección incorrecta" /></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="severity">Severidad</label><select class="m3-text-field-input" id="severity" name="severity">@foreach(var item in severities){<option value="@item">@item</option>}</select></div>
+            <div class="m3-text-field orbi-field-full"><label class="m3-text-field-label" for="description">Descripción</label><textarea class="m3-text-field-input" id="description" name="description" rows="4" style="height:auto;padding-top:12px;" required></textarea></div>
+            <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Reportar incidencia</button></div>
+        </form>
+    </section>
+    <section class="m3-card orbi-operation-section"><h2>Incidencias visibles</h2>
+        @if(!Model.Incidents.Any()){<div class="orbi-empty-state">No hay incidencias para mostrar.</div>}
+        else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Pedido</th><th>Tipo</th><th>Severidad</th><th>Descripción</th><th>Estado</th><th>Reportó</th></tr></thead><tbody>@foreach(var item in Model.Incidents){<tr><td>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>#@item.DeliveryOrderId · @item.Order.Store.Name</td><td>@item.IncidentType</td><td><span class="orbi-status">@item.Severity</span></td><td>@item.Description</td><td>@if(User.IsInRole("Administrador")){<form asp-action="UpdateDeliveryIncident" method="post" style="display:flex;gap:8px;"><input type="hidden" name="id" value="@item.DeliveryIncidentId"/><select class="m3-text-field-input" name="status" style="height:40px;min-width:130px;">@foreach(var status in statuses){<option value="@status" selected="@(item.Status == status)">@status</option>}</select><button class="m3-filled-button" type="submit">Guardar</button></form>}else{<span class="orbi-status">@item.Status</span>}</td><td>@(item.ReportedByUser?.Email ?? "Sistema")</td></tr>}</tbody></table></div>}
+    </section>
+</div>

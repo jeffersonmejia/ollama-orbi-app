@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using SakilaApp.Data;
 using SakilaApp.Models.Delivery;
+using SakilaApp.Models.Operations;
 
 namespace SakilaApp.Controllers;
 
@@ -73,6 +75,14 @@ public class DeliveryController : Controller
 
         _context.DeliveryOrders.Add(order);
         await _context.SaveChangesAsync();
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
+        {
+            DeliveryOrderId = order.DeliveryOrderId,
+            ChangedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+            NewStatus = order.Status,
+            Note = "Pedido creado"
+        });
+        await _context.SaveChangesAsync();
         TempData["Success"] = $"Pedido #{order.DeliveryOrderId} creado correctamente.";
         return RedirectToAction(nameof(MyOrders));
     }
@@ -121,7 +131,18 @@ public class DeliveryController : Controller
                 return Forbid();
         }
 
+        var previousStatus = order.Status;
+        if (previousStatus == status)
+            return RedirectToAction(User.IsInRole("Administrador") ? nameof(Admin) : nameof(Deliveries));
+
         order.Status = status;
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
+        {
+            DeliveryOrderId = order.DeliveryOrderId,
+            ChangedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+            PreviousStatus = previousStatus,
+            NewStatus = status
+        });
         await _context.SaveChangesAsync();
         return RedirectToAction(User.IsInRole("Administrador") ? nameof(Admin) : nameof(Deliveries));
     }

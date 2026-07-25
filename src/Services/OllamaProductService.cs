@@ -14,7 +14,7 @@ public sealed class OllamaProductService
         _configuration = configuration;
     }
 
-    public async Task<string> SuggestAsync(
+    public async Task<OllamaSuggestion> SuggestAsync(
         string question,
         string catalog,
         string assistantContext,
@@ -58,14 +58,36 @@ public sealed class OllamaProductService
 
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(cancellationToken);
-        return string.IsNullOrWhiteSpace(result?.Response)
+        var answer = string.IsNullOrWhiteSpace(result?.Response)
             ? "No pude generar una recomendación en este momento."
             : result.Response.Trim();
+        return new OllamaSuggestion(
+            answer,
+            model,
+            result?.PromptEvalCount ?? 0,
+            result?.EvalCount ?? 0,
+            result?.TotalDuration is > 0 ? (int)Math.Min(result.TotalDuration.Value / 1_000_000, int.MaxValue) : 0);
     }
 
     private sealed class OllamaGenerateResponse
     {
         [JsonPropertyName("response")]
         public string? Response { get; init; }
+
+        [JsonPropertyName("prompt_eval_count")]
+        public int PromptEvalCount { get; init; }
+
+        [JsonPropertyName("eval_count")]
+        public int EvalCount { get; init; }
+
+        [JsonPropertyName("total_duration")]
+        public long? TotalDuration { get; init; }
     }
 }
+
+public sealed record OllamaSuggestion(
+    string Response,
+    string ModelName,
+    int PromptTokens,
+    int CompletionTokens,
+    int DurationMilliseconds);

@@ -1,0 +1,28 @@
+@model SakilaApp.Models.Operations.InventoryMovementsViewModel
+@{
+    ViewData["Title"] = "Movimientos de inventario";
+    var movementTypes = new[] { "Entrada", "Salida", "Ajuste", "Reserva", "Liberación" };
+}
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header"><div><h1>Movimientos de inventario</h1><p>Registra y consulta cambios de existencias por producto.</p></div></header>
+    <partial name="_OperationsNav" /><partial name="_Alerts" />
+
+    <section class="m3-card orbi-operation-section">
+        <h2>Nuevo movimiento</h2>
+        <form class="orbi-operation-form" asp-action="CreateInventoryMovement" method="post">
+            <div class="m3-text-field"><label class="m3-text-field-label" for="deliveryProductId">Producto</label><select class="m3-text-field-input" id="deliveryProductId" name="deliveryProductId" required><option value="">Selecciona</option>@foreach (var item in Model.Products){<option value="@item.DeliveryProductId">@item.Store.Name · @item.Name</option>}</select></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="movementType">Tipo</label><select class="m3-text-field-input" id="movementType" name="movementType" required>@foreach (var item in movementTypes){<option value="@item">@item</option>}</select></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="quantityDelta">Variación de cantidad</label><input class="m3-text-field-input" id="quantityDelta" name="quantityDelta" type="number" required placeholder="Ej. 10 o -2" /></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="unitCost">Costo unitario</label><input class="m3-text-field-input" id="unitCost" name="unitCost" type="number" min="0" step="0.01" /></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="deliveryOrderId">Pedido relacionado</label><select class="m3-text-field-input" id="deliveryOrderId" name="deliveryOrderId"><option value="">Ninguno</option>@foreach (var order in Model.Orders){<option value="@order.DeliveryOrderId">Pedido #@order.DeliveryOrderId · @order.CustomerEmail</option>}</select></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="metadata">Metadatos JSON</label><input class="m3-text-field-input" id="metadata" name="metadata" value="{}" /></div>
+            <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Registrar movimiento</button></div>
+        </form>
+    </section>
+
+    <section class="m3-card orbi-operation-section"><h2>Últimos movimientos</h2>
+        @if (!Model.Movements.Any()){<div class="orbi-empty-state">No hay movimientos registrados.</div>}
+        else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Costo</th><th>Pedido</th><th>Usuario</th></tr></thead><tbody>@foreach (var item in Model.Movements){<tr><td>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@item.Product.Store.Name · @item.Product.Name</td><td><span class="orbi-status">@item.MovementType</span></td><td>@item.QuantityDelta</td><td>@(item.UnitCost?.ToString("C") ?? "—")</td><td>@(item.DeliveryOrderId.HasValue ? $"#{item.DeliveryOrderId}" : "—")</td><td>@(item.PerformedByUser?.Email ?? "Sistema")</td></tr>}</tbody></table></div>}
+    </section>
+</div>

@@ -1,0 +1,159 @@
+.orbi-operations-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.orbi-operations-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.orbi-operations-header h1 {
+  margin: 0 0 4px;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-headline-small-size);
+}
+
+.orbi-operations-header p,
+.orbi-muted {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.orbi-operations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.orbi-operation-card {
+  display: grid;
+  gap: 10px;
+  min-height: 150px;
+  padding: 20px;
+  color: inherit;
+  text-decoration: none !important;
+}
+
+.orbi-operation-card:hover {
+  color: inherit;
+  text-decoration: none !important;
+  transform: translateY(-2px);
+}
+
+.orbi-operation-card .material-symbols-outlined {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--md-sys-shape-corner-medium);
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.orbi-operation-card strong {
+  color: var(--md-sys-color-primary);
+  font-size: var(--md-sys-typescale-headline-small-size);
+}
+
+.orbi-operation-card h2 {
+  margin: 0;
+  font-size: var(--md-sys-typescale-title-medium-size);
+}
+
+.orbi-operation-section {
+  margin-bottom: 24px;
+  padding: 20px;
+}
+
+.orbi-operation-section h2 {
+  margin: 0 0 16px;
+  font-size: var(--md-sys-typescale-title-large-size);
+}
+
+.orbi-operation-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.orbi-operation-form .orbi-field-full,
+.orbi-operation-form .orbi-form-actions {
+  grid-column: 1 / -1;
+}
+
+.orbi-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.orbi-operation-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.orbi-operation-table-wrap .m3-data-table {
+  min-width: 820px;
+}
+
+.orbi-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-sys-color-secondary-container);
+  font-size: var(--md-sys-typescale-label-small-size);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.orbi-alert {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.orbi-alert-error {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.orbi-empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.orbi-json-preview {
+  display: block;
+  max-width: 280px;
+  overflow: hidden;
+  font-family: monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .orbi-operations-header {
+    flex-direction: column;
+  }
+
+  .orbi-operation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .orbi-operation-form .orbi-field-full,
+  .orbi-operation-form .orbi-form-actions {
+    grid-column: auto;
+  }
+}

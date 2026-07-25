@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/css/m3/m3-layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/m3/m3-components.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/m3/m3-animations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/operations.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="~/SakilaApp.styles.css" asp-append-version="true" />
 </head>
@@ -69,6 +70,12 @@
                 {
                     <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="Admin"><span class="material-symbols-outlined">admin_panel_settings</span><span>Admin</span></a></li>
                 }
+                <li>
+                    <a class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" ? "active" : "")" asp-controller="Operations" asp-action="Index">
+                        <span class="material-symbols-outlined">monitoring</span>
+                        <span>@(User.IsInRole("Administrador") ? "Operación" : User.IsInRole("Vendedor") ? "Inventario" : "Seguimiento")</span>
+                    </a>
+                </li>
             }
 
             @* Módulos Sakila conservados en el proyecto base, ocultos en la navegación de Orbi.

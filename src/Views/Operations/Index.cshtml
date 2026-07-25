@@ -1,0 +1,54 @@
+@model SakilaApp.Models.Operations.OperationsDashboardViewModel
+@{
+    ViewData["Title"] = "Operaciones";
+}
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header">
+        <div>
+            <h1>Centro de operaciones</h1>
+            <p>Herramientas disponibles para tu rol en Orbi.</p>
+        </div>
+    </header>
+    <partial name="_Alerts" />
+
+    <div class="orbi-operations-grid">
+        @if (User.IsInRole("Administrador") || User.IsInRole("Vendedor"))
+        {
+            <a class="m3-card orbi-operation-card" asp-action="InventoryMovements">
+                <span class="material-symbols-outlined">inventory_2</span><h2>Movimientos de inventario</h2>
+                <strong>@Model.InventoryMovements</strong><span class="orbi-muted">Entradas, salidas y ajustes registrados</span>
+            </a>
+            <a class="m3-card orbi-operation-card" asp-action="StockReservations">
+                <span class="material-symbols-outlined">lock_clock</span><h2>Reservas de stock</h2>
+                <strong>@Model.ActiveReservations</strong><span class="orbi-muted">Reservas activas</span>
+            </a>
+        }
+        @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
+        {
+            <a class="m3-card orbi-operation-card" asp-action="DeliveryIncidents">
+                <span class="material-symbols-outlined">report</span><h2>Incidencias</h2>
+                <strong>@Model.OpenIncidents</strong><span class="orbi-muted">Casos abiertos o en revisión</span>
+            </a>
+            <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
+                <span class="material-symbols-outlined">history</span><h2>Historial de pedidos</h2>
+                <strong>@Model.StatusChanges</strong><span class="orbi-muted">Cambios de estado visibles</span>
+            </a>
+        }
+        @if (User.IsInRole("Administrador"))
+        {
+            <a class="m3-card orbi-operation-card" asp-action="AuditLogs">
+                <span class="material-symbols-outlined">policy</span><h2>Auditoría</h2>
+                <strong>@Model.AuditEvents</strong><span class="orbi-muted">Eventos operativos</span>
+            </a>
+            <a class="m3-card orbi-operation-card" asp-action="EmailQueue">
+                <span class="material-symbols-outlined">outbox</span><h2>Cola de correos</h2>
+                <strong>@Model.PendingEmails</strong><span class="orbi-muted">Pendientes o fallidos</span>
+            </a>
+            <a class="m3-card orbi-operation-card" asp-action="AiConsumptionLogs">
+                <span class="material-symbols-outlined">neurology</span><h2>Consumo de IA</h2>
+                <strong>@Model.AiRequests</strong><span class="orbi-muted">Solicitudes registradas</span>
+            </a>
+        }
+    </div>
+</div>

@@ -1,0 +1,11 @@
+@model IReadOnlyList<SakilaApp.Models.Operations.AuditLog>
+@{ ViewData["Title"] = "Auditoría"; }
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header"><div><h1>Registro de auditoría</h1><p>Eventos administrativos y operativos recientes.</p></div></header>
+    <partial name="_OperationsNav" />
+    <section class="m3-card orbi-operation-section">
+        @if(!Model.Any()){<div class="orbi-empty-state">No hay eventos de auditoría.</div>}
+        else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Identificador</th><th>Valores</th><th>IP</th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td><td>@(item.User?.Email ?? "Sistema")</td><td>@item.Action</td><td>@item.EntityType</td><td>@(item.EntityId ?? "—")</td><td><code class="orbi-json-preview" title="@item.NewValuesJson">@(item.NewValuesJson ?? "—")</code></td><td>@(item.IpAddress ?? "—")</td></tr>}</tbody></table></div>}
+    </section>
+</div>

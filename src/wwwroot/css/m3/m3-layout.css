@@ -133,6 +133,10 @@ a:hover {
   width: 72px;
 }
 
+.m3-nav-item.orbi-operation-nav-item {
+  width: 72px;
+}
+
 .orbi-profile-label small {
   max-width: 72px;
   overflow: hidden;

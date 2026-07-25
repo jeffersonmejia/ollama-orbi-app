@@ -1,0 +1,11 @@
+@model IReadOnlyList<SakilaApp.Models.Operations.OrderStatusHistory>
+@{ ViewData["Title"] = "Historial de pedidos"; }
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header"><div><h1>Historial de estados</h1><p>Trazabilidad cronológica de los pedidos disponibles para tu rol.</p></div></header>
+    <partial name="_OperationsNav" /><partial name="_Alerts" />
+    <section class="m3-card orbi-operation-section">
+        @if(!Model.Any()){<div class="orbi-empty-state">Todavía no hay cambios de estado registrados.</div>}
+        else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Pedido</th><th>Tienda</th><th>Estado anterior</th><th>Nuevo estado</th><th>Responsable</th><th>Nota</th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.ChangedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>#@item.DeliveryOrderId</td><td>@item.Order.Store.Name</td><td>@(item.PreviousStatus ?? "Creación")</td><td><span class="orbi-status">@item.NewStatus</span></td><td>@(item.ChangedByUser?.Email ?? "Sistema")</td><td>@(item.Note ?? "—")</td></tr>}</tbody></table></div>}
+    </section>
+</div>
