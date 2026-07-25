@@ -120,7 +120,7 @@
 }
 
 .m3-outlined-button:hover {
-  background: rgba(103, 80, 164, 0.08);
+  background: rgba(194, 24, 91, 0.08);
   text-decoration: none;
   color: var(--md-sys-color-primary);
 }
@@ -160,7 +160,7 @@
 }
 
 .m3-text-button:hover {
-  background: rgba(103, 80, 164, 0.08);
+  background: rgba(194, 24, 91, 0.08);
   text-decoration: none;
   color: var(--md-sys-color-primary);
 }
@@ -327,11 +327,11 @@
 }
 
 .m3-data-table tbody tr:hover {
-  background: rgba(103, 80, 164, 0.04);
+  background: rgba(194, 24, 91, 0.04);
 }
 
 .m3-data-table tbody tr:active {
-  background: rgba(103, 80, 164, 0.08);
+  background: rgba(194, 24, 91, 0.08);
 }
 
 .m3-pagination {
@@ -464,7 +464,7 @@
 }
 
 .m3-snackbar-action:hover {
-  background: rgba(208, 188, 255, 0.08);
+  background: rgba(255, 177, 200, 0.08);
 }
 
 .m3-dialog-overlay {

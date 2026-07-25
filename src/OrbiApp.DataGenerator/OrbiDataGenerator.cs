@@ -20,18 +20,11 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
     private ProductInfo[] _products = [];
     private OrderInfo[] _orders = [];
 
-    private static readonly Dictionary<string, (string[] Products, decimal Min, decimal Max)> Catalog = new(StringComparer.Ordinal)
+private static readonly Dictionary<string, (string[] Products, decimal Min, decimal Max)> Catalog = new(StringComparer.Ordinal)
     {
-        ["Restaurante"] = (["Encebollado", "Seco de pollo", "Bolón mixto", "Arroz con menestra", "Ceviche de camarón", "Locro de papa", "Jugo natural", "Agua mineral"], 1.25m, 14.90m),
-        ["Farmacia"] = (["Paracetamol 500 mg", "Alcohol antiséptico", "Protector solar", "Vitamina C", "Suero oral", "Curitas adhesivas", "Jabón neutro", "Gel antibacterial"], 0.75m, 28.50m),
-        ["Supermercado"] = (["Arroz envejecido", "Leche entera", "Atún en aceite", "Aceite vegetal", "Huevos medianos", "Café molido", "Azúcar blanca", "Avena en hojuelas"], 0.80m, 22.00m),
-        ["Minimarket"] = (["Agua sin gas", "Galletas de avena", "Yogur natural", "Papas fritas", "Chocolate nacional", "Bebida hidratante", "Pan de molde", "Helado artesanal"], 0.50m, 9.50m),
-        ["Panadería"] = (["Pan de yuca", "Pan integral", "Croissant de queso", "Torta de chocolate", "Empanada de viento", "Enrollado de canela", "Bizcocho", "Café pasado"], 0.35m, 24.00m),
-        ["Tecnología"] = (["Mouse inalámbrico", "Teclado USB", "Cable HDMI", "Audífonos Bluetooth", "Memoria USB", "Cargador tipo C", "Soporte para portátil", "Cámara web"], 4.90m, 89.90m),
-        ["Librería"] = (["Cuaderno universitario", "Bolígrafos de gel", "Resaltadores", "Carpeta archivadora", "Papel bond A4", "Agenda ejecutiva", "Lápices de colores", "Notas adhesivas"], 0.60m, 18.50m),
-        ["Ferretería"] = (["Martillo de uña", "Destornillador plano", "Cinta aislante", "Brocha profesional", "Llave ajustable", "Tornillos galvanizados", "Silicona selladora", "Taladro percutor"], 0.70m, 115.00m),
-        ["Ropa"] = (["Camiseta de algodón", "Jean clásico", "Chaqueta impermeable", "Medias deportivas", "Blusa casual", "Pantalón gabardina", "Gorra ajustable", "Cinturón de cuero"], 3.90m, 64.90m),
-        ["Hogar"] = (["Juego de vasos", "Toalla de baño", "Organizador plástico", "Sartén antiadherente", "Almohada suave", "Lámpara de mesa", "Escoba multiuso", "Recipientes herméticos"], 1.50m, 48.00m)
+        ["Comida Rápida"] = (["Hamburguesa clásica", "Hamburguesa con queso", "Papas fritas medianas", "Papas fritas grandes", "Nuggets de pollo (6 pzs)", "Nuggets de pollo (10 pzs)", "Hot dog clásico", "Hot dog con queso", "Gaseosa 500ml", "Jugo natural 300ml", "Agua mineral 600ml", "Helado suave", "Sundae de chocolate", "Ensalada césar", "Pollo crujiente (2 pzs)", "Pollo crujiente (4 pzs)", "Wrap de pollo", "Tacos de carne (2 pzs)", "Pizza personal pepperoni", "Pizza personal hawaiana"], 1.50m, 12.50m),
+        ["Farmacia"] = (["Paracetamol 500mg (10 tabs)", "Ibuprofeno 400mg (10 tabs)", "Amoxicilina 500mg (12 caps)", "Alcohol antiséptico 120ml", "Alcohol en gel 60ml", "Protector solar FPS50 50ml", "Vitamina C 1000mg (20 tabs)", "Suero oral sobres (6 und)", "Curitas adhesivas (20 und)", "Jabón neutro 100g", "Gel antibacterial 250ml", "Algodón 50g", "Gasas estériles (5 und)", "Termómetro digital", "Tiritas impermeables (10 und)", "Crema antiinflamatoria 30g", "Antialérgico 10mg (10 tabs)", "Descongestionante nasal 15ml", "Jarabe para tos 120ml", "Vendas elásticas 5cm"], 0.50m, 18.50m),
+        ["Supermercado"] = (["Arroz blanco 1kg", "Arroz integral 1kg", "Azúcar blanca 1kg", "Azúcar morena 1kg", "Sal refinada 1kg", "Aceite vegetal 1L", "Aceite de girasol 1L", "Leche entera 1L", "Leche descremada 1L", "Yogur natural 170g", "Yogur de frutas 170g", "Queso fresco 250g", "Mantequilla 200g", "Huevos medianos (12 und)", "Huevos grandes (12 und)", "Pan de molde integral", "Pan de molde blanco", "Fideos espagueti 500g", "Fideos tallarines 500g", "Atún en agua 170g", "Atún en aceite 170g", "Sardinas en tomate 155g", "Frijoles negros 400g", "Lentejas 500g", "Garbanzos 400g", "Harina de trigo 1kg", "Harina de maíz 1kg", "Avena en hojuelas 500g", "Café molido 250g", "Café instantáneo 100g", "Té negro (25 bolsas)", "Chocolate en polvo 200g", "Galletas de agua 200g", "Galletas de chocolate 150g", "Papas fritas 150g", "Maní tostado 200g", "Pasas 100g", "Miel de abeja 350g", "Mermelada de fresa 350g", "Azúcar morena 500g", "Vinagre de manzana 500ml", "Salsa de soya 250ml", "Mayonesa 350g", "Kétchup 350g", "Mostaza 200g", "Aceitunas verdes 200g", "Pepinillos 350g", "Tomate triturado 400g", "Pasta de tomate 130g", "Caldo de pollo (6 cubos)", "Caldo de verduras (6 cubos)", "Pimienta negra 50g", "Comino molido 50g", "Orégano seco 20g", "Laurel (10 hojas)", "Canela en polvo 50g", "Vainilla esencia 60ml", "Levadura seca 10g", "Polvo de hornear 100g", "Bicarbonato de sodio 200g", "Maicena 200g", "Gelatina sin sabor 10g", "Coco rallado 100g", "Nueces 100g", "Almendras 100g", "Maní sin cáscara 200g", "Semillas de girasol 150g", "Chía 200g", "Quinoa 500g", "Amaranto 300g", "Cuscús 500g", "Bulgur 500g", "Mijo 500g"], 0.60m, 15.50m)
     };
 
     public async Task RunAsync()
@@ -116,7 +109,7 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
     private async Task GenerateStoresAsync()
     {
         var categories = Catalog.Keys.ToArray();
-        var suffixes = new[] { "Andino", "del Pacífico", "La Esquina", "Buen Vivir", "Santa Clara", "Nuevo Horizonte", "del Valle", "Los Ceibos" };
+        var suffixes = new[] { "Express", "Central", "La Esquina", "Del Valle", "Norte", "Sur", "Centro", "Los Ceibos" };
         await CopyBatchesAsync("tiendas", _plan.Stores,
             "COPY delivery_store (delivery_store_id, name, category, address, is_active) FROM STDIN (FORMAT BINARY)",
             (writer, index) =>
@@ -446,7 +439,7 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
     private DateTimeOffset RandomDate(int daysBack) => options.ReferenceDate.AddDays(-_faker.Random.Int(0, daysBack)).AddMinutes(-_faker.Random.Int(0, 1439));
     private string Address(string city) => Trim($"{_faker.PickRandom("Av.", "Calle", "Cdla.", "Barrio", "Coop.")} {_faker.Address.StreetName()} {_faker.Random.Int(1, 999)}, {city}", 180);
     private static decimal Money(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
-    private static string StorePrefix(string category) => category switch { "Restaurante" => "Restaurante", "Farmacia" => "Farmacia", "Panadería" => "Panadería", "Tecnología" => "Tecnología", "Librería" => "Librería", "Ferretería" => "Ferretería", "Ropa" => "Moda", "Hogar" => "Hogar", _ => category };
+    private static string StorePrefix(string category) => category switch { "Comida Rápida" => "Comida Rápida", "Farmacia" => "Farmacia", "Supermercado" => "Supermercado", _ => category };
     private static string Trim(string value, int max) => value.Length <= max ? value : value[..max];
 
     private static string UniqueEmail(string first, string last, int index)
