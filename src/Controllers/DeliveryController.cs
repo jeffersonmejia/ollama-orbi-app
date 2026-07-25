@@ -33,6 +33,7 @@ public class DeliveryController : Controller
 
         string? userProvinceCode = null;
         string? userCityName = null;
+        string? userCityCode = null;
         if (CurrentUserId is string userId)
         {
             var profile = await _context.UserProfiles.AsNoTracking()
@@ -44,8 +45,8 @@ public class DeliveryController : Controller
             {
                 userProvinceCode = profile.ProvinceCode;
                 userCityName = profile.City?.Name;
-                if (User.IsInRole("Usuario"))
-                    productsQuery = productsQuery.Where(product => product.Store.ProvinceCode == userProvinceCode);
+                userCityCode = profile.CityCode;
+                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
             }
         }
 

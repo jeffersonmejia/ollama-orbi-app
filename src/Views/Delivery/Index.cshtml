@@ -14,9 +14,9 @@
                 var provinceName = ViewBag.UserProvinceName as string;
                 var cityName = ViewBag.UserCityName as string;
             }
-            @if (!string.IsNullOrEmpty(provinceName))
+            @if (!string.IsNullOrEmpty(cityName))
             {
-                <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@provinceName</strong><span>·</span>@cityName</p>
+                <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@cityName</strong><span>·</span>@provinceName</p>
             }
             else if (User.IsInRole("Usuario") && defaultAddress is not null)
             {
