@@ -321,10 +321,30 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> AdminStores(int page = 1)
+    public async Task<IActionResult> AdminStores(string? buscar, string? provincia, string? ciudad, int page = 1)
     {
+        var query = _context.DeliveryStores.AsNoTracking()
+            .Include(s => s.Province).Include(s => s.City).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = $"%{buscar.Trim()}%";
+            query = query.Where(s => EF.Functions.ILike(s.Name, term) || EF.Functions.ILike(s.Category, term) || EF.Functions.ILike(s.Address, term));
+        }
+        if (!string.IsNullOrWhiteSpace(provincia))
+            query = query.Where(s => s.ProvinceCode == provincia);
+        if (!string.IsNullOrWhiteSpace(ciudad))
+            query = query.Where(s => s.CityCode == ciudad);
+
+        ViewBag.Buscar = buscar;
+        ViewBag.Provincia = provincia;
+        ViewBag.Ciudad = ciudad;
+        ViewBag.Provincias = await _context.EcuadorProvinces.OrderBy(p => p.Name).ToListAsync();
+        ViewBag.Ciudades = await _context.EcuadorCities
+            .Where(c => string.IsNullOrWhiteSpace(provincia) || c.ProvinceCode == provincia)
+            .OrderBy(c => c.Name).ToListAsync();
+
         var stores = await PaginatedList<DeliveryStore>.CreateAsync(
-            _context.DeliveryStores.AsNoTracking().OrderBy(store => store.Name), Math.Max(1, page), 5);
+            query.OrderBy(s => s.Name), Math.Max(1, page), 5);
         ViewData["PaginatedList"] = stores;
         return View(stores);
     }

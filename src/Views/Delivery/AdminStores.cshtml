@@ -1,4 +1,5 @@
 @using SakilaApp.Models.Delivery
+@using SakilaApp.Models.Identity
 @model SakilaApp.Models.PaginatedList<DeliveryStore>
 @{ ViewData["Title"] = "Tiendas"; ViewData["PaginatedList"] = Model; }
 
@@ -19,6 +20,35 @@
                     @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
                     @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
 
+                    <form asp-action="AdminStores" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="m3-text-field" style="margin:0;flex:1;min-width:180px;">
+                            <label class="m3-text-field-label">Buscar</label>
+                            <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Nombre, categoría..." style="height:40px;" />
+                        </div>
+                        <div class="m3-text-field" style="margin:0;min-width:160px;">
+                            <label class="m3-text-field-label">Provincia</label>
+                            <select name="provincia" class="m3-text-field-input" style="height:40px;" onchange="this.form.submit()">
+                                <option value="">Todas</option>
+                                @foreach (var p in (IEnumerable<EcuadorProvince>)ViewBag.Provincias)
+                                {
+                                    <option value="@p.Code" selected="@(ViewBag.Provincia == p.Code)">@p.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="m3-text-field" style="margin:0;min-width:160px;">
+                            <label class="m3-text-field-label">Ciudad</label>
+                            <select name="ciudad" class="m3-text-field-input" style="height:40px;" onchange="this.form.submit()">
+                                <option value="">Todas</option>
+                                @foreach (var c in (IEnumerable<EcuadorCity>)ViewBag.Ciudades)
+                                {
+                                    <option value="@c.Code" selected="@(ViewBag.Ciudad == c.Code)">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
+                        <a asp-action="AdminStores" class="m3-text-button" style="height:40px;line-height:40px;">Limpiar</a>
+                    </form>
+
                     <div class="orbi-admin-stack">
                         <section id="edit-store-section" class="m3-card orbi-admin-edit-card">
                             <h3 id="store-form-title">Nueva tienda</h3>
@@ -37,12 +67,13 @@
                             <div class="orbi-admin-table-heading"><div><h3>Tiendas registradas</h3><p>Disponibilidad actual del catálogo local.</p></div></div>
                             <div class="orbi-orders-table-wrap">
                                 <table class="m3-data-table orbi-orders-table">
-                                    <thead><tr><th>Tienda</th><th>Categoría</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr></thead>
+                                    <thead><tr><th>Tienda</th><th>Categoría</th><th>Ciudad</th><th>Provincia</th><th>Estado</th><th>Acciones</th></tr></thead>
                                     <tbody>
                                     @foreach (var store in Model)
                                     {
                                         <tr>
-                                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td><td>@store.Category</td><td class="orbi-order-address">@store.Address</td>
+                                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td><td>@store.Category</td>
+                                            <td>@(store.City?.Name ?? "-")</td><td>@(store.Province?.Name ?? "-")</td>
                                             <td><span class="orbi-order-status @(store.IsActive ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(store.IsActive ? "Activa" : "Inactiva")</span></td>
                                             <td><div class="orbi-admin-row-actions">
                                                 <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address"><span class="material-symbols-outlined">edit</span>Editar</button>
