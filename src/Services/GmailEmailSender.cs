@@ -11,41 +11,50 @@ namespace SakilaApp.Services;
 public class GmailEmailSender : IEmailSender<IdentityUser>, IEmailSender
 {
     private readonly EmailSettings _settings;
+    private readonly ILogger<GmailEmailSender> _logger;
 
-    public GmailEmailSender(IOptions<EmailSettings> settings)
+    public GmailEmailSender(IOptions<EmailSettings> settings, ILogger<GmailEmailSender> logger)
     {
         _settings = settings.Value;
+        _logger = logger;
     }
 
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
-        var message = new MimeMessage();
-
-        message.From.Add(new MailboxAddress(
-            _settings.SenderName,
-            _settings.SenderEmail));
-
-        message.To.Add(MailboxAddress.Parse(email));
-        message.Subject = subject;
-
-        message.Body = new BodyBuilder
+        try
         {
-            HtmlBody = htmlMessage
-        }.ToMessageBody();
+            var message = new MimeMessage();
 
-        using var client = new SmtpClient();
+            message.From.Add(new MailboxAddress(
+                _settings.SenderName,
+                _settings.SenderEmail));
 
-        await client.ConnectAsync(
-            _settings.SmtpServer,
-            _settings.SmtpPort,
-            SecureSocketOptions.StartTls);
+            message.To.Add(MailboxAddress.Parse(email));
+            message.Subject = subject;
 
-        await client.AuthenticateAsync(
-            _settings.SenderEmail,
-            _settings.Password);
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = htmlMessage
+            }.ToMessageBody();
 
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(
+                _settings.SmtpServer,
+                _settings.SmtpPort,
+                SecureSocketOptions.StartTls);
+
+            await client.AuthenticateAsync(
+                _settings.SenderEmail,
+                _settings.Password);
+
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo enviar correo a {Email} con asunto '{Subject}'.", email, subject);
+        }
     }
 
     public async Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink)
