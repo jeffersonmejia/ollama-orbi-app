@@ -19,7 +19,6 @@
 
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    var hasSharedChat = !string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase);
 }
 
 @inject SignInManager<IdentityUser> SignInManager
@@ -35,7 +34,7 @@
         }
     }
 }
-<div class="m3-app-layout @(hasSharedChat ? "orbi-chat-layout" : string.Empty)">
+<div class="m3-app-layout orbi-chat-layout">
     <nav class="m3-nav-rail">
         <div class="m3-nav-rail-header"></div>
 
@@ -52,15 +51,12 @@
                 </a>
             </li>
 
-            @if (hasSharedChat)
-            {
-                <li>
-                    <button id="orbi-chat-nav-toggle" class="m3-nav-item orbi-chat-nav-toggle" type="button" aria-expanded="false" aria-controls="orbi-chat-panel">
-                        <span class="material-symbols-outlined">smart_toy</span>
-                        <span>Asistente</span>
-                    </button>
-                </li>
-            }
+            <li>
+                <button id="orbi-chat-nav-toggle" class="m3-nav-item orbi-chat-nav-toggle" type="button" aria-expanded="false" aria-controls="orbi-chat-panel">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span>Asistente</span>
+                </button>
+            </li>
 
             @if (User.Identity?.IsAuthenticated == true)
             {
@@ -314,10 +310,7 @@
     </div>
 </div>
 
-@if (hasSharedChat)
-{
-    <partial name="_ContextualChat" />
-}
+<partial name="_ContextualChat" />
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/js/m3.js" asp-append-version="true"></script>

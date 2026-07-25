@@ -45,11 +45,6 @@
 <style>
     .orbi-home-layout {
         display: block;
-        padding-right: 380px;
-        transition: padding-right 220ms var(--md-sys-motion-easing-standard);
-    }
-
-    .orbi-home-layout.chat-collapsed {
         padding-right: 0;
     }
 
@@ -149,6 +144,8 @@
         }
     }
 
+    /* El asistente compartido vive en el layout; estos estilos pertenecen al panel legado. */
+    /*
     .orbi-chat-typing span {
         display: inline-block;
         animation: orbi-chat-dot 1.2s infinite ease-in-out;
@@ -342,8 +339,7 @@
     }
 
     @@media (max-width: 900px) {
-        .orbi-home-layout { padding-right: min(380px, calc(100vw - 80px)); }
-        .orbi-home-layout.chat-collapsed { padding-right: 0; }
+        .orbi-home-layout { padding-right: 0; }
         .orbi-chat-panel {
             width: min(380px, calc(100vw - 80px));
         }
@@ -356,6 +352,7 @@
     @@media (prefers-reduced-motion: reduce) {
         .orbi-chat-typing span, .orbi-chat-cursor::after, .orbi-chat-voice.listening { animation: none; }
     }
+    */
 </style>
 
 <div id="orbi-home-layout" class="orbi-home-layout">
@@ -475,6 +472,8 @@
     }
 </section>
 
+@if (ViewData["RenderLegacyHomeChat"] is true)
+{
 <aside id="orbi-chat-panel" class="orbi-chat-panel" data-welcome="@chatWelcome" aria-label="Asistente Orbi">
     <div class="orbi-chat-header" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
@@ -513,7 +512,6 @@
         </form>
     </div>
 </aside>
-</div>
 
 <script>
     (function () {
@@ -802,3 +800,5 @@
         });
     })();
 </script>
+}
+</div>
