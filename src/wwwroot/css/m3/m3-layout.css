@@ -129,8 +129,12 @@ a:hover {
   gap: 0;
 }
 
+.m3-nav-item.orbi-profile-nav-item {
+  width: 72px;
+}
+
 .orbi-profile-label small {
-  max-width: 64px;
+  max-width: 72px;
   overflow: hidden;
   color: var(--md-sys-color-primary);
   font-size: 9px;

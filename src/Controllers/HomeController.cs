@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +22,18 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ViewData["FirstName"] = await _identityContext.UserProfiles
+                .AsNoTracking()
+                .Where(profile => profile.IdentityUserId == userId)
+                .Select(profile => profile.FirstName)
+                .FirstOrDefaultAsync();
+        }
+
         return View();
     }
 

@@ -9,6 +9,7 @@
     updateSessionNavigation();
     initRegisterSteps();
     initGoogleLogin();
+    initWelcomeFirstName();
   });
 
   function updateSessionNavigation() {
@@ -16,7 +17,9 @@
       .forEach(function (label) { label.textContent = 'Registro'; });
 
     var profileLink = document.querySelector('.m3-nav-item[href*="/Account/Manage"]');
-    if (!profileLink || profileLink.querySelector('.orbi-profile-label')) return;
+    if (!profileLink) return;
+    profileLink.classList.add('orbi-profile-nav-item');
+    if (profileLink.querySelector('.orbi-profile-label')) return;
 
     var label = Array.from(profileLink.querySelectorAll('span'))
       .find(function (item) { return item.textContent.trim() === 'Perfil'; });
@@ -28,6 +31,20 @@
     wrapper.innerHTML = '<span>Perfil</span><small></small>';
     wrapper.querySelector('small').textContent = role;
     label.replaceWith(wrapper);
+  }
+
+  function initWelcomeFirstName() {
+    var heading = Array.from(document.querySelectorAll('h1')).find(function (item) {
+      return item.textContent.trim().toLowerCase().startsWith('bienvenido,');
+    });
+    if (!heading) return;
+
+    var currentIdentity = heading.textContent.split(',').slice(1).join(',').trim();
+    if (!currentIdentity.includes('@')) return;
+
+    var firstName = currentIdentity.split('@')[0].split(/[._-]/)[0];
+    if (!firstName) return;
+    heading.textContent = 'Bienvenido, ' + firstName.charAt(0).toUpperCase() + firstName.slice(1);
   }
 
   function initGoogleLogin() {

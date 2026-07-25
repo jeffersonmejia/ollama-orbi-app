@@ -1,5 +1,4 @@
 ﻿@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
 
 @{
     ViewData["Title"] = "Orbi";
@@ -354,7 +353,7 @@
     @if (SignInManager.IsSignedIn(User))
     {
         <h1 style="font-size:var(--md-sys-typescale-headline-large-size);font-weight:var(--md-sys-typescale-headline-large-weight);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">
-            Bienvenido, @UserManager.GetUserName(User)
+            Bienvenido, @(ViewData["FirstName"] as string ?? "usuario")
         </h1>
         <p style="font-size:var(--md-sys-typescale-display-small-size);color:var(--md-sys-color-on-surface-variant);margin:2.5rem 0 3rem;font-weight:300;letter-spacing:-0.02em;" id="randomMessage">¿Qué quieres pedir hoy?</p>
         <script>

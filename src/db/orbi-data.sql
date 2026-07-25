@@ -37,7 +37,7 @@ ON CONFLICT (identity_user_id) DO NOTHING;
 
 INSERT INTO user_profile
     (identity_user_id, first_name, last_name, cedula, address_line_1, address_line_2, province_code, city_code, reference)
-SELECT "Id", 'María', 'López', '1712345675', 'Av. Amazonas', 'Calle Naciones Unidas', '17', '1701', NULL
+SELECT "Id", 'María', 'López', '1712345671', 'Av. Amazonas', 'Calle Naciones Unidas', '17', '1701', NULL
 FROM "AspNetUsers" WHERE "NormalizedEmail" = 'MARIA.LOPEZ@ORBI.COM'
 ON CONFLICT (identity_user_id) DO NOTHING;
 
