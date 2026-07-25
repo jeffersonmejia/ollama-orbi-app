@@ -7,34 +7,22 @@
 }
 
 <div class="m3-page orbi-store-page">
-    <header class="orbi-store-header">
-        <div>
-            <h1 class="m3-page-title">Tiendas</h1>
-            @{
-                var provinceName = ViewBag.UserProvinceName as string;
-                var cityName = ViewBag.UserCityName as string;
-            }
-            @if (!string.IsNullOrEmpty(cityName))
-            {
-                <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@cityName</strong><span>·</span>@provinceName</p>
-            }
-            else if (User.IsInRole("Usuario") && defaultAddress is not null)
-            {
-                <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
-            }
-        </div>
-        @if (User.IsInRole("Usuario"))
-        {
-            <a asp-area="Identity" asp-page="/Account/Manage/Addresses" class="m3-outlined-button">
-                <span class="material-symbols-outlined">location_on</span> Mis direcciones
-            </a>
-        }
-    </header>
+    @{
+        var provinceName = ViewBag.UserProvinceName as string;
+        var cityName = ViewBag.UserCityName as string;
+    }
 
     <form asp-action="Index" method="get" class="orbi-store-filters">
         <div class="orbi-store-search">
             <span class="material-symbols-outlined">search</span>
             <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" />
+            @if (!string.IsNullOrEmpty(cityName))
+            {
+                <span class="orbi-inline-location">
+                    <span class="material-symbols-outlined">location_on</span>@cityName · @provinceName
+                    <a asp-area="Identity" asp-page="/Account/Manage/Addresses" class="orbi-inline-edit" title="Editar ubicación"><span class="material-symbols-outlined">edit</span></a>
+                </span>
+            }
         </div>
         <label class="orbi-price-filter" for="precioMinimo"><span class="material-symbols-outlined">attach_money</span><span>Mín.</span><input id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" aria-label="Precio mínimo" /></label>
         <label class="orbi-price-filter" for="precioMaximo"><span class="material-symbols-outlined">payments</span><span>Máx.</span><input id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" aria-label="Precio máximo" /></label>
