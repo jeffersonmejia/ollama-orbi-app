@@ -46,7 +46,19 @@ public class DeliveryController : Controller
                 userProvinceCode = profile.ProvinceCode;
                 userCityName = profile.City?.Name;
                 userCityCode = profile.CityCode;
-                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
+                var hasCityStores = await _context.DeliveryProducts
+                    .AnyAsync(p => p.IsAvailable && p.Store.IsActive && p.Store.CityCode == userCityCode);
+                if (hasCityStores)
+                {
+                    productsQuery = productsQuery.Where(p => p.Store.CityCode == userCityCode);
+                }
+                else
+                {
+                    var hasProvinceStores = await _context.DeliveryProducts
+                        .AnyAsync(p => p.IsAvailable && p.Store.IsActive && p.Store.ProvinceCode == userProvinceCode);
+                    if (hasProvinceStores)
+                        productsQuery = productsQuery.Where(p => p.Store.ProvinceCode == userProvinceCode);
+                }
             }
         }
 
