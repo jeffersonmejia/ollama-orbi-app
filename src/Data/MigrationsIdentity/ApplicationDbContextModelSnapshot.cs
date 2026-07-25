@@ -521,6 +521,71 @@ namespace SakilaApp.Data.MigrationsIdentity
                     b.ToTable("delivery_product", (string)null);
                 });
 
+            modelBuilder.Entity("SakilaApp.Models.Delivery.DeliveryPayment", b =>
+                {
+                    b.Property<long>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("payment_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("DeliveryOrderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("delivery_order_id");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("external_id");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_payment_created_at");
+
+                    b.HasIndex("DeliveryOrderId")
+                        .HasDatabaseName("ix_payment_order");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_payment_external_id");
+
+                    b.ToTable("payment", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_payment_amount", "amount >= 0");
+                            t.HasCheckConstraint("ck_payment_provider", "provider IN ('PayPhone', 'PayPal')");
+                            t.HasCheckConstraint("ck_payment_status", "status IN ('Pendiente', 'Aprobado', 'Rechazado', 'Reembolsado')");
+                        });
+                });
+
             modelBuilder.Entity("SakilaApp.Models.Delivery.DeliveryStore", b =>
                 {
                     b.Property<int>("DeliveryStoreId")
@@ -1322,6 +1387,17 @@ namespace SakilaApp.Data.MigrationsIdentity
                     b.Navigation("Store");
                 });
 
+            modelBuilder.Entity("SakilaApp.Models.Delivery.DeliveryPayment", b =>
+                {
+                    b.HasOne("SakilaApp.Models.Delivery.DeliveryOrder", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("DeliveryOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("SakilaApp.Models.Identity.EcuadorCity", b =>
                 {
                     b.HasOne("SakilaApp.Models.Identity.EcuadorProvince", "Province")
@@ -1473,6 +1549,8 @@ namespace SakilaApp.Data.MigrationsIdentity
             modelBuilder.Entity("SakilaApp.Models.Delivery.DeliveryOrder", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("SakilaApp.Models.Delivery.DeliveryStore", b =>

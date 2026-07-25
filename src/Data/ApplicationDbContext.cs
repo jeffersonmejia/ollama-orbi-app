@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<DeliveryProduct> DeliveryProducts => Set<DeliveryProduct>();
     public DbSet<DeliveryOrder> DeliveryOrders => Set<DeliveryOrder>();
     public DbSet<DeliveryOrderItem> DeliveryOrderItems => Set<DeliveryOrderItem>();
+    public DbSet<DeliveryPayment> DeliveryPayments => Set<DeliveryPayment>();
     public DbSet<EcuadorProvince> EcuadorProvinces => Set<EcuadorProvince>();
     public DbSet<EcuadorCity> EcuadorCities => Set<EcuadorCity>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
@@ -131,6 +132,29 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.Quantity).HasColumnName("quantity");
             entity.Property(x => x.UnitPrice).HasColumnName("unit_price");
             entity.Property(x => x.Subtotal).HasColumnName("subtotal");
+        });
+
+        builder.Entity<DeliveryPayment>(entity =>
+        {
+            entity.ToTable("payment", table =>
+            {
+                table.HasCheckConstraint("ck_payment_provider", "provider IN ('PayPhone', 'PayPal')");
+                table.HasCheckConstraint("ck_payment_status", "status IN ('Pendiente', 'Aprobado', 'Rechazado', 'Reembolsado')");
+                table.HasCheckConstraint("ck_payment_amount", "amount >= 0");
+            });
+            entity.HasKey(x => x.PaymentId);
+            entity.Property(x => x.PaymentId).HasColumnName("payment_id").HasColumnType("bigint").ValueGeneratedOnAdd();
+            entity.Property(x => x.DeliveryOrderId).HasColumnName("delivery_order_id");
+            entity.Property(x => x.ExternalId).HasColumnName("external_id").HasMaxLength(80);
+            entity.Property(x => x.Provider).HasColumnName("provider").HasMaxLength(30);
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(20);
+            entity.Property(x => x.Amount).HasColumnName("amount").HasColumnType("numeric(10,2)");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.Property(x => x.ConfirmedAt).HasColumnName("confirmed_at").HasColumnType("timestamp with time zone");
+            entity.HasIndex(x => x.ExternalId).IsUnique().HasDatabaseName("ux_payment_external_id");
+            entity.HasIndex(x => x.DeliveryOrderId).HasDatabaseName("ix_payment_order");
+            entity.HasIndex(x => x.CreatedAt).HasDatabaseName("ix_payment_created_at");
+            entity.HasOne(x => x.Order).WithMany(x => x.Payments).HasForeignKey(x => x.DeliveryOrderId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<InventoryMovement>(entity =>

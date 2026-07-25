@@ -12,4 +12,5 @@ public class DeliveryOrder
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DeliveryStore Store { get; set; } = null!;
     public ICollection<DeliveryOrderItem> Items { get; set; } = new List<DeliveryOrderItem>();
+    public ICollection<DeliveryPayment> Payments { get; set; } = new List<DeliveryPayment>();
 }

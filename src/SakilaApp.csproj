@@ -25,6 +25,14 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
   </ItemGroup>
 
+  <!-- OrbiApp.DataGenerator is an independent console project nested under src. -->
+  <ItemGroup>
+    <Compile Remove="OrbiApp.DataGenerator/**/*.cs" />
+    <Content Remove="OrbiApp.DataGenerator/**" />
+    <EmbeddedResource Remove="OrbiApp.DataGenerator/**" />
+    <None Remove="OrbiApp.DataGenerator/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="db/orbi-*.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
