@@ -33,8 +33,9 @@ public class DeliveryController : Controller
         if (!string.IsNullOrWhiteSpace(buscar))
         {
             var term = buscar.Trim();
-            productsQuery = productsQuery.Where(product => product.Name.Contains(term) ||
-                product.Store.Name.Contains(term) || product.Store.Category.Contains(term));
+            var pattern = $"%{term}%";
+            productsQuery = productsQuery.Where(product => EF.Functions.ILike(product.Name, pattern) ||
+                EF.Functions.ILike(product.Store.Name, pattern) || EF.Functions.ILike(product.Store.Category, pattern));
         }
         if (precioMinimo.HasValue) productsQuery = productsQuery.Where(product => product.Price >= precioMinimo.Value);
         if (precioMaximo.HasValue) productsQuery = productsQuery.Where(product => product.Price <= precioMaximo.Value);
@@ -139,9 +140,11 @@ public class DeliveryController : Controller
         if (!string.IsNullOrWhiteSpace(buscar))
         {
             var term = buscar.Trim();
+            var pattern = $"%{term}%";
             var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
-            query = query.Where(order => order.Store.Name.Contains(term) || order.Status.Contains(term) ||
-                order.Items.Any(item => item.ProductName.Contains(term)) ||
+            query = query.Where(order => EF.Functions.ILike(order.Store.Name, pattern) ||
+                EF.Functions.ILike(order.Status, pattern) ||
+                order.Items.Any(item => EF.Functions.ILike(item.ProductName, pattern)) ||
                 (hasOrderId && order.DeliveryOrderId == orderId));
         }
         var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
@@ -159,9 +162,11 @@ public class DeliveryController : Controller
         if (!string.IsNullOrWhiteSpace(buscar))
         {
             var term = buscar.Trim();
+            var pattern = $"%{term}%";
             var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
-            query = query.Where(order => order.Store.Name.Contains(term) || order.Status.Contains(term) ||
-                order.CustomerEmail.Contains(term) || order.Items.Any(item => item.ProductName.Contains(term)) ||
+            query = query.Where(order => EF.Functions.ILike(order.Store.Name, pattern) ||
+                EF.Functions.ILike(order.Status, pattern) || EF.Functions.ILike(order.CustomerEmail, pattern) ||
+                order.Items.Any(item => EF.Functions.ILike(item.ProductName, pattern)) ||
                 (hasOrderId && order.DeliveryOrderId == orderId));
         }
         var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
@@ -172,9 +177,10 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> Admin(int page = 1)
+    public async Task<IActionResult> Admin(int page = 1, int storePage = 1)
     {
-        ViewBag.Stores = await _context.DeliveryStores.OrderBy(store => store.Name).ToListAsync();
+        ViewBag.Stores = await PaginatedList<DeliveryStore>.CreateAsync(
+            _context.DeliveryStores.AsNoTracking().OrderBy(store => store.Name), Math.Max(1, storePage), 5);
         var orders = await PaginatedList<DeliveryOrder>.CreateAsync(OrderQuery(), Math.Max(1, page), 5);
         ViewData["PaginatedList"] = orders;
         return View(orders);
@@ -216,6 +222,28 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Administrador")]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStore(int storeId, string name, string category, string address)
+    {
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
+        {
+            TempData["Error"] = "Completa el nombre, la categoría y la dirección de la tienda.";
+            return RedirectToAction(nameof(Admin));
+        }
+
+        var store = await _context.DeliveryStores.FindAsync(storeId);
+        if (store == null) return NotFound();
+
+        store.Name = name.Trim();
+        store.Category = category.Trim();
+        store.Address = address.Trim();
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"La tienda {store.Name} fue actualizada.";
+        return RedirectToAction(nameof(Admin));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Administrador")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleStore(int storeId)
     {
         var store = await _context.DeliveryStores.FindAsync(storeId);
@@ -223,6 +251,7 @@ public class DeliveryController : Controller
 
         store.IsActive = !store.IsActive;
         await _context.SaveChangesAsync();
+        TempData["Success"] = $"{store.Name} ahora está {(store.IsActive ? "activa" : "inactiva")}.";
         return RedirectToAction(nameof(Admin));
     }
 

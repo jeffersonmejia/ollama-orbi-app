@@ -31,7 +31,8 @@ public async Task<IActionResult> Index(string? buscar, int? page)
 
     if (!string.IsNullOrWhiteSpace(buscar))
     {
-        consulta = consulta.Where(f => f.Title.Contains(buscar));
+        var pattern = $"%{buscar.Trim()}%";
+        consulta = consulta.Where(f => EF.Functions.ILike(f.Title, pattern));
     }
 
     var source = consulta.OrderBy(f => f.Title);

@@ -300,7 +300,7 @@
             </h1>
         </header>
 
-        <main class="m3-main">
+        <main class="m3-main @(currentController == "Home" && User.Identity?.IsAuthenticated != true ? "orbi-public-home-main" : string.Empty)">
             @RenderBody()
         </main>
 

@@ -4,12 +4,13 @@
 
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var pageParameter = ViewData["PaginationPageParameter"] as string ?? "page";
 
     Func<int, string> pageUrl = (page) =>
     {
         var query = new List<string>();
-        if (page > 1) query.Add($"page={page}");
-        foreach (var item in Context.Request.Query.Where(item => !string.Equals(item.Key, "page", StringComparison.OrdinalIgnoreCase)))
+        if (page > 1) query.Add($"{Uri.EscapeDataString(pageParameter)}={page}");
+        foreach (var item in Context.Request.Query.Where(item => !string.Equals(item.Key, pageParameter, StringComparison.OrdinalIgnoreCase)))
         {
             foreach (var value in item.Value)
                 query.Add($"{Uri.EscapeDataString(item.Key)}={Uri.EscapeDataString(value ?? string.Empty)}");
@@ -18,7 +19,7 @@
     };
 }
 
-<p class="m3-pagination-meta">Página @paginatedList.PageIndex de @Math.Max(1, paginatedList.TotalPages) · @paginatedList.TotalCount registros totales · máximo 5 por página</p>
+<p class="m3-pagination-meta">Página @paginatedList.PageIndex de @Math.Max(1, paginatedList.TotalPages) · @paginatedList.TotalCount registros totales · máximo @paginatedList.PageSize por página</p>
 
 @if (paginatedList.TotalPages > 1)
 {

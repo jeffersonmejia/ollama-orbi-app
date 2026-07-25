@@ -3,60 +3,153 @@
 
 @{
     ViewData["Title"] = "Administración Orbi";
-    var stores = ViewBag.Stores as IReadOnlyList<DeliveryStore> ?? new List<DeliveryStore>();
+    var stores = ViewBag.Stores as SakilaApp.Models.PaginatedList<DeliveryStore>
+        ?? new SakilaApp.Models.PaginatedList<DeliveryStore>(new(), 0, 1, 5);
     var statuses = new[] { "Pendiente", "En preparación", "En camino", "Entregado", "Cancelado" };
+    Func<string, string> statusClass = status => status switch
+    {
+        "Entregado" => "is-delivered",
+        "En camino" => "is-transit",
+        "En preparación" => "is-preparing",
+        "Cancelado" => "is-cancelled",
+        _ => "is-pending"
+    };
 }
 
-<div class="m3-page">
-    <h1 class="m3-page-title">Administración de delivery</h1>
-    <section class="m3-card orbi-operation-section">
-    <h2>Administrar tiendas</h2>
-    <p class="orbi-muted">Selecciona la tienda y cambia su disponibilidad desde el formulario.</p>
-    <div style="display:grid;gap:12px;margin-bottom:28px;">
-        @foreach (var store in stores)
-        {
-            <div class="m3-card" style="padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                <span><strong>@store.Name</strong> · @(store.IsActive ? "Activa" : "Inactiva")</span>
-                <form asp-action="ToggleStore" method="post">
-                    <input type="hidden" name="storeId" value="@store.DeliveryStoreId" />
-                    <button class="m3-filled-button" type="submit">@(store.IsActive ? "Desactivar" : "Activar")</button>
-                </form>
+<div class="m3-page orbi-orders-page">
+    <header class="orbi-orders-header">
+        <h1 class="m3-page-title">Administración de delivery</h1>
+        <p>Gestiona la disponibilidad de las tiendas y el estado de los pedidos.</p>
+    </header>
+
+    @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
+
+    <section id="edit-store-section" class="m3-card orbi-admin-account-section">
+        <div class="orbi-admin-section-intro">
+            <span class="material-symbols-outlined">storefront</span>
+            <div><h2>Editar tienda</h2><p>Actualiza la identidad y ubicación que verá el cliente.</p></div>
+        </div>
+        <form asp-action="UpdateStore" method="post" class="orbi-operation-form orbi-admin-section-form">
+            <input id="edit-store-id" type="hidden" name="storeId" />
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" for="edit-store-name">Nombre</label>
+                <input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Selecciona Editar en la tabla" />
             </div>
-        }
-    </div>
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" for="edit-store-category">Categoría</label>
+                <input class="m3-text-field-input" id="edit-store-category" name="category" required />
+            </div>
+            <div class="m3-text-field orbi-field-full">
+                <label class="m3-text-field-label" for="edit-store-address">Dirección</label>
+                <input class="m3-text-field-input" id="edit-store-address" name="address" required />
+            </div>
+            <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Guardar cambios</button></div>
+        </form>
     </section>
 
-    <section class="m3-card orbi-operation-section">
-    <h2>Pedidos</h2>
-    <div style="overflow-x:auto;">
-        <table class="m3-data-table">
-            <thead><tr><th>Pedido</th><th>Cliente</th><th>Repartidor</th><th>Total</th><th>Estado</th></tr></thead>
-            <tbody>
-            @foreach (var order in Model)
-            {
-                <tr>
-                    <td>#@order.DeliveryOrderId · @order.Store.Name</td>
-                    <td>@order.CustomerEmail</td>
-                    <td>@order.DeliveryPersonEmail</td>
-                    <td>@order.Total.ToString("C")</td>
-                    <td>
-                        <form asp-action="UpdateStatus" method="post" style="display:flex;gap:8px;">
-                            <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
-                            <select name="status" aria-label="Estado del pedido">
-                                @foreach (var status in statuses)
-                                {
-                                    <option value="@status" selected="@(order.Status == status)">@status</option>
-                                }
-                            </select>
-                            <button class="m3-filled-button" type="submit">Guardar</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-    @{ ViewData["PaginatedList"] = Model; }
-    <partial name="_Pagination" />
+    <section id="edit-order-section" class="m3-card orbi-admin-account-section">
+        <div class="orbi-admin-section-intro">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <div><h2>Actualizar pedido</h2><p>Cambia el estado operativo de un pedido específico.</p></div>
+        </div>
+        <form asp-action="UpdateStatus" method="post" class="orbi-operation-form orbi-admin-section-form">
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label" for="edit-order-id">Pedido</label>
+                    <select class="m3-text-field-input" id="edit-order-id" name="orderId" required>
+                        <option value="">Selecciona un pedido</option>
+                        @foreach (var order in Model)
+                        {
+                            <option value="@order.DeliveryOrderId">#@order.DeliveryOrderId · @order.Store.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label" for="edit-order-status">Nuevo estado</label>
+                    <select class="m3-text-field-input" id="edit-order-status" name="status" required>
+                        @foreach (var status in statuses) { <option value="@status">@status</option> }
+                    </select>
+                </div>
+                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Actualizar estado</button></div>
+        </form>
+    </section>
+
+    <section class="m3-card orbi-orders-table-card orbi-admin-table-card">
+        <div class="orbi-admin-table-heading"><div><h2>Tiendas</h2><p>Disponibilidad actual del catálogo local.</p></div></div>
+        <div class="orbi-orders-table-wrap">
+            <table class="m3-data-table orbi-orders-table">
+                <thead><tr><th>Tienda</th><th>Categoría</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>
+                    @foreach (var store in stores)
+                    {
+                        <tr>
+                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td>
+                            <td>@store.Category</td>
+                            <td class="orbi-order-address">@store.Address</td>
+                            <td><span class="orbi-order-status @(store.IsActive ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(store.IsActive ? "Activa" : "Inactiva")</span></td>
+                            <td>
+                                <div class="orbi-admin-row-actions">
+                                    <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address"><span class="material-symbols-outlined">edit</span>Editar</button>
+                                    <form asp-action="ToggleStore" method="post" class="orbi-store-toggle-form">
+                                        <input type="hidden" name="storeId" value="@store.DeliveryStoreId" />
+                                        <label class="orbi-switch" title="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")">
+                                            <input type="checkbox" checked="@store.IsActive" role="switch" aria-label="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")" onchange="this.form.requestSubmit()" />
+                                            <span></span>
+                                        </label>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @{ ViewData["PaginatedList"] = stores; ViewData["PaginationPageParameter"] = "storePage"; }
+        <partial name="_Pagination" />
+    </section>
+
+    <section class="m3-card orbi-orders-table-card orbi-admin-table-card">
+        <div class="orbi-admin-table-heading"><div><h2>Pedidos</h2><p>Lectura general de pedidos, clientes y repartidores.</p></div></div>
+        <div class="orbi-orders-table-wrap">
+            <table class="m3-data-table orbi-orders-table">
+                <thead><tr><th>Pedido</th><th>Tienda y productos</th><th>Cliente</th><th>Repartidor</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td><strong>#@order.DeliveryOrderId</strong><small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td><strong>@order.Store.Name</strong><small>@string.Join(" · ", order.Items.Select(item => $"{item.Quantity}× {item.ProductName}"))</small></td>
+                            <td>@order.CustomerEmail</td>
+                            <td>@order.DeliveryPersonEmail</td>
+                            <td><strong>$@order.Total.ToString("0.00")</strong></td>
+                            <td><span class="orbi-order-status @statusClass(order.Status)"><span class="orbi-status-dot"></span>@order.Status</span></td>
+                            <td><button type="button" class="m3-text-button" data-edit-order data-id="@order.DeliveryOrderId" data-status="@order.Status"><span class="material-symbols-outlined">edit</span>Editar</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @{ ViewData["PaginatedList"] = Model; ViewData["PaginationPageParameter"] = "page"; }
+        <partial name="_Pagination" />
     </section>
 </div>
+
+<script>
+    (() => {
+        document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
+            document.getElementById('edit-store-id').value = button.dataset.id;
+            document.getElementById('edit-store-name').value = button.dataset.name;
+            document.getElementById('edit-store-category').value = button.dataset.category;
+            document.getElementById('edit-store-address').value = button.dataset.address;
+            document.getElementById('edit-store-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('edit-store-name').focus();
+        }));
+
+        document.querySelectorAll('[data-edit-order]').forEach(button => button.addEventListener('click', () => {
+            document.getElementById('edit-order-id').value = button.dataset.id;
+            document.getElementById('edit-order-status').value = button.dataset.status;
+            document.getElementById('edit-order-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('edit-order-status').focus();
+        }));
+    })();
+</script>

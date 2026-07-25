@@ -62,5 +62,29 @@
 .orbi-order-status.is-delivered { color:#146c2e; background:#d8f5df; }
 .orbi-order-status.is-cancelled { color:var(--md-sys-color-error); background:var(--md-sys-color-error-container); }
 .orbi-delivery-actions { display:flex; gap:2px; }
+.orbi-admin-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.orbi-admin-form-grid>.orbi-operation-form { align-content:start; padding:16px; border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-medium); background:var(--md-sys-color-surface-container-low); }
+.orbi-admin-account-section { display:grid; grid-template-columns:minmax(220px,.72fr) minmax(0,1.6fr); gap:28px; margin-bottom:20px; padding:24px; }
+.orbi-admin-section-intro { display:flex; align-items:flex-start; gap:14px; }
+.orbi-admin-section-intro>.material-symbols-outlined { display:grid; place-items:center; width:42px; height:42px; flex:0 0 42px; border-radius:50%; color:var(--md-sys-color-primary); background:var(--md-sys-color-primary-container); }
+.orbi-admin-section-intro h2 { margin:0; font-size:var(--md-sys-typescale-title-large-size); }
+.orbi-admin-section-intro p { margin:5px 0 0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-admin-section-form { padding-left:28px; border-left:1px solid var(--md-sys-color-outline-variant); }
+.orbi-admin-table-card { margin-bottom:24px; }
+.orbi-admin-table-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0 10px; }
+.orbi-admin-table-heading h2 { margin:0; font-size:var(--md-sys-typescale-title-large-size); }
+.orbi-admin-table-heading p { margin:3px 0 0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-admin-row-actions { display:flex; align-items:center; gap:10px; }
+.orbi-admin-row-actions .m3-text-button,[data-edit-order].m3-text-button { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+.orbi-admin-row-actions .material-symbols-outlined,[data-edit-order] .material-symbols-outlined { font-size:18px; }
+.orbi-store-toggle-form { display:flex; margin:0; }
+.orbi-switch { position:relative; display:inline-flex; width:46px; height:26px; cursor:pointer; }
+.orbi-switch input { position:absolute; width:1px; height:1px; opacity:0; }
+.orbi-switch span { width:100%; border:2px solid var(--md-sys-color-outline); border-radius:999px; background:var(--md-sys-color-surface-container-highest); transition:.18s ease; }
+.orbi-switch span::after { content:""; position:absolute; top:5px; left:6px; width:16px; height:16px; border-radius:50%; background:var(--md-sys-color-outline); transition:.18s ease; }
+.orbi-switch input:checked+span { border-color:var(--md-sys-color-primary); background:var(--md-sys-color-primary); }
+.orbi-switch input:checked+span::after { left:24px; background:var(--md-sys-color-on-primary); }
+.orbi-switch input:focus-visible+span { outline:3px solid var(--md-sys-color-primary-container); outline-offset:2px; }
 @media(max-width:900px){.orbi-store-filters{grid-template-columns:1fr 1fr}.orbi-store-search{grid-column:1/-1}.orbi-store-filters>.m3-filled-button{grid-column:1/2}}
+@media(max-width:760px){.orbi-admin-form-grid{grid-template-columns:1fr}.orbi-admin-account-section{grid-template-columns:1fr;gap:18px}.orbi-admin-section-form{padding:18px 0 0;border-left:0;border-top:1px solid var(--md-sys-color-outline-variant)}}
 @media(max-width:560px){.orbi-store-filters{grid-template-columns:1fr}.orbi-store-search,.orbi-store-filters>.m3-filled-button{grid-column:auto}.orbi-order-search{border-radius:16px;flex-wrap:wrap;padding:10px}.orbi-order-search input{flex-basis:calc(100% - 34px)}}

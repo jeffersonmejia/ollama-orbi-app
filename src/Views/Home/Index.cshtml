@@ -48,10 +48,25 @@
         padding-right: 0;
     }
 
+    .orbi-home-section {
+        min-width: 0;
+        padding: 3rem 1rem 4rem;
+        text-align: center;
+    }
+
+    .m3-main.orbi-public-home-main {
+        max-width: none;
+        padding: 8px;
+    }
+
+    .orbi-home-section.orbi-home-public {
+        padding: 0;
+    }
+
     .orbi-home-video-shell {
         position: relative;
-        width: min(100%, 960px);
-        margin: 0 auto 2.5rem;
+        width: 100%;
+        margin: 0;
         border-radius: var(--md-sys-shape-corner-large);
         box-shadow: var(--md-sys-elevation-level2);
         overflow: hidden;
@@ -61,7 +76,9 @@
     .orbi-home-video {
         display: block;
         width: 100%;
-        max-height: 540px;
+        height: calc(100vh - 88px);
+        min-height: 420px;
+        max-height: 760px;
         object-fit: cover;
         opacity: .72;
     }
@@ -126,6 +143,15 @@
     }
 
     @@media (max-width: 560px) {
+        .m3-main.orbi-public-home-main {
+            padding: 4px;
+        }
+
+        .orbi-home-video {
+            height: calc(100vh - 132px);
+            min-height: 360px;
+        }
+
         .orbi-home-video-actions {
             right: 56px;
             bottom: 12px;
@@ -356,7 +382,7 @@
 </style>
 
 <div id="orbi-home-layout" class="orbi-home-layout">
-<section style="text-align:center;padding:3rem 1rem 4rem;min-width:0;">
+<section class="orbi-home-section @(!SignInManager.IsSignedIn(User) ? "orbi-home-public" : string.Empty)">
     @if (SignInManager.IsSignedIn(User))
     {
         <h1 style="font-size:var(--md-sys-typescale-headline-large-size);font-weight:var(--md-sys-typescale-headline-large-weight);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">

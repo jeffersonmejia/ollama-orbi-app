@@ -306,8 +306,13 @@ public class OperationsController : Controller
     {
         var query = _context.AuditLogs.AsNoTracking().Include(item => item.User).AsQueryable();
         if (!string.IsNullOrWhiteSpace(buscar))
-            query = query.Where(item => item.Action.Contains(buscar) || item.EntityType.Contains(buscar) ||
-                (item.EntityId != null && item.EntityId.Contains(buscar)) || (item.User != null && item.User.Email!.Contains(buscar)));
+        {
+            var pattern = $"%{buscar.Trim()}%";
+            query = query.Where(item => EF.Functions.ILike(item.Action, pattern) ||
+                EF.Functions.ILike(item.EntityType, pattern) ||
+                (item.EntityId != null && EF.Functions.ILike(item.EntityId, pattern)) ||
+                (item.User != null && EF.Functions.ILike(item.User.Email!, pattern)));
+        }
         ViewBag.Buscar = buscar;
         return View(await PaginatedList<AuditLog>.CreateAsync(query.OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
@@ -378,8 +383,12 @@ public class OperationsController : Controller
     {
         var query = _context.AiConsumptionLogs.AsNoTracking().Include(item => item.User).AsQueryable();
         if (!string.IsNullOrWhiteSpace(buscar))
-            query = query.Where(item => item.ModelName.Contains(buscar) || item.Operation.Contains(buscar) ||
-                (item.User != null && item.User.Email!.Contains(buscar)));
+        {
+            var pattern = $"%{buscar.Trim()}%";
+            query = query.Where(item => EF.Functions.ILike(item.ModelName, pattern) ||
+                EF.Functions.ILike(item.Operation, pattern) ||
+                (item.User != null && EF.Functions.ILike(item.User.Email!, pattern)));
+        }
         ViewBag.Buscar = buscar;
         return View(await PaginatedList<AiConsumptionLog>.CreateAsync(query.OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
