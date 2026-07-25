@@ -19,7 +19,7 @@
                     @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
 
                     <form asp-action="AdminUsers" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-                        <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Buscar por email..." style="height:40px;min-width:240px;" />
+                        <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Buscar por nombre o correo..." style="height:40px;min-width:240px;" />
                         <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
                         <a asp-action="AdminUsers" class="m3-text-button" style="height:40px;line-height:40px;">Limpiar</a>
                     </form>
@@ -28,16 +28,15 @@
                         <div class="orbi-admin-table-heading"><div><h3>Usuarios registrados</h3><p>Cuentas de acceso y estado.</p></div></div>
                         <div class="orbi-orders-table-wrap">
                             <table class="m3-data-table orbi-orders-table">
-                                <thead><tr><th>Email</th><th>Usuario</th><th>Email confirmado</th><th>Bloqueado</th><th>Acciones</th></tr></thead>
+                                <thead><tr><th>Correo</th><th>Email confirmado</th><th>Estado</th><th>Acciones</th></tr></thead>
                                 <tbody>
                                 @foreach (var user in Model)
                                 {
                                     var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
                                     <tr>
                                         <td><strong>@user.Email</strong></td>
-                                        <td>@user.UserName</td>
                                         <td><span class="orbi-order-status @(user.EmailConfirmed ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(user.EmailConfirmed ? "Sí" : "No")</span></td>
-                                        <td><span class="orbi-order-status @(isLocked ? "is-cancelled" : "is-delivered")"><span class="orbi-status-dot"></span>@(isLocked ? "Sí" : "No")</span></td>
+                                        <td><span class="orbi-order-status @(isLocked ? "is-cancelled" : "is-delivered")"><span class="orbi-status-dot"></span>@(isLocked ? "Inhabilitado" : "Habilitado")</span></td>
                                         <td><div class="orbi-admin-row-actions">
                                             <form asp-action="ToggleUser" method="post"><input type="hidden" name="userId" value="@user.Id" />@Html.AntiForgeryToken()<label class="orbi-switch" title="@(isLocked ? "Habilitar cuenta" : "Deshabilitar cuenta")"><input type="checkbox" checked="@(!isLocked)" role="switch" aria-label="@(isLocked ? "Habilitar cuenta" : "Deshabilitar cuenta")" onchange="this.form.requestSubmit()" /><span></span></label></form>
                                         </div></td>

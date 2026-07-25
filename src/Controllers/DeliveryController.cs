@@ -335,9 +335,13 @@ public class DeliveryController : Controller
         var query = _context.Users.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(buscar))
         {
-            var term = buscar.Trim();
-            var pattern = $"%{term}%";
-            query = query.Where(u => EF.Functions.ILike(u.Email!, pattern) || EF.Functions.ILike(u.UserName!, pattern));
+            var term = buscar.Trim().ToLower();
+            var profileUserIds = await _context.UserProfiles
+                .Where(p => p.FirstName.ToLower().Contains(term) || p.LastName.ToLower().Contains(term))
+                .Select(p => p.IdentityUserId)
+                .ToListAsync();
+            query = query.Where(u =>
+                u.Email!.ToLower().Contains(term) || profileUserIds.Contains(u.Id));
         }
         var users = await PaginatedList<Microsoft.AspNetCore.Identity.IdentityUser>.CreateAsync(
             query.OrderBy(u => u.Email), Math.Max(1, page), 5);
