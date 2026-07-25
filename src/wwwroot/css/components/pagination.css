@@ -14,3 +14,8 @@
   backdrop-filter: var(--glass-blur-soft);
   border-radius: var(--radius-full);
 }
+.m3-pagination-meta {
+  margin: 14px 0 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-size);
+}

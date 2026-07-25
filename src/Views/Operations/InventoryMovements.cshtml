@@ -24,5 +24,6 @@
     <section class="m3-card orbi-operation-section"><h2>Últimos movimientos</h2>
         @if (!Model.Movements.Any()){<div class="orbi-empty-state">No hay movimientos registrados.</div>}
         else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Costo</th><th>Pedido</th><th>Usuario</th></tr></thead><tbody>@foreach (var item in Model.Movements){<tr><td>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@item.Product.Store.Name · @item.Product.Name</td><td><span class="orbi-status">@item.MovementType</span></td><td>@item.QuantityDelta</td><td>@(item.UnitCost?.ToString("C") ?? "—")</td><td>@(item.DeliveryOrderId.HasValue ? $"#{item.DeliveryOrderId}" : "—")</td><td>@(item.PerformedByUser?.Email ?? "Sistema")</td></tr>}</tbody></table></div>}
+        <partial name="_TableSummaryPagination" model="Model.Movements" />
     </section>
 </div>

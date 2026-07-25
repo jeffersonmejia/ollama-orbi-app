@@ -77,14 +77,18 @@ public class StoreController : Controller
         return Json(new { success = true, totalItems });
     }
 
-    public async Task<IActionResult> Cart()
+    public async Task<IActionResult> Cart(int page = 1)
     {
         var userEmail = User.Identity?.Name ?? "usuario@local";
 
-        var items = await _context.ShoppingCartItems
+        var query = _context.ShoppingCartItems
             .Include(c => c.FilmStock)
             .Where(c => c.UserEmail == userEmail)
-            .ToListAsync();
+            .OrderBy(c => c.ShoppingCartItemId);
+
+        ViewData["CartTotal"] = await query.SumAsync(item => (decimal?)(item.Quantity * item.FilmStock.UnitPrice)) ?? 0m;
+        var items = await PaginatedList<ShoppingCartItem>.CreateAsync(query, Math.Max(1, page), 5);
+        ViewData["PaginatedList"] = items;
 
         return View(items);
     }

@@ -1,4 +1,5 @@
 using SakilaApp.Models.Delivery;
+using SakilaApp.Models;
 
 namespace SakilaApp.Models.Operations;
 
@@ -15,20 +16,20 @@ public sealed class OperationsDashboardViewModel
 
 public sealed class InventoryMovementsViewModel
 {
-    public IReadOnlyList<InventoryMovement> Movements { get; init; } = Array.Empty<InventoryMovement>();
+    public PaginatedList<InventoryMovement> Movements { get; init; } = new(new(), 0, 1, 5);
     public IReadOnlyList<DeliveryProduct> Products { get; init; } = Array.Empty<DeliveryProduct>();
     public IReadOnlyList<DeliveryOrder> Orders { get; init; } = Array.Empty<DeliveryOrder>();
 }
 
 public sealed class StockReservationsViewModel
 {
-    public IReadOnlyList<StockReservation> Reservations { get; init; } = Array.Empty<StockReservation>();
+    public PaginatedList<StockReservation> Reservations { get; init; } = new(new(), 0, 1, 5);
     public IReadOnlyList<DeliveryProduct> Products { get; init; } = Array.Empty<DeliveryProduct>();
     public IReadOnlyList<DeliveryOrder> Orders { get; init; } = Array.Empty<DeliveryOrder>();
 }
 
 public sealed class DeliveryIncidentsViewModel
 {
-    public IReadOnlyList<DeliveryIncident> Incidents { get; init; } = Array.Empty<DeliveryIncident>();
+    public PaginatedList<DeliveryIncident> Incidents { get; init; } = new(new(), 0, 1, 5);
     public IReadOnlyList<DeliveryOrder> Orders { get; init; } = Array.Empty<DeliveryOrder>();
 }

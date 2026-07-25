@@ -19,5 +19,6 @@
     <section class="m3-card orbi-operation-section"><h2>Reservas recientes</h2>
         @if(!Model.Reservations.Any()){<div class="orbi-empty-state">No hay reservas registradas.</div>}
         else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Producto</th><th>Pedido</th><th>Cantidad</th><th>Estado</th><th>Vence</th><th>Responsable</th><th>Acción</th></tr></thead><tbody>@foreach(var item in Model.Reservations){<tr><td>@item.Product.Store.Name · @item.Product.Name</td><td>#@item.DeliveryOrderId</td><td>@item.Quantity</td><td><span class="orbi-status">@item.Status</span></td><td>@item.ExpiresAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@(item.ReservedByUser?.Email ?? "Sistema")</td><td>@if(item.Status == "Activa"){<form asp-action="ReleaseStockReservation" method="post"><input type="hidden" name="id" value="@item.StockReservationId"/><button class="m3-text-button" type="submit">Liberar</button></form>}else{<span>—</span>}</td></tr>}</tbody></table></div>}
+        <partial name="_TableSummaryPagination" model="Model.Reservations" />
     </section>
 </div>

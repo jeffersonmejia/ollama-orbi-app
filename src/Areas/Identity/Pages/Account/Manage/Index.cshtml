@@ -1,40 +1,83 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Perfil";
     ViewData["ActivePage"] = ManageNavPages.Index;
+    var editing = Model.AddressInput?.UserAddressId.HasValue == true;
 }
 
-<div style="display:flex;align-items:center;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--md-sys-color-outline-variant);margin-bottom:16px;">
-    <div style="width:56px;height:56px;border-radius:var(--md-sys-shape-corner-medium);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;">
-        @((Model.Username ?? "U").Substring(0, 1).ToUpperInvariant())
-    </div>
-    <div>
-        <div style="font-size:var(--md-sys-typescale-label-small-size);font-weight:var(--md-sys-typescale-label-small-weight);color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:0.04em;">Cuenta activa</div>
-        <h2 style="font-size:var(--md-sys-typescale-title-large-size);color:var(--md-sys-color-on-surface);margin:2px 0;">@Model.Username</h2>
-        <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Rol: @Model.RoleSummary</p>
-    </div>
+<div class="orbi-profile-header">
+    <div class="orbi-profile-avatar">@((Model.Username ?? "U")[..1].ToUpperInvariant())</div>
+    <div><small>Cuenta activa</small><h2>@Model.Username</h2><p>Rol: @Model.RoleSummary</p></div>
 </div>
 
 <partial name="_StatusMessage" for="StatusMessage" />
 
-<form id="profile-form" method="post" style="display:grid;gap:16px;max-width:480px;">
-    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+<section class="orbi-profile-section">
+    <h3>Información de contacto</h3>
+    <form id="profile-form" method="post" class="orbi-profile-form-grid">
+        <div asp-validation-summary="ModelOnly" class="text-danger orbi-field-full" role="alert"></div>
+        <div class="m3-text-field"><label class="m3-text-field-label">Usuario</label><input value="@Model.Username" class="m3-text-field-input" disabled /></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="Input.PhoneNumber"></label><input asp-for="Input.PhoneNumber" class="m3-text-field-input" placeholder="Número de contacto" /><span asp-validation-for="Input.PhoneNumber" class="text-danger"></span></div>
+        <div class="orbi-form-actions"><button type="submit" class="m3-filled-button">Guardar contacto</button></div>
+    </form>
+</section>
 
-    <div class="m3-text-field">
-        <label class="m3-text-field-label">Usuario</label>
-        <input asp-for="Username" class="m3-text-field-input" placeholder="Usuario" disabled style="opacity:0.6;" />
+<section class="orbi-profile-section" id="address-form">
+    <div class="orbi-section-heading"><div><h3>@(editing ? "Editar dirección" : "Agregar dirección")</h3><p>Usa un nombre breve como Casa, Trabajo o Universidad.</p></div>@if(editing){<a asp-page="./Index" class="m3-text-button">Cancelar edición</a>}</div>
+    <form method="post" asp-page-handler="SaveAddress" class="orbi-profile-form-grid">
+        <input asp-for="AddressInput.UserAddressId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger orbi-field-full" role="alert"></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.Label"></label><input asp-for="AddressInput.Label" class="m3-text-field-input" placeholder="Casa" /><span asp-validation-for="AddressInput.Label" class="text-danger"></span></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.AddressLine1"></label><input asp-for="AddressInput.AddressLine1" class="m3-text-field-input" placeholder="Av. principal y número" /><span asp-validation-for="AddressInput.AddressLine1" class="text-danger"></span></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.AddressLine2"></label><input asp-for="AddressInput.AddressLine2" class="m3-text-field-input" placeholder="Calle secundaria" /></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.ProvinceCode"></label><select asp-for="AddressInput.ProvinceCode" id="profile-province" class="m3-text-field-input" required><option value="">Selecciona</option>@foreach(var province in Model.Provinces){<option value="@province.Code">@province.Name</option>}</select><span asp-validation-for="AddressInput.ProvinceCode" class="text-danger"></span></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.CityCode"></label><select asp-for="AddressInput.CityCode" id="profile-city" class="m3-text-field-input" required><option value="">Selecciona</option>@foreach(var city in Model.Cities){<option value="@city.Code" data-province="@city.ProvinceCode">@city.Name</option>}</select><span asp-validation-for="AddressInput.CityCode" class="text-danger"></span></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.Reference"></label><input asp-for="AddressInput.Reference" class="m3-text-field-input" placeholder="Frente al parque (opcional)" /></div>
+        <label class="orbi-address-default"><input asp-for="AddressInput.IsDefault" /> <span>Usar como dirección principal</span></label>
+        <div class="orbi-form-actions"><button type="submit" class="m3-filled-button">@(editing ? "Actualizar dirección" : "Agregar dirección")</button></div>
+    </form>
+</section>
+
+<section class="orbi-profile-section">
+    <div class="orbi-section-heading"><div><h3>Mis direcciones</h3><p>@Model.Addresses.Count direcciones guardadas</p></div></div>
+    <div class="orbi-address-list">
+        @if (!Model.Addresses.Any())
+        {
+            <p class="orbi-empty-state">Aún no tienes direcciones guardadas.</p>
+        }
+        @foreach (var address in Model.Addresses)
+        {
+            <article class="orbi-address-item @(address.IsDefault ? "is-default" : "")">
+                <span class="material-symbols-outlined">@(address.IsDefault ? "home_pin" : "location_on")</span>
+                <div><div class="orbi-address-title"><strong>@address.Label</strong>@if(address.IsDefault){<small>Principal</small>}</div><p>@address.FormattedAddress</p></div>
+                <div class="orbi-address-actions">
+                    <a asp-page="./Index" asp-route-editAddressId="@address.UserAddressId" asp-fragment="address-form" class="m3-text-button">Editar</a>
+                    @if (!address.IsDefault)
+                    {
+                        <form method="post" asp-page-handler="SetDefault"><input type="hidden" name="id" value="@address.UserAddressId" /><button class="m3-text-button" type="submit">Hacer principal</button></form>
+                        <form method="post" asp-page-handler="DeleteAddress" onsubmit="return confirm('¿Eliminar esta dirección?');"><input type="hidden" name="id" value="@address.UserAddressId" /><button class="m3-text-button orbi-danger-button" type="submit">Eliminar</button></form>
+                    }
+                </div>
+            </article>
+        }
     </div>
-
-    <div class="m3-text-field">
-        <label class="m3-text-field-label" asp-for="Input.PhoneNumber"></label>
-        <input asp-for="Input.PhoneNumber" class="m3-text-field-input" placeholder="Agrega un numero de contacto" />
-        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-    </div>
-
-    <button id="update-profile-button" type="submit" class="m3-filled-button" style="align-self:start;">Guardar cambios</button>
-</form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const province = document.getElementById('profile-province');
+            const city = document.getElementById('profile-city');
+            const options = Array.from(city.options).slice(1);
+            function filterCities(preserve) {
+                const selected = preserve ? city.value : '';
+                options.forEach(option => option.hidden = option.dataset.province !== province.value);
+                if (!options.some(option => !option.hidden && option.value === selected)) city.value = '';
+            }
+            province.addEventListener('change', () => filterCities(false));
+            filterCities(true);
+        })();
+    </script>
 }

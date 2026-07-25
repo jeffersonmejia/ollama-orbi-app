@@ -9,11 +9,16 @@
     {
         var query = new List<string>();
         if (page > 1) query.Add($"page={page}");
-        if (!string.IsNullOrEmpty(ViewBag.Buscar as string))
-            query.Add($"buscar={Uri.EscapeDataString(ViewBag.Buscar)}");
+        foreach (var item in Context.Request.Query.Where(item => !string.Equals(item.Key, "page", StringComparison.OrdinalIgnoreCase)))
+        {
+            foreach (var value in item.Value)
+                query.Add($"{Uri.EscapeDataString(item.Key)}={Uri.EscapeDataString(value ?? string.Empty)}");
+        }
         return $"/{controller}/{action}" + (query.Count > 0 ? "?" + string.Join("&", query) : "");
     };
 }
+
+<p class="m3-pagination-meta">Página @paginatedList.PageIndex de @Math.Max(1, paginatedList.TotalPages) · @paginatedList.TotalCount registros totales · máximo 5 por página</p>
 
 @if (paginatedList.TotalPages > 1)
 {

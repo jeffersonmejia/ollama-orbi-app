@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SakilaApp.Data;
 using SakilaApp.Models.Delivery;
 using SakilaApp.Models.Operations;
+using SakilaApp.Models;
 
 namespace SakilaApp.Controllers;
 
@@ -68,18 +69,16 @@ public class OperationsController : Controller
     }
 
     [Authorize(Roles = "Administrador,Vendedor")]
-    public async Task<IActionResult> InventoryMovements()
+    public async Task<IActionResult> InventoryMovements(int page = 1)
     {
         var model = new InventoryMovementsViewModel
         {
-            Movements = await _context.InventoryMovements
+            Movements = await PaginatedList<InventoryMovement>.CreateAsync(_context.InventoryMovements
                 .AsNoTracking()
                 .Include(item => item.Product).ThenInclude(product => product.Store)
                 .Include(item => item.Order)
                 .Include(item => item.PerformedByUser)
-                .OrderByDescending(item => item.CreatedAt)
-                .Take(150)
-                .ToListAsync(),
+                .OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5),
             Products = await _context.DeliveryProducts.AsNoTracking()
                 .Include(product => product.Store)
                 .OrderBy(product => product.Store.Name).ThenBy(product => product.Name)
@@ -134,18 +133,16 @@ public class OperationsController : Controller
     }
 
     [Authorize(Roles = "Administrador,Vendedor")]
-    public async Task<IActionResult> StockReservations()
+    public async Task<IActionResult> StockReservations(int page = 1)
     {
         var model = new StockReservationsViewModel
         {
-            Reservations = await _context.StockReservations
+            Reservations = await PaginatedList<StockReservation>.CreateAsync(_context.StockReservations
                 .AsNoTracking()
                 .Include(item => item.Product).ThenInclude(product => product.Store)
                 .Include(item => item.Order)
                 .Include(item => item.ReservedByUser)
-                .OrderByDescending(item => item.CreatedAt)
-                .Take(150)
-                .ToListAsync(),
+                .OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5),
             Products = await _context.DeliveryProducts.AsNoTracking()
                 .Include(product => product.Store)
                 .OrderBy(product => product.Store.Name).ThenBy(product => product.Name)
@@ -219,19 +216,17 @@ public class OperationsController : Controller
     }
 
     [Authorize(Roles = "Administrador,Repartidor,Usuario")]
-    public async Task<IActionResult> DeliveryIncidents()
+    public async Task<IActionResult> DeliveryIncidents(int page = 1)
     {
         var orders = AccessibleOrders();
         var model = new DeliveryIncidentsViewModel
         {
-            Incidents = await _context.DeliveryIncidents
+            Incidents = await PaginatedList<DeliveryIncident>.CreateAsync(_context.DeliveryIncidents
                 .AsNoTracking()
                 .Where(incident => orders.Any(order => order.DeliveryOrderId == incident.DeliveryOrderId))
                 .Include(incident => incident.Order).ThenInclude(order => order.Store)
                 .Include(incident => incident.ReportedByUser)
-                .OrderByDescending(incident => incident.CreatedAt)
-                .Take(150)
-                .ToListAsync(),
+                .OrderByDescending(incident => incident.CreatedAt), Math.Max(1, page), 5),
             Orders = await orders.AsNoTracking().Include(order => order.Store)
                 .OrderByDescending(order => order.CreatedAt).Take(100).ToListAsync()
         };
@@ -289,37 +284,39 @@ public class OperationsController : Controller
     }
 
     [Authorize(Roles = "Administrador,Repartidor,Usuario")]
-    public async Task<IActionResult> OrderStatusHistory()
+    public async Task<IActionResult> OrderStatusHistory(int? orderId, string? status, int page = 1)
     {
         var orders = AccessibleOrders();
-        var histories = await _context.OrderStatusHistories
+        var query = _context.OrderStatusHistories
             .AsNoTracking()
             .Where(history => orders.Any(order => order.DeliveryOrderId == history.DeliveryOrderId))
             .Include(history => history.Order).ThenInclude(order => order.Store)
             .Include(history => history.ChangedByUser)
-            .OrderByDescending(history => history.ChangedAt)
-            .Take(200)
-            .ToListAsync();
+            .AsQueryable();
+        if (orderId.HasValue) query = query.Where(item => item.DeliveryOrderId == orderId.Value);
+        if (!string.IsNullOrWhiteSpace(status)) query = query.Where(item => item.NewStatus == status);
+        ViewBag.OrderId = orderId;
+        ViewBag.Status = status;
+        var histories = await PaginatedList<OrderStatusHistory>.CreateAsync(query.OrderByDescending(history => history.ChangedAt), Math.Max(1, page), 5);
         return View(histories);
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> AuditLogs()
+    public async Task<IActionResult> AuditLogs(string? buscar, int page = 1)
     {
-        return View(await _context.AuditLogs.AsNoTracking()
-            .Include(item => item.User)
-            .OrderByDescending(item => item.CreatedAt)
-            .Take(250)
-            .ToListAsync());
+        var query = _context.AuditLogs.AsNoTracking().Include(item => item.User).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(buscar))
+            query = query.Where(item => item.Action.Contains(buscar) || item.EntityType.Contains(buscar) ||
+                (item.EntityId != null && item.EntityId.Contains(buscar)) || (item.User != null && item.User.Email!.Contains(buscar)));
+        ViewBag.Buscar = buscar;
+        return View(await PaginatedList<AuditLog>.CreateAsync(query.OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> EmailQueue()
+    public async Task<IActionResult> EmailQueue(int page = 1)
     {
-        return View(await _context.EmailQueue.AsNoTracking()
-            .OrderByDescending(item => item.CreatedAt)
-            .Take(200)
-            .ToListAsync());
+        return View(await PaginatedList<EmailQueueItem>.CreateAsync(_context.EmailQueue.AsNoTracking()
+            .OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
 
     [HttpPost]
@@ -377,13 +374,14 @@ public class OperationsController : Controller
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> AiConsumptionLogs()
+    public async Task<IActionResult> AiConsumptionLogs(string? buscar, int page = 1)
     {
-        return View(await _context.AiConsumptionLogs.AsNoTracking()
-            .Include(item => item.User)
-            .OrderByDescending(item => item.CreatedAt)
-            .Take(250)
-            .ToListAsync());
+        var query = _context.AiConsumptionLogs.AsNoTracking().Include(item => item.User).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(buscar))
+            query = query.Where(item => item.ModelName.Contains(buscar) || item.Operation.Contains(buscar) ||
+                (item.User != null && item.User.Email!.Contains(buscar)));
+        ViewBag.Buscar = buscar;
+        return View(await PaginatedList<AiConsumptionLog>.CreateAsync(query.OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
 
     private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);

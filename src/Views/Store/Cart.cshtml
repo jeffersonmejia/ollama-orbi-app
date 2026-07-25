@@ -1,7 +1,8 @@
-@model IEnumerable<SakilaApp.Models.Commerce.ShoppingCartItem>
+@model SakilaApp.Models.PaginatedList<SakilaApp.Models.Commerce.ShoppingCartItem>
 
 @{
-    var total = Model.Sum(i => i.Quantity * i.FilmStock.UnitPrice);
+    var total = ViewData["CartTotal"] as decimal? ?? 0m;
+    ViewData["PaginatedList"] = Model;
 }
 
 <div class="m3-page">
@@ -45,6 +46,7 @@
                 </tbody>
             </table>
         </div>
+        <partial name="_Pagination" />
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;flex-wrap:wrap;gap:1rem;">
             <h3 style="font-size:var(--md-sys-typescale-title-large-size);font-weight:var(--md-sys-typescale-title-large-weight);color:var(--md-sys-color-on-surface);margin:0;">Total: @total.ToString("C")</h3>

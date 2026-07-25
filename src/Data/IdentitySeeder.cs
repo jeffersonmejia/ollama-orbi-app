@@ -92,6 +92,26 @@ public static class IdentitySeeder
             profile.ProvinceCode = userSeed.ProvinceCode;
             profile.CityCode = userSeed.CityCode;
             profile.Reference = userSeed.Reference;
+
+            var primaryAddress = await dbContext.UserAddresses
+                .SingleOrDefaultAsync(item => item.IdentityUserId == user.Id && item.IsDefault);
+            if (primaryAddress is null)
+            {
+                primaryAddress = new UserAddress
+                {
+                    IdentityUserId = user.Id,
+                    Label = "Casa",
+                    IsDefault = true
+                };
+                dbContext.UserAddresses.Add(primaryAddress);
+            }
+
+            primaryAddress.AddressLine1 = userSeed.AddressLine1;
+            primaryAddress.AddressLine2 = userSeed.AddressLine2;
+            primaryAddress.ProvinceCode = userSeed.ProvinceCode;
+            primaryAddress.CityCode = userSeed.CityCode;
+            primaryAddress.Reference = userSeed.Reference;
+            primaryAddress.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
         await dbContext.SaveChangesAsync();

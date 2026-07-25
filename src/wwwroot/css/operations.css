@@ -143,6 +143,10 @@
   white-space: nowrap;
 }
 
+.orbi-table-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:16px; }
+.orbi-table-summary { margin:0; color:var(--md-sys-color-on-surface-variant); font-size:var(--md-sys-typescale-body-small-size); }
+.orbi-table-footer .m3-pagination { margin:0; }
+
 @media (max-width: 700px) {
   .orbi-operations-header {
     flex-direction: column;

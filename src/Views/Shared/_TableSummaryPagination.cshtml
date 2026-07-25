@@ -1,0 +1,5 @@
+@model SakilaApp.Models.IPaginatedList
+<div class="orbi-table-footer">
+    @{ ViewData["PaginatedList"] = Model; }
+    <partial name="_Pagination" />
+</div>

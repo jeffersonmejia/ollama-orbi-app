@@ -326,6 +326,17 @@ namespace SakilaApp.Areas.Identity.Pages.Account
                 CityCode = profile.CityCode,
                 Reference = string.IsNullOrWhiteSpace(profile.Reference) ? null : profile.Reference.Trim()
             });
+            _context.UserAddresses.Add(new UserAddress
+            {
+                IdentityUserId = user.Id,
+                Label = "Casa",
+                AddressLine1 = profile.AddressLine1.Trim(),
+                AddressLine2 = profile.AddressLine2.Trim(),
+                ProvinceCode = profile.ProvinceCode,
+                CityCode = profile.CityCode,
+                Reference = string.IsNullOrWhiteSpace(profile.Reference) ? null : profile.Reference.Trim(),
+                IsDefault = true
+            });
 
             try
             {

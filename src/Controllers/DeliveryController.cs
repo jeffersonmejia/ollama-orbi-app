@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using SakilaApp.Data;
 using SakilaApp.Models.Delivery;
+using SakilaApp.Models.Identity;
 using SakilaApp.Models.Operations;
+using SakilaApp.Models;
 
 namespace SakilaApp.Controllers;
 
@@ -31,17 +33,43 @@ public class DeliveryController : Controller
             .ThenBy(product => product.Name)
             .ToListAsync();
 
-        return View(products);
+        var addresses = new List<UserAddress>();
+        if (User.IsInRole("Usuario") && CurrentUserId is string userId)
+        {
+            await EnsurePrimaryAddressAsync(userId);
+            addresses = await _context.UserAddresses.AsNoTracking()
+                .Where(address => address.IdentityUserId == userId)
+                .Include(address => address.Province)
+                .Include(address => address.City)
+                .OrderByDescending(address => address.IsDefault)
+                .ThenBy(address => address.Label)
+                .ToListAsync();
+        }
+
+        return View(new DeliveryCatalogViewModel { Products = products, Addresses = addresses });
     }
 
     [HttpPost]
     [Authorize(Roles = "Usuario")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateOrder(int productId, int quantity, string deliveryAddress)
+    public async Task<IActionResult> CreateOrder(int productId, int quantity)
     {
-        if (quantity < 1 || string.IsNullOrWhiteSpace(deliveryAddress))
+        if (quantity < 1 || CurrentUserId is not string userId)
         {
-            TempData["Error"] = "Indica una cantidad y una dirección de entrega válidas.";
+            TempData["Error"] = "Indica una cantidad válida y selecciona una dirección guardada.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var deliveryAddress = await _context.UserAddresses.AsNoTracking()
+            .Where(address => address.IdentityUserId == userId)
+            .Include(address => address.Province)
+            .Include(address => address.City)
+            .OrderByDescending(address => address.IsDefault)
+            .ThenBy(address => address.UserAddressId)
+            .FirstOrDefaultAsync();
+        if (deliveryAddress is null)
+        {
+            TempData["Error"] = "Agrega una dirección principal en tu perfil antes de realizar un pedido.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -58,7 +86,7 @@ public class DeliveryController : Controller
             DeliveryStoreId = product.DeliveryStoreId,
             CustomerEmail = User.Identity!.Name!,
             DeliveryPersonEmail = "carlos.perez@orbi.com",
-            DeliveryAddress = deliveryAddress.Trim(),
+            DeliveryAddress = $"{deliveryAddress.Label}: {deliveryAddress.FormattedAddress}",
             Total = subtotal,
             Items = new List<DeliveryOrderItem>
             {
@@ -108,10 +136,12 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> Admin()
+    public async Task<IActionResult> Admin(int page = 1)
     {
         ViewBag.Stores = await _context.DeliveryStores.OrderBy(store => store.Name).ToListAsync();
-        return View(await OrderQuery().ToListAsync());
+        var orders = await PaginatedList<DeliveryOrder>.CreateAsync(OrderQuery(), Math.Max(1, page), 5);
+        ViewData["PaginatedList"] = orders;
+        return View(orders);
     }
 
     [HttpPost]
@@ -165,4 +195,27 @@ public class DeliveryController : Controller
         .Include(order => order.Store)
         .Include(order => order.Items)
         .OrderByDescending(order => order.CreatedAt);
+
+    private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    private async Task EnsurePrimaryAddressAsync(string userId)
+    {
+        if (await _context.UserAddresses.AnyAsync(address => address.IdentityUserId == userId)) return;
+
+        var profile = await _context.UserProfiles.AsNoTracking().SingleOrDefaultAsync(item => item.IdentityUserId == userId);
+        if (profile is null || string.IsNullOrWhiteSpace(profile.AddressLine1)) return;
+
+        _context.UserAddresses.Add(new UserAddress
+        {
+            IdentityUserId = userId,
+            Label = "Casa",
+            AddressLine1 = profile.AddressLine1,
+            AddressLine2 = profile.AddressLine2,
+            ProvinceCode = profile.ProvinceCode,
+            CityCode = profile.CityCode,
+            Reference = profile.Reference,
+            IsDefault = true
+        });
+        await _context.SaveChangesAsync();
+    }
 }

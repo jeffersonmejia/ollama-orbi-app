@@ -1,11 +1,20 @@
-@model IReadOnlyList<SakilaApp.Models.Operations.OrderStatusHistory>
+@model SakilaApp.Models.PaginatedList<SakilaApp.Models.Operations.OrderStatusHistory>
 @{ ViewData["Title"] = "Historial de pedidos"; }
 
 <div class="orbi-operations-page">
     <header class="orbi-operations-header"><div><h1>Historial de estados</h1><p>Trazabilidad cronológica de los pedidos disponibles para tu rol.</p></div></header>
     <partial name="_OperationsNav" /><partial name="_Alerts" />
     <section class="m3-card orbi-operation-section">
+        <h2>Filtrar historial</h2>
+        <form asp-action="OrderStatusHistory" method="get" class="orbi-operation-form orbi-filter-form">
+            <div class="m3-text-field"><label class="m3-text-field-label" for="orderId">Número de pedido</label><input class="m3-text-field-input" id="orderId" name="orderId" type="number" min="1" value="@ViewBag.OrderId" /></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" for="status">Estado</label><select class="m3-text-field-input" id="status" name="status"><option value="">Todos</option>@foreach(var state in new[]{"Pendiente","En preparación","En camino","Entregado","Cancelado"}){<option value="@state" selected="@(ViewBag.Status == state)">@state</option>}</select></div>
+            <div class="orbi-form-actions"><a asp-action="OrderStatusHistory" class="m3-text-button">Limpiar</a><button class="m3-filled-button" type="submit">Aplicar filtros</button></div>
+        </form>
+    </section>
+    <section class="m3-card orbi-operation-section"><h2>Registros</h2>
         @if(!Model.Any()){<div class="orbi-empty-state">Todavía no hay cambios de estado registrados.</div>}
         else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Fecha</th><th>Pedido</th><th>Tienda</th><th>Estado anterior</th><th>Nuevo estado</th><th>Responsable</th><th>Nota</th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.ChangedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>#@item.DeliveryOrderId</td><td>@item.Order.Store.Name</td><td>@(item.PreviousStatus ?? "Creación")</td><td><span class="orbi-status">@item.NewStatus</span></td><td>@(item.ChangedByUser?.Email ?? "Sistema")</td><td>@(item.Note ?? "—")</td></tr>}</tbody></table></div>}
+        <partial name="_TableSummaryPagination" model="Model" />
     </section>
 </div>

@@ -1,4 +1,4 @@
-@model IReadOnlyList<SakilaApp.Models.Operations.EmailQueueItem>
+@model SakilaApp.Models.PaginatedList<SakilaApp.Models.Operations.EmailQueueItem>
 @{
     ViewData["Title"] = "Cola de correos";
     var defaultSchedule = DateTimeOffset.UtcNow.ToString("yyyy-MM-ddTHH:mm");
@@ -19,5 +19,6 @@
     <section class="m3-card orbi-operation-section"><h2>Mensajes recientes</h2>
         @if(!Model.Any()){<div class="orbi-empty-state">La cola está vacía.</div>}
         else {<div class="orbi-operation-table-wrap"><table class="m3-data-table"><thead><tr><th>Creado</th><th>Destinatario</th><th>Asunto</th><th>Estado</th><th>Intentos</th><th>Programado</th><th>Error</th><th>Acciones</th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@item.RecipientEmail</td><td>@item.Subject</td><td><span class="orbi-status">@item.Status</span></td><td>@item.AttemptCount / @item.MaxAttempts</td><td>@item.ScheduledAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td>@(item.LastError ?? "—")</td><td><div style="display:flex;gap:4px;">@if(item.Status == "Fallido"){<form asp-action="RetryEmail" method="post"><input type="hidden" name="id" value="@item.EmailQueueId"/><button class="m3-text-button" type="submit">Reintentar</button></form>}@if(item.Status != "Enviado" && item.Status != "Cancelado"){<form asp-action="CancelEmail" method="post"><input type="hidden" name="id" value="@item.EmailQueueId"/><button class="m3-text-button" type="submit">Cancelar</button></form>}</div></td></tr>}</tbody></table></div>}
+        <partial name="_TableSummaryPagination" model="Model" />
     </section>
 </div>

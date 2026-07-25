@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<EcuadorProvince> EcuadorProvinces => Set<EcuadorProvince>();
     public DbSet<EcuadorCity> EcuadorCities => Set<EcuadorCity>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
     public DbSet<DeliveryIncident> DeliveryIncidents => Set<DeliveryIncident>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -87,6 +88,35 @@ public class ApplicationDbContext : IdentityDbContext
                 .WithMany()
                 .HasForeignKey(x => x.CityCode)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<UserAddress>(entity =>
+        {
+            entity.ToTable("user_address", table =>
+            {
+                table.HasCheckConstraint("ck_user_address_label", "length(trim(label)) > 0");
+            });
+            entity.HasKey(x => x.UserAddressId);
+            entity.Property(x => x.UserAddressId).HasColumnName("user_address_id").HasColumnType("bigint").ValueGeneratedOnAdd();
+            entity.Property(x => x.IdentityUserId).HasColumnName("identity_user_id");
+            entity.Property(x => x.Label).HasColumnName("label").HasMaxLength(40);
+            entity.Property(x => x.AddressLine1).HasColumnName("address_line_1").HasMaxLength(160);
+            entity.Property(x => x.AddressLine2).HasColumnName("address_line_2").HasMaxLength(160);
+            entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
+            entity.Property(x => x.CityCode).HasColumnName("city_code").HasMaxLength(4);
+            entity.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(240);
+            entity.Property(x => x.IsDefault).HasColumnName("is_default");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.HasIndex(x => x.IdentityUserId).HasDatabaseName("ix_user_address_user");
+            entity.HasIndex(x => new { x.IdentityUserId, x.Label }).IsUnique().HasDatabaseName("ux_user_address_user_label");
+            entity.HasIndex(x => x.IdentityUserId)
+                .HasFilter("is_default")
+                .IsUnique()
+                .HasDatabaseName("ux_user_address_default");
+            entity.HasOne(x => x.Profile).WithMany(x => x.Addresses).HasForeignKey(x => x.IdentityUserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Province).WithMany().HasForeignKey(x => x.ProvinceCode).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.City).WithMany().HasForeignKey(x => x.CityCode).OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<DeliveryStore>(entity =>

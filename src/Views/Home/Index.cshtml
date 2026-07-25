@@ -5,21 +5,31 @@
     var chatContext = "public_home";
     var chatWelcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
     string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
+    string[] roleMessages =
+    {
+        "¿Qué quieres pedir hoy?",
+        "Tus tiendas favoritas están cerca",
+        "Explora productos disponibles",
+        "Recibe tu pedido en tu dirección favorita"
+    };
 
     if (User.IsInRole("Administrador"))
     {
+        roleMessages = new[] { "Controla la operación de Orbi", "Revisa pedidos e incidencias", "Consulta inventario y auditoría", "Gestiona tiendas y entregas" };
         chatContext = "administrador";
         chatWelcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
         chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
     }
     else if (User.IsInRole("Vendedor"))
     {
+        roleMessages = new[] { "Mantén el inventario al día", "Registra movimientos de productos", "Controla las reservas de stock", "Impulsa las ventas de tu tienda" };
         chatContext = "vendedor";
         chatWelcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
         chatSuggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?" };
     }
     else if (User.IsInRole("Repartidor"))
     {
+        roleMessages = new[] { "Tus entregas están listas", "Actualiza el estado de cada pedido", "Reporta incidencias en ruta", "Entrega cada pedido a tiempo" };
         chatContext = "repartidor";
         chatWelcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
         chatSuggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?" };
@@ -355,15 +365,10 @@
         <h1 style="font-size:var(--md-sys-typescale-headline-large-size);font-weight:var(--md-sys-typescale-headline-large-weight);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">
             Bienvenido, @(ViewData["FirstName"] as string ?? "usuario")
         </h1>
-        <p style="font-size:var(--md-sys-typescale-display-small-size);color:var(--md-sys-color-on-surface-variant);margin:2.5rem 0 3rem;font-weight:300;letter-spacing:-0.02em;" id="randomMessage">¿Qué quieres pedir hoy?</p>
+        <p style="font-size:var(--md-sys-typescale-display-small-size);color:var(--md-sys-color-on-surface-variant);margin:2.5rem 0 3rem;font-weight:300;letter-spacing:-0.02em;" id="randomMessage">@roleMessages[0]</p>
         <script>
             (function() {
-                var messages = [
-                    "¿Qué quieres pedir hoy?",
-                    "Tus tiendas favoritas están cerca",
-                    "Explora productos disponibles",
-                    "Recibe tu pedido donde estés"
-                ];
+                var messages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(roleMessages));
                 var pool = [];
                 var el = document.getElementById('randomMessage');
                 if (el) {

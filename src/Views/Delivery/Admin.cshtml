@@ -1,5 +1,5 @@
 @using SakilaApp.Models.Delivery
-@model IReadOnlyList<DeliveryOrder>
+@model SakilaApp.Models.PaginatedList<DeliveryOrder>
 
 @{
     ViewData["Title"] = "Administración Orbi";
@@ -9,7 +9,9 @@
 
 <div class="m3-page">
     <h1 class="m3-page-title">Administración de delivery</h1>
-    <h2>Tiendas</h2>
+    <section class="m3-card orbi-operation-section">
+    <h2>Administrar tiendas</h2>
+    <p class="orbi-muted">Selecciona la tienda y cambia su disponibilidad desde el formulario.</p>
     <div style="display:grid;gap:12px;margin-bottom:28px;">
         @foreach (var store in stores)
         {
@@ -22,7 +24,9 @@
             </div>
         }
     </div>
+    </section>
 
+    <section class="m3-card orbi-operation-section">
     <h2>Pedidos</h2>
     <div style="overflow-x:auto;">
         <table class="m3-data-table">
@@ -52,4 +56,7 @@
             </tbody>
         </table>
     </div>
+    @{ ViewData["PaginatedList"] = Model; }
+    <partial name="_Pagination" />
+    </section>
 </div>

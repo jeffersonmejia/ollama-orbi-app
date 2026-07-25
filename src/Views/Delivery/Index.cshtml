@@ -1,35 +1,69 @@
 @using SakilaApp.Models.Delivery
-@model IReadOnlyList<DeliveryProduct>
+@model DeliveryCatalogViewModel
 
 @{
     ViewData["Title"] = "Tiendas Orbi";
+    var defaultAddress = Model.Addresses.FirstOrDefault(address => address.IsDefault) ?? Model.Addresses.FirstOrDefault();
 }
 
-<div class="m3-page">
-    <h1 class="m3-page-title">Tiendas y productos</h1>
-    <p style="color:var(--md-sys-color-on-surface-variant);">Elige un producto y recíbelo en tu dirección.</p>
+<div class="m3-page orbi-store-page">
+    <header class="orbi-store-header">
+        <div>
+            <span class="orbi-store-eyebrow">Catálogo local</span>
+            <h1 class="m3-page-title">Tiendas y productos</h1>
+            <p>Elige lo que necesitas y recíbelo en una dirección guardada.</p>
+        </div>
+        @if (User.IsInRole("Usuario"))
+        {
+            <a asp-area="Identity" asp-page="/Account/Manage/Index" class="m3-outlined-button">
+                <span class="material-symbols-outlined">location_on</span> Mis direcciones
+            </a>
+        }
+    </header>
 
     @if (TempData["Error"] is string error)
     {
-        <div class="m3-card" style="padding:16px;margin-bottom:16px;">@error</div>
+        <div class="orbi-alert orbi-alert-error">@error</div>
     }
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
-        @foreach (var product in Model)
+    @if (User.IsInRole("Usuario"))
+    {
+        <section class="m3-card orbi-delivery-address-card">
+            <span class="material-symbols-outlined">home_pin</span>
+            <div>
+                <small>Dirección de entrega predeterminada</small>
+                @if (defaultAddress is null)
+                {
+                    <strong>Aún no tienes una dirección disponible</strong>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index">Agregar dirección en mi perfil</a>
+                }
+                else
+                {
+                    <strong>@defaultAddress.Label</strong>
+                    <span>@defaultAddress.FormattedAddress</span>
+                }
+            </div>
+        </section>
+    }
+
+    <div class="orbi-product-grid">
+        @foreach (var product in Model.Products)
         {
-            <article class="m3-card" style="padding:24px;">
-                <div style="color:var(--md-sys-color-primary);font-weight:500;">@product.Store.Name · @product.Store.Category</div>
-                <h2 style="margin:8px 0 4px;">@product.Name</h2>
-                <p style="margin:0 0 16px;color:var(--md-sys-color-on-surface-variant);">@product.Store.Address</p>
-                <strong>@product.Price.ToString("C")</strong>
+            <article class="m3-card orbi-product-card">
+                <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
+                <h2>@product.Name</h2>
+                <p class="orbi-store-location">@product.Store.Address</p>
+                <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
 
                 @if (User.IsInRole("Usuario"))
                 {
-                    <form asp-action="CreateOrder" method="post" style="display:grid;gap:10px;margin-top:16px;">
+                    <form asp-action="CreateOrder" method="post" class="orbi-product-order-form">
                         <input type="hidden" name="productId" value="@product.DeliveryProductId" />
-                        <input type="number" name="quantity" value="1" min="1" max="20" aria-label="Cantidad" />
-                        <input type="text" name="deliveryAddress" required maxlength="180" placeholder="Dirección de entrega" aria-label="Dirección de entrega" />
-                        <button type="submit" class="m3-filled-button">Pedir ahora</button>
+                        <div class="m3-text-field">
+                            <label class="m3-text-field-label" for="quantity-@product.DeliveryProductId">Cantidad</label>
+                            <input class="m3-text-field-input" id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="20" required />
+                        </div>
+                        <button type="submit" class="m3-filled-button" disabled="@(!Model.Addresses.Any())">Pedir ahora</button>
                     </form>
                 }
             </article>
