@@ -34,9 +34,12 @@
 .orbi-quantity-button:hover { background:var(--md-sys-color-primary-container); }
 .orbi-quantity-button .material-symbols-outlined { font-size:20px; }
 .orbi-category-empty { margin-top:16px; padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant); }
-.orbi-store-filters { display:grid; grid-template-columns:minmax(220px,1fr) 150px 150px auto auto; align-items:end; gap:10px; margin-bottom:14px; }
+.orbi-store-filters { display:grid; grid-template-columns:minmax(220px,1fr) 118px 118px auto auto; align-items:center; gap:8px; margin-bottom:14px; }
 .orbi-store-search,.orbi-order-search { display:flex; align-items:center; gap:8px; min-height:48px; padding:0 14px; border:1px solid var(--md-sys-color-outline-variant); border-radius:24px; background:var(--md-sys-color-surface-container-low); }
 .orbi-store-search input,.orbi-order-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; }
+.orbi-price-filter { display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:3px; min-height:38px; padding:0 8px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container-low); color:var(--md-sys-color-on-surface-variant); font-size:11px; }
+.orbi-price-filter .material-symbols-outlined { color:var(--md-sys-color-primary); font-size:17px; }
+.orbi-price-filter input { width:100%; min-width:0; padding:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; font-size:13px; }
 @media(max-width:700px){.orbi-store-header{align-items:flex-start;flex-direction:column}.orbi-category-grid{grid-template-columns:1fr}.orbi-category-card{min-height:100px}}
 
 .orbi-orders-page { max-width:1180px; margin:0 auto; }

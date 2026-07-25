@@ -53,21 +53,15 @@
 
 <style>
     .orbi-chat-panel {
-        position: fixed; inset: 0 0 0 auto; z-index: 1100; width: 380px; height: 100vh;
-        padding: 20px; box-sizing: border-box; border-left: 1px solid var(--md-sys-color-outline-variant);
-        background: var(--md-sys-color-surface); display: flex; flex-direction: column; min-width: 0;
-        transition: width 220ms var(--md-sys-motion-easing-standard), height 220ms var(--md-sys-motion-easing-standard), padding 220ms var(--md-sys-motion-easing-standard), border-radius 220ms var(--md-sys-motion-easing-standard);
+        position: fixed; inset: 0 auto 0 80px; z-index: 45; width: 340px; height: 100vh;
+        padding: 18px; box-sizing: border-box; border-right: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface); display: none; flex-direction: column; min-width: 0;
     }
-    .orbi-chat-layout .m3-content-area { padding-right: 380px; transition: padding-right 220ms var(--md-sys-motion-easing-standard); }
-    .orbi-chat-layout.chat-collapsed .m3-content-area { padding-right: 0; }
-    .orbi-chat-panel.collapsed {
-        width: 56px; height: 56px; inset: 16px 16px auto auto; padding: 7px; overflow: hidden;
-        border: 1px solid var(--md-sys-color-outline-variant); border-radius: 18px;
-        background: var(--md-sys-color-surface-container-high); box-shadow: 0 4px 14px rgba(0,0,0,.18);
-    }
-    .orbi-chat-panel.collapsed .orbi-chat-brand, .orbi-chat-panel.collapsed #orbi-chat-new { display: none; }
-    .orbi-chat-panel.collapsed .orbi-chat-header { justify-content: center; gap: 0; margin-bottom: 0 !important; }
-    .orbi-chat-panel.collapsed #orbi-chat-toggle { width: 40px; height: 40px; flex: 0 0 40px; color: var(--md-sys-color-on-primary-container); background: var(--md-sys-color-primary-container); }
+    .orbi-chat-panel.open { display:flex; }
+    .orbi-chat-layout .m3-content-area { transition: margin-left 220ms var(--md-sys-motion-easing-standard); }
+    .orbi-chat-layout.chat-open .m3-content-area { margin-left:420px; }
+    .orbi-chat-nav-toggle { width:56px; border:0; cursor:pointer; font-family:inherit; }
+    .orbi-chat-nav-toggle.active { color:var(--md-sys-color-primary); background:var(--md-sys-color-primary-container); }
     .orbi-chat-body { min-height: 0; flex: 1; display: flex; flex-direction: column; }
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
@@ -86,10 +80,8 @@
     @@keyframes orbi-chat-dot { 0%,60%,100% { transform:translateY(0);opacity:.35 } 30% { transform:translateY(-3px);opacity:1 } }
     @@keyframes orbi-voice-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
     @@media (max-width: 900px) {
-        .orbi-chat-layout .m3-content-area { padding-right: min(380px, calc(100vw - 80px)); }
-        .orbi-chat-layout.chat-collapsed .m3-content-area { padding-right: 0; }
-        .orbi-chat-panel { width: min(380px, calc(100vw - 80px)); }
-        .orbi-chat-panel.collapsed { width:56px;height:56px; }
+        .orbi-chat-panel { inset:0 0 72px 0; width:min(340px,100vw); z-index:60; box-shadow:4px 0 18px rgba(0,0,0,.18); }
+        .orbi-chat-layout.chat-open .m3-content-area { margin-left:0; }
     }
 </style>
 
@@ -98,7 +90,7 @@
         <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
         <strong class="orbi-chat-brand" style="flex:1;">Asistente Orbi</strong>
         <button id="orbi-chat-new" type="button" class="m3-icon-btn" aria-label="Nuevo chat" title="Nuevo chat"><span class="material-symbols-outlined">add_comment</span></button>
-        <button id="orbi-chat-toggle" type="button" class="m3-icon-btn" aria-expanded="true" aria-controls="orbi-chat-body" aria-label="Contraer chat" title="Contraer chat"><span class="material-symbols-outlined">chevron_right</span></button>
+        <button id="orbi-chat-toggle" type="button" class="m3-icon-btn" aria-expanded="true" aria-controls="orbi-chat-body" aria-label="Cerrar asistente" title="Cerrar asistente"><span class="material-symbols-outlined">chevron_left</span></button>
     </div>
     <div id="orbi-chat-body" class="orbi-chat-body">
         <div id="orbi-chat-messages" aria-live="polite" style="flex:1;min-height:180px;overflow-y:auto;padding:8px 4px;font-size:var(--md-sys-typescale-body-small-size);margin-bottom:8px;">
@@ -134,7 +126,7 @@
     const voiceModeButton = document.getElementById('orbi-chat-voice-mode');
     const voiceModeIcon = voiceModeButton.querySelector('.material-symbols-outlined');
     const toggle = document.getElementById('orbi-chat-toggle');
-    const toggleIcon = toggle.querySelector('.material-symbols-outlined');
+    const navToggle = document.getElementById('orbi-chat-nav-toggle');
     const body = document.getElementById('orbi-chat-body');
     const appLayout = document.querySelector('.orbi-chat-layout');
     let controller = null;
@@ -211,18 +203,17 @@
         voiceButton.hidden = true; voiceModeButton.hidden = true;
     }
 
-    toggle.addEventListener('click', () => {
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', String(!expanded));
-        toggle.setAttribute('aria-label', expanded ? 'Abrir asistente' : 'Contraer chat');
-        toggle.title = expanded ? 'Abrir asistente' : 'Contraer chat';
-        toggleIcon.textContent = expanded ? 'smart_toy' : 'chevron_right';
-        body.hidden = expanded;
-        panel.classList.toggle('collapsed', expanded);
-        appLayout?.classList.toggle('chat-collapsed', expanded);
-        if (expanded && voiceMode) setVoiceMode(false);
-        if (!expanded) input.focus();
-    });
+    const setPanelOpen = open => {
+        panel.classList.toggle('open', open);
+        appLayout?.classList.toggle('chat-open', open);
+        navToggle?.classList.toggle('active', open);
+        navToggle?.setAttribute('aria-expanded', String(open));
+        if (!open && voiceMode) setVoiceMode(false);
+        if (open) setTimeout(() => input.focus(), 0);
+    };
+
+    navToggle?.addEventListener('click', () => setPanelOpen(!panel.classList.contains('open')));
+    toggle.addEventListener('click', () => setPanelOpen(false));
 
     document.getElementById('orbi-chat-new').addEventListener('click', () => {
         controller?.abort(); setVoiceMode(false); controller = null; messages.replaceChildren(); addMessage(panel.dataset.welcome);

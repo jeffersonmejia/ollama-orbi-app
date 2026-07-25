@@ -28,8 +28,8 @@
             <span class="material-symbols-outlined">search</span>
             <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" />
         </div>
-        <div class="m3-text-field"><label class="m3-text-field-label" for="precioMinimo">Precio mínimo</label><input class="m3-text-field-input" id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" /></div>
-        <div class="m3-text-field"><label class="m3-text-field-label" for="precioMaximo">Precio máximo</label><input class="m3-text-field-input" id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" /></div>
+        <label class="orbi-price-filter" for="precioMinimo"><span class="material-symbols-outlined">attach_money</span><span>Mín.</span><input id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" aria-label="Precio mínimo" /></label>
+        <label class="orbi-price-filter" for="precioMaximo"><span class="material-symbols-outlined">payments</span><span>Máx.</span><input id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" aria-label="Precio máximo" /></label>
         <input type="hidden" name="categoria" value="@ViewBag.Categoria" />
         <button type="submit" class="m3-filled-button">Aplicar</button>
         <a asp-action="Index" class="m3-text-button">Limpiar</a>
