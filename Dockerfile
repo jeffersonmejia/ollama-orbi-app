@@ -4,14 +4,14 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copiar el archivo del proyecto y restaurar dependencias
-COPY ["SakilaApp.csproj", "./"]
-RUN dotnet restore "SakilaApp.csproj"
+COPY ["src/SakilaApp.csproj", "src/"]
+RUN dotnet restore "src/SakilaApp.csproj"
 
 # Copiar el resto del proyecto
 COPY . .
 
 # Publicar la aplicación para la imagen utilizada por Docker Stack
-RUN dotnet publish "SakilaApp.csproj" \
+RUN dotnet publish "src/SakilaApp.csproj" \
     -c Release \
     -o /app/publish \
     --no-restore

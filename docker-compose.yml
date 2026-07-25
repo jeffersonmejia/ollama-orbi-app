@@ -31,8 +31,8 @@ services:
       - postgres_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
-      - ./db/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
+      - ./src/db/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
+      - ./src/db/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jef_db_first -d orbi_app"]
       interval: 10s
@@ -62,4 +62,4 @@ services:
 
 secrets:
   postgres_password:
-    file: ./.docker/secrets/postgres_password
+    file: ./src/.docker/secrets/postgres_password

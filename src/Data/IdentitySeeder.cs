@@ -7,12 +7,12 @@ public static class IdentitySeeder
     private static readonly string[] ApplicationRoles =
         { "Administrador", "Vendedor", "Repartidor", "Usuario" };
 
-    private static readonly string[] LegacyTestEmails =
+    private static readonly SeedUser[] SeedUsers =
     {
-        "admin1@orbi.app",
-        "admin2@orbi.app",
-        "usuario@orbi.app",
-        "repartidor@orbi.app"
+        new("jefferson.mejia@orbi.com", "Admin123*", "Administrador"),
+        new("maria.lopez@orbi.com", "Vendedor123*", "Vendedor"),
+        new("carlos.perez@orbi.com", "Reparto123*", "Repartidor"),
+        new("ana.torres@orbi.com", "Usuario123*", "Usuario")
     };
 
     public static async Task SeedAsync(IServiceProvider serviceProvider)
@@ -28,13 +28,18 @@ public static class IdentitySeeder
             }
         }
 
-        foreach (var email in LegacyTestEmails)
+        var allowedEmails = SeedUsers
+            .Select(user => user.Email)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var usersToDelete = userManager.Users
+            .AsEnumerable()
+            .Where(user => user.Email == null || !allowedEmails.Contains(user.Email))
+            .ToList();
+
+        foreach (var user in usersToDelete)
         {
-            var legacyUser = await userManager.FindByEmailAsync(email);
-            if (legacyUser != null)
-            {
-                await userManager.DeleteAsync(legacyUser);
-            }
+            await userManager.DeleteAsync(user);
         }
 
         var obsoleteRoles = roleManager.Roles
@@ -52,15 +57,7 @@ public static class IdentitySeeder
             await roleManager.DeleteAsync(role);
         }
 
-        var users = new[]
-        {
-            new { Email = "jefferson.mejia@orbi.com", Password = "Admin123*", Role = "Administrador" },
-            new { Email = "maria.lopez@orbi.com", Password = "Vendedor123*", Role = "Vendedor" },
-            new { Email = "carlos.perez@orbi.com", Password = "Reparto123*", Role = "Repartidor" },
-            new { Email = "ana.torres@orbi.com", Password = "Usuario123*", Role = "Usuario" }
-        };
-
-        foreach (var userSeed in users)
+        foreach (var userSeed in SeedUsers)
         {
             var user = await userManager.FindByEmailAsync(userSeed.Email);
 
@@ -90,4 +87,6 @@ public static class IdentitySeeder
             }
         }
     }
+
+    private sealed record SeedUser(string Email, string Password, string Role);
 }

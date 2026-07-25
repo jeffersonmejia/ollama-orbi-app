@@ -6,7 +6,7 @@ publish/
 .idea/
 .git/
 DataProtectionKeys/
-.docker/secrets/
+src/.docker/secrets/
 *.log
 *.user
 *.suo
