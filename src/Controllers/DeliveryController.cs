@@ -14,7 +14,7 @@ namespace SakilaApp.Controllers;
 public class DeliveryController : Controller
 {
     private static readonly string[] ValidStatuses =
-        { "Pendiente", "En preparación", "En camino", "Entregado", "Cancelado" };
+        { "Pendiente", "Comprado", "En preparación", "En camino", "Entregado", "Cancelado" };
 
     private readonly ApplicationDbContext _context;
 
@@ -212,7 +212,7 @@ public class DeliveryController : Controller
         if (User.IsInRole("Repartidor"))
         {
             if (order.DeliveryPersonEmail != User.Identity!.Name ||
-                (status != "En camino" && status != "Entregado"))
+                (status != "Comprado" && status != "En camino" && status != "Entregado"))
                 return Forbid();
         }
 

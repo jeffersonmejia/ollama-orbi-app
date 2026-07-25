@@ -1,40 +1,35 @@
 ﻿@page
 @model EmailModel
 @{
-    ViewData["Title"] = "Manage Email";
+    ViewData["Title"] = "Correo";
     ViewData["ActivePage"] = ManageNavPages.Email;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="email-form" method="post">
+<div class="orbi-account-page">
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Correo electrónico</h2><p>Administra el correo asociado a tu cuenta.</p></div>
+            <span class="material-symbols-outlined">mail</span>
+        </div>
+        <partial name="_StatusMessage" for="StatusMessage" />
+        <form id="email-form" method="post" class="orbi-account-rows">
             <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-            @if (Model.IsEmailConfirmed)
-            {
-                <div class="m3-text-field">
-                    <input asp-for="Email" class="m3-text-field-input" placeholder="Please enter your email." disabled />
-                    <label asp-for="Email" class="m3-text-field-label"></label>
-                    <span class="text-success">✓</span>
-                </div>
-            }
-            else
-            {
-                <div class="m3-text-field">
-                    <input asp-for="Email" class="m3-text-field-input" placeholder="Please enter your email." disabled />
-                    <label asp-for="Email" class="m3-text-field-label"></label>
-                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="m3-text-button">Send verification email</button>
-                </div>
-            }
-            <div class="m3-text-field">
-                <input asp-for="Input.NewEmail" class="m3-text-field-input" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label asp-for="Input.NewEmail" class="m3-text-field-label"></label>
-                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            <div class="orbi-account-row">
+                <label>Correo actual</label>
+                <span>@Model.Email @if (Model.IsEmailConfirmed) { <span style="color:var(--md-sys-color-primary);">✓ Verificado</span> }</span>
             </div>
-            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="m3-filled-button">Change email</button>
+            @if (!Model.IsEmailConfirmed)
+            {
+                <div><button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="m3-text-button">Enviar correo de verificación</button></div>
+            }
+            <div class="orbi-account-row orbi-account-row-editable">
+                <label asp-for="Input.NewEmail"></label>
+                <input asp-for="Input.NewEmail" autocomplete="email" aria-required="true" placeholder="Ingresa el nuevo correo" />
+            </div>
+            <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            <div><button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="m3-text-button">Guardar</button></div>
         </form>
-    </div>
+    </section>
 </div>
 
 @section Scripts {

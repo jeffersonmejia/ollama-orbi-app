@@ -27,8 +27,9 @@ public class OperationsController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? section)
     {
+        ViewBag.ActiveSection = section ?? "pedidos";
         var model = new OperationsDashboardViewModel();
 
         if (User.IsInRole("Administrador"))
@@ -387,6 +388,8 @@ public class OperationsController : Controller
             var pattern = $"%{buscar.Trim()}%";
             query = query.Where(item => EF.Functions.ILike(item.ModelName, pattern) ||
                 EF.Functions.ILike(item.Operation, pattern) ||
+                EF.Functions.ILike(item.PromptText, pattern) ||
+                EF.Functions.ILike(item.IpAddress!, pattern) ||
                 (item.User != null && EF.Functions.ILike(item.User.Email!, pattern)));
         }
         ViewBag.Buscar = buscar;

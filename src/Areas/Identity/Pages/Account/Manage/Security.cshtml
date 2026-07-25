@@ -1,0 +1,115 @@
+@page
+@model SecurityModel
+@{
+    ViewData["Title"] = "Seguridad";
+    ViewData["ActivePage"] = ManageNavPages.Security;
+}
+
+<div class="orbi-account-page">
+    <header class="orbi-account-identity">
+        <div class="orbi-account-avatar">@((User.Identity?.Name ?? "U")[..1].ToUpperInvariant())</div>
+        <h1>Seguridad</h1>
+        <span>Administra la protección de tu cuenta.</span>
+    </header>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    @* Doble factor *@
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Doble factor (2FA)</h2><p>Protege tu cuenta con una capa adicional de seguridad.</p></div>
+            <span class="material-symbols-outlined">security</span>
+        </div>
+        @if (Model.Is2faEnabled)
+        {
+            if (Model.RecoveryCodesLeft == 0)
+            {
+                <div class="orbi-account-rows"><div class="orbi-account-row"><span><strong>No te quedan códigos de recuperación.</strong> Debes <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto</a> antes de poder ingresar con un código de recuperación.</span></div></div>
+            }
+            else if (Model.RecoveryCodesLeft <= 3)
+            {
+                <div class="orbi-account-rows"><div class="orbi-account-row"><span><strong>Te quedan @Model.RecoveryCodesLeft códigos de recuperación.</strong> Deberías <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto</a>.</span></div></div>
+            }
+
+            <div class="orbi-account-rows" style="gap:8px; flex-wrap:wrap;">
+                @if (Model.IsMachineRemembered)
+                {
+                    <form method="post" asp-page-handler="ForgetBrowser" style="display:inline">
+                        <button type="submit" class="m3-filled-button">Olvidar este navegador</button>
+                    </form>
+                }
+                <a asp-page="./Disable2fa" class="m3-filled-button">Desactivar 2FA</a>
+                <a asp-page="./GenerateRecoveryCodes" class="m3-filled-button">Restablecer códigos</a>
+            </div>
+        }
+
+        <h4 style="margin:16px 0 8px;">Aplicación de autenticación</h4>
+        @if (!Model.HasAuthenticator)
+        {
+            <a asp-page="./EnableAuthenticator" class="m3-filled-button">Agregar aplicación de autenticación</a>
+        }
+        else
+        {
+            <div class="orbi-account-rows" style="gap:8px; flex-wrap:wrap;">
+                <a asp-page="./EnableAuthenticator" class="m3-filled-button">Configurar aplicación</a>
+                <a asp-page="./ResetAuthenticator" class="m3-filled-button">Restablecer aplicación</a>
+            </div>
+        }
+    </section>
+
+    @* Accesos externos *@
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Accesos externos</h2><p>Servicios vinculados para iniciar sesión.</p></div>
+            <span class="material-symbols-outlined">link</span>
+        </div>
+        @if (Model.CurrentLogins?.Count > 0)
+        {
+            <div class="orbi-account-rows">
+                @foreach (var login in Model.CurrentLogins)
+                {
+                    <div class="orbi-account-row">
+                        <span>@login.ProviderDisplayName</span>
+                        @if (Model.ShowRemoveButton)
+                        {
+                            <form asp-page-handler="RemoveLogin" method="post" style="display:inline">
+                                <input type="hidden" name="LoginProvider" value="@login.LoginProvider" />
+                                <input type="hidden" name="ProviderKey" value="@login.ProviderKey" />
+                                <button type="submit" class="m3-text-button" style="color:var(--md-sys-color-error);">Eliminar</button>
+                            </form>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        @if (Model.OtherLogins?.Count > 0)
+        {
+            <h4 style="margin:16px 0 8px;">Agregar otro servicio</h4>
+            <form asp-page-handler="LinkLogin" method="post" style="display:flex;gap:8px;flex-wrap:wrap;">
+                @foreach (var provider in Model.OtherLogins)
+                {
+                    <button type="submit" class="m3-filled-button" name="provider" value="@provider.Name">@provider.DisplayName</button>
+                }
+            </form>
+        }
+        @if (Model.CurrentLogins?.Count == 0 && Model.OtherLogins?.Count == 0)
+        {
+            <div class="orbi-account-rows"><div class="orbi-account-row"><span>No hay accesos externos configurados.</span></div></div>
+        }
+    </section>
+
+    @* Datos personales *@
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Datos personales</h2><p>Descarga o elimina la información de tu cuenta.</p></div>
+            <span class="material-symbols-outlined">database</span>
+        </div>
+        <div class="orbi-account-rows" style="gap:10px;">
+            <span style="color:var(--md-sys-color-on-surface-variant);font-size:14px;">Tu cuenta contiene datos personales que nos has proporcionado.</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <form asp-page="DownloadPersonalData" method="post"><button class="m3-filled-button" type="submit">Descargar datos</button></form>
+                <a asp-page="DeletePersonalData" class="m3-filled-button" style="background:var(--md-sys-color-error);color:var(--md-sys-color-on-error);">Eliminar cuenta</a>
+            </div>
+        </div>
+    </section>
+</div>

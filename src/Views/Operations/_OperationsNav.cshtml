@@ -1,10 +1,4 @@
 <nav style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" aria-label="Módulos operativos">
-    <a class="m3-outlined-button" asp-controller="Operations" asp-action="Index">Resumen</a>
-    @if (User.IsInRole("Administrador") || User.IsInRole("Vendedor"))
-    {
-        <a class="m3-outlined-button" asp-controller="Operations" asp-action="InventoryMovements">Inventario</a>
-        <a class="m3-outlined-button" asp-controller="Operations" asp-action="StockReservations">Reservas</a>
-    }
     @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
     {
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="DeliveryIncidents">Incidencias</a>
@@ -12,8 +6,6 @@
     }
     @if (User.IsInRole("Administrador"))
     {
-        <a class="m3-outlined-button" asp-controller="Operations" asp-action="AuditLogs">Auditoría</a>
-        <a class="m3-outlined-button" asp-controller="Operations" asp-action="EmailQueue">Correos</a>
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="AiConsumptionLogs">Consumo IA</a>
     }
 </nav>

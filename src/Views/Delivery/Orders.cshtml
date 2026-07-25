@@ -10,6 +10,7 @@
         "Entregado" => "is-delivered",
         "En camino" => "is-transit",
         "En preparación" => "is-preparing",
+        "Comprado" => "is-preparing",
         "Cancelado" => "is-cancelled",
         _ => "is-pending"
     };
@@ -66,15 +67,18 @@
                                 @if (isDeliveryPerson)
                                 {
                                     <td>
-                                        @if (order.Status != "Entregado")
-                                        {
-                                            <form asp-action="UpdateStatus" method="post" class="orbi-delivery-actions">
-                                                <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
-                                                <button class="m3-text-button" name="status" value="En camino">En camino</button>
-                                                <button class="m3-text-button" name="status" value="Entregado">Entregado</button>
-                                            </form>
-                                        }
-                                        else { <span>—</span> }
+                                        <form asp-action="UpdateStatus" method="post" class="orbi-delivery-actions">
+                                            <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
+                                            <select name="status" aria-label="Estado del pedido" @(order.Status == "Entregado" ? "disabled" : "")>
+                                                <option value="Comprado" selected="@(order.Status == "Comprado")">Comprado</option>
+                                                <option value="En camino" selected="@(order.Status == "En camino")">En camino</option>
+                                                <option value="Entregado" selected="@(order.Status == "Entregado")">Entregado</option>
+                                            </select>
+                                            @if (order.Status != "Entregado")
+                                            {
+                                                <button class="m3-filled-button" type="submit">Actualizar</button>
+                                            }
+                                        </form>
                                     </td>
                                 }
                             </tr>

@@ -26,12 +26,7 @@
                 <span>@Model.Username</span>
                 <span class="material-symbols-outlined">lock</span>
             </div>
-            <div class="orbi-account-row orbi-account-row-editable">
-                <label asp-for="Input.PhoneNumber"></label>
-                <input asp-for="Input.PhoneNumber" placeholder="Agregar número de contacto" />
-                <button type="submit" class="m3-text-button">Guardar</button>
-            </div>
-            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            <button type="submit" class="m3-filled-button" style="margin-top:8px;">Guardar</button>
         </form>
     </section>
 

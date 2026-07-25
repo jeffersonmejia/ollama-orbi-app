@@ -412,56 +412,136 @@
             })();
         </script>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:800px;margin:0 auto;text-align:left;">
-                <a asp-controller="Delivery" asp-action="Index" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                    <div style="width:40px;height:40px;border-radius:var(--md-sys-shape-corner-small);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        @if (User.IsInRole("Administrador"))
+        {
+            var usersData = ViewBag.UsersPerMonth as IEnumerable<dynamic>;
+            var ordersData = ViewBag.OrdersPerMonth as IEnumerable<dynamic>;
+            var storesData = ViewBag.StoresPerMonth as IEnumerable<dynamic>;
+            int totalUsers = ViewBag.TotalUsers;
+            int totalOrders = ViewBag.TotalOrders;
+            int totalStores = ViewBag.TotalStores;
+
+            <style>
+                .orbi-home-charts { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px; margin:0 auto; text-align:left; }
+                .orbi-home-chart-card { background:var(--md-sys-color-surface); border:1px solid var(--md-sys-color-outline-variant); border-radius:16px; padding:24px; display:flex; flex-direction:column; min-height:260px; }
+                .orbi-home-chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+                .orbi-home-chart-title { font-size:13px; font-weight:500; color:var(--md-sys-color-on-surface-variant); letter-spacing:0.02em; text-transform:uppercase; }
+                .orbi-home-chart-value { font-size:28px; font-weight:600; color:var(--md-sys-color-on-surface); letter-spacing:-0.02em; }
+                .orbi-home-chart-body { flex:1; display:flex; align-items:flex-end; }
+                .orbi-home-chart-body svg { width:100%; height:100%; min-height:130px; }
+                .orbi-home-chart-legend { display:flex; gap:16px; margin-top:10px; }
+                .orbi-home-chart-legend span { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--md-sys-color-on-surface-variant); }
+                .orbi-home-chart-legend i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+                @@media(max-width:900px){.orbi-home-charts{grid-template-columns:1fr}}
+                @@media(min-width:901px) and (max-width:1200px){.orbi-home-charts{grid-template-columns:repeat(2,1fr)}}
+            </style>
+
+            <div class="orbi-home-charts">
+                @{
+                    int cw = 300, ch = 120, px = 24, py = 16;
+                    int cW = cw - px * 2, cH = ch - py * 2;
+
+                    Func<List<dynamic>, string, string> makeChart = (data, color) =>
+                    {
+                        if (data == null || data.Count == 0) return "<svg viewBox='0 0 300 120'></svg>";
+                        int count = data.Count;
+                        int max = data.Max(x => (int)x.Count);
+                        if (max == 0) max = 1;
+
+                        var lines = new List<string>();
+                        var dots = new List<string>();
+                        var labels = new List<string>();
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            int x = count == 1 ? px + cW / 2 : px + (int)((double)i / (count - 1) * cW);
+                            int val = (int)data[i].Count;
+                            int y = py + cH - (int)((double)val / max * cH);
+                            lines.Add($"{x},{y}");
+                            dots.Add($"<circle cx='{x}' cy='{y}' r='3.5' fill='{color}' stroke='white' stroke-width='2'/>");
+                            string lbl = $"{data[i].Month}/{((int)data[i].Year).ToString()[^2..]}";
+                            labels.Add($"<text x='{x}' y='{ch - 2}' text-anchor='middle' fill='var(--md-sys-color-on-surface-variant)' font-size='9' font-family='Inter,sans-serif'>{lbl}</text>");
+                        }
+
+                        var grid = new List<string>();
+                        for (int g = 0; g <= 4; g++)
+                        {
+                            int gy = py + (int)((double)g / 4 * cH);
+                            grid.Add($"<line x1='{px}' y1='{gy}' x2='{cw - px}' y2='{gy}' stroke='var(--md-sys-color-outline-variant)' stroke-width='0.5' opacity='0.35'/>");
+                        }
+
+                        return $@"<svg viewBox='0 0 {cw} {ch}' preserveAspectRatio='none'>
+                            {string.Join("", grid)}
+                            <polyline points='{string.Join(" ", lines)}' fill='none' stroke='{color}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>
+                            {string.Join("", dots)}
+                            {string.Join("", labels)}
+                        </svg>";
+                    };
+
+                    var allOrders = ordersData?.ToList() ?? new List<dynamic>();
+                    var delivered = allOrders.Where(x => ((string)x.Status) == "Entregado").ToList();
+                    var transit = allOrders.Where(x => ((string)x.Status) == "En camino").ToList();
+                    var pending = allOrders.Where(x => x.Status != "Entregado" && x.Status != "En camino").ToList();
+                    int maxO = new[] { delivered.Any() ? delivered.Max(x => (int)x.Count) : 0, transit.Any() ? transit.Max(x => (int)x.Count) : 0, pending.Any() ? pending.Max(x => (int)x.Count) : 0 }.Max();
+                    if (maxO == 0) maxO = 1;
+
+                    Func<List<dynamic>, string, string> multiLine = (data, color) =>
+                    {
+                        if (data.Count == 0) return "";
+                        var pts = new List<string>();
+                        var ds = new List<string>();
+                        for (int i = 0; i < data.Count; i++)
+                        {
+                            int x = data.Count == 1 ? px + cW / 2 : px + (int)((double)i / (data.Count - 1) * cW);
+                            int y = py + cH - (int)((double)(int)data[i].Count / maxO * cH);
+                            pts.Add($"{x},{y}");
+                            ds.Add($"<circle cx='{x}' cy='{y}' r='3' fill='{color}' stroke='white' stroke-width='1.5'/>");
+                        }
+                        return $"<polyline points='{string.Join(" ", pts)}' fill='none' stroke='{color}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>{string.Join("", ds)}";
+                    };
+                }
+
+                <div class="orbi-home-chart-card">
+                    <div class="orbi-home-chart-header">
+                        <span class="orbi-home-chart-title">Usuarios registrados</span>
+                        <span class="orbi-home-chart-value">@totalUsers</span>
                     </div>
-                    <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Tiendas</h3>
-                    <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Explora productos y realiza pedidos</p>
-                </a>
-            @if (User.IsInRole("Usuario"))
-            {
-            <a asp-controller="Delivery" asp-action="MyOrders" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                <div style="width:40px;height:40px;border-radius:var(--md-sys-shape-corner-small);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                    <div class="orbi-home-chart-body">@Html.Raw(makeChart(usersData?.ToList() ?? new List<dynamic>(), "#C2185B"))</div>
                 </div>
-                <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Mis pedidos</h3>
-                <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Consulta el estado de tus pedidos</p>
-            </a>
-            }
-            @if (User.IsInRole("Repartidor"))
-            {
-                <a asp-controller="Delivery" asp-action="Deliveries" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                    <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Mis entregas</h3>
-                    <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Actualiza pedidos en camino y entregados</p>
-                </a>
-            }
-            @if (User.IsInRole("Administrador"))
-            {
-                <a asp-controller="Delivery" asp-action="Admin" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                    <div style="width:40px;height:40px;border-radius:var(--md-sys-shape-corner-small);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+
+                <div class="orbi-home-chart-card">
+                    <div class="orbi-home-chart-header">
+                        <span class="orbi-home-chart-title">Pedidos</span>
+                        <span class="orbi-home-chart-value">@totalOrders</span>
                     </div>
-                    <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Panel Admin</h3>
-                    <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Control de tiendas y pedidos</p>
-                </a>
-            }
-            <a asp-controller="Operations" asp-action="Index" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                <div style="width:40px;height:40px;border-radius:var(--md-sys-shape-corner-small);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                    <span class="material-symbols-outlined">monitoring</span>
+                    <div class="orbi-home-chart-body">
+                        <svg viewBox="0 0 @cw @ch" preserveAspectRatio="none">
+                            @for (int g = 0; g <= 4; g++)
+                            {
+                                int gy = py + (int)((double)g / 4 * cH);
+                                <line x1="@px" y1="@gy" x2="@(cw - px)" y2="@gy" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35" />
+                            }
+                            @Html.Raw(multiLine(delivered, "#146c2e"))
+                            @Html.Raw(multiLine(transit, "#075c9b"))
+                            @Html.Raw(multiLine(pending, "#B85700"))
+                        </svg>
+                    </div>
+                    <div class="orbi-home-chart-legend">
+                        <span><i style="background:#146c2e"></i>Entregados</span>
+                        <span><i style="background:#075c9b"></i>En camino</span>
+                        <span><i style="background:#B85700"></i>Pendientes</span>
+                    </div>
                 </div>
-                <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Centro de operaciones</h3>
-                <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Accede a las herramientas disponibles para tu rol</p>
-            </a>
-            <a asp-area="Identity" asp-page="/Account/Manage/Index" class="m3-card m3-hover-lift" style="text-decoration:none;padding:24px;cursor:pointer;">
-                <div style="width:40px;height:40px;border-radius:var(--md-sys-shape-corner-small);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+                <div class="orbi-home-chart-card">
+                    <div class="orbi-home-chart-header">
+                        <span class="orbi-home-chart-title">Tiendas registradas</span>
+                        <span class="orbi-home-chart-value">@totalStores</span>
+                    </div>
+                    <div class="orbi-home-chart-body">@Html.Raw(makeChart(storesData?.ToList() ?? new List<dynamic>(), "#075c9b"))</div>
                 </div>
-                <h3 style="font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);margin:0 0 4px;">Mi Perfil</h3>
-                <p style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Tus datos y configuración</p>
-            </a>
-        </div>
+            </div>
+        }
     }
     else
     {

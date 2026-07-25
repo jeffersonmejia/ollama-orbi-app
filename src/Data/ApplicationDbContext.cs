@@ -127,6 +127,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.Category).HasColumnName("category");
             entity.Property(x => x.Address).HasColumnName("address");
             entity.Property(x => x.IsActive).HasColumnName("is_active");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
         });
 
         builder.Entity<DeliveryProduct>(entity =>
@@ -350,11 +351,13 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.UserId).HasColumnName("user_id");
             entity.Property(x => x.ModelName).HasColumnName("model_name").HasMaxLength(120);
             entity.Property(x => x.Operation).HasColumnName("operation").HasMaxLength(80);
+            entity.Property(x => x.PromptText).HasColumnName("prompt_text").HasMaxLength(500);
             entity.Property(x => x.PromptTokens).HasColumnName("prompt_tokens");
             entity.Property(x => x.CompletionTokens).HasColumnName("completion_tokens");
             entity.Property(x => x.TotalTokens).HasColumnName("total_tokens");
             entity.Property(x => x.EstimatedCost).HasColumnName("estimated_cost").HasColumnType("numeric(14,6)");
             entity.Property(x => x.DurationMilliseconds).HasColumnName("duration_milliseconds");
+            entity.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(45);
             entity.Property(x => x.MetadataJson).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValueSql("'{}'::jsonb");
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.HasIndex(x => new { x.UserId, x.CreatedAt }).HasDatabaseName("ix_ai_consumption_log_user_created_at");

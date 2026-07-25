@@ -62,6 +62,9 @@
 .orbi-order-status.is-delivered { color:#146c2e; background:#d8f5df; }
 .orbi-order-status.is-cancelled { color:var(--md-sys-color-error); background:var(--md-sys-color-error-container); }
 .orbi-delivery-actions { display:flex; gap:2px; }
+.orbi-delivery-actions select { padding:6px 10px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container); color:var(--md-sys-color-on-surface); font:inherit; font-size:13px; cursor:pointer; min-height:36px; }
+.orbi-delivery-actions select:focus { border-color:var(--md-sys-color-primary); outline:none; box-shadow:0 0 0 1px var(--md-sys-color-primary); }
+.orbi-delivery-actions button { min-height:36px; padding:0 14px; }
 .orbi-admin-account-section { display:grid; grid-template-columns:minmax(220px,.72fr) minmax(0,1.6fr); gap:28px; margin-bottom:20px; padding:24px; }
 .orbi-admin-section-intro { display:flex; align-items:flex-start; gap:14px; }
 .orbi-admin-section-intro>.material-symbols-outlined { display:grid; place-items:center; width:42px; height:42px; flex:0 0 42px; border-radius:50%; color:var(--md-sys-color-primary); background:var(--md-sys-color-primary-container); }

@@ -61,12 +61,10 @@ namespace  SakilaApp.Areas.Identity.Pages.Account.Manage
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        public static string Security => "Security";
+
         public static string TwoFactorAuthentication => "TwoFactorAuthentication";
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public static string IndexNavClass(ViewContext viewContext) => PageNavClass(viewContext, Index);
 
         public static string AddressesNavClass(ViewContext viewContext) => PageNavClass(viewContext, Addresses);
@@ -112,6 +110,8 @@ namespace  SakilaApp.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, TwoFactorAuthentication);
+
+        public static string SecurityNavClass(ViewContext viewContext) => PageNavClass(viewContext, Security);
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

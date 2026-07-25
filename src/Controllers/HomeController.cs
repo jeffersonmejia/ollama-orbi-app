@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using SakilaApp.Data;
@@ -34,6 +35,37 @@ public class HomeController : Controller
                 .Where(profile => profile.IdentityUserId == userId)
                 .Select(profile => profile.FirstName)
                 .FirstOrDefaultAsync();
+
+            if (User.IsInRole("Administrador"))
+            {
+                var usersPerMonth = await _identityContext.UserProfiles
+                    .AsNoTracking()
+                    .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month })
+                    .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                    .ToListAsync();
+
+                var ordersPerMonth = await _identityContext.DeliveryOrders
+                    .AsNoTracking()
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.Status })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Status, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                    .ToListAsync();
+
+                var storesPerMonth = await _identityContext.DeliveryStores
+                    .AsNoTracking()
+                    .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month })
+                    .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                    .ToListAsync();
+
+                ViewBag.UsersPerMonth = usersPerMonth;
+                ViewBag.OrdersPerMonth = ordersPerMonth;
+                ViewBag.StoresPerMonth = storesPerMonth;
+                ViewBag.TotalUsers = usersPerMonth.Sum(x => x.Count);
+                ViewBag.TotalOrders = ordersPerMonth.Sum(x => x.Count);
+                ViewBag.TotalStores = storesPerMonth.Sum(x => x.Count);
+            }
         }
 
         return View();
@@ -111,10 +143,12 @@ public class HomeController : Controller
                     : null,
                 ModelName = suggestion.ModelName,
                 Operation = "ProductChat",
+                PromptText = message.Length > 500 ? message[..500] : message,
                 PromptTokens = suggestion.PromptTokens,
                 CompletionTokens = suggestion.CompletionTokens,
                 TotalTokens = suggestion.PromptTokens + suggestion.CompletionTokens,
                 DurationMilliseconds = suggestion.DurationMilliseconds,
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
                 MetadataJson = JsonSerializer.Serialize(new { Context = contextKey })
             });
             await _identityContext.SaveChangesAsync(cancellationToken);

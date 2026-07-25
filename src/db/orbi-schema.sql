@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS delivery_store (
     name varchar(100) NOT NULL,
     category varchar(60) NOT NULL,
     address varchar(180) NOT NULL,
-    is_active boolean NOT NULL DEFAULT true
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS delivery_product (
@@ -215,11 +216,13 @@ CREATE TABLE IF NOT EXISTS ai_consumption_log (
     user_id text,
     model_name varchar(120) NOT NULL,
     operation varchar(80) NOT NULL,
+    prompt_text varchar(500) NOT NULL DEFAULT '',
     prompt_tokens integer NOT NULL,
     completion_tokens integer NOT NULL,
     total_tokens integer NOT NULL,
     estimated_cost numeric(14,6) NOT NULL,
     duration_milliseconds integer NOT NULL,
+    ip_address varchar(45),
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT "PK_ai_consumption_log" PRIMARY KEY (ai_consumption_log_id),
@@ -279,6 +282,8 @@ CREATE INDEX IF NOT EXISTS ix_ai_consumption_log_model_created_at
     ON ai_consumption_log(model_name, created_at);
 CREATE INDEX IF NOT EXISTS ix_ai_consumption_log_created_at
     ON ai_consumption_log(created_at);
+CREATE INDEX IF NOT EXISTS ix_ai_consumption_log_ip
+    ON ai_consumption_log(ip_address);
 
 -- Direcciones múltiples del usuario. La dirección del perfil se conserva como
 -- dirección principal para mantener compatibilidad con registros existentes.

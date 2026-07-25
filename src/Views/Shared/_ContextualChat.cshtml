@@ -55,13 +55,13 @@
     .orbi-chat-panel {
         position: fixed; inset: 0 auto 0 80px; z-index: 45; width: 340px; height: 100vh;
         padding: 18px; box-sizing: border-box; border-right: 1px solid var(--md-sys-color-outline-variant);
-        background: var(--md-sys-color-surface); display: none; flex-direction: column; min-width: 0;
+        background: #ffffff; display: none; flex-direction: column; min-width: 0;
     }
     .orbi-chat-panel.open { display:flex; }
     .orbi-chat-layout .m3-content-area { transition: margin-left 220ms var(--md-sys-motion-easing-standard); }
     .orbi-chat-layout.chat-open .m3-content-area { margin-left:420px; }
     .orbi-chat-nav-toggle { width:56px; border:0; cursor:pointer; font-family:inherit; }
-    .orbi-chat-nav-toggle.active { color:var(--md-sys-color-primary); background:var(--md-sys-color-primary-container); }
+    .orbi-chat-nav-toggle.active { color:var(--md-sys-color-on-surface); background:var(--md-sys-color-surface-container-high); }
     .orbi-chat-body { min-height: 0; flex: 1; display: flex; flex-direction: column; }
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }

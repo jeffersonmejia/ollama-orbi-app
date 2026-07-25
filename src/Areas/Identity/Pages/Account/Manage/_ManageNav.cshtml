@@ -1,17 +1,19 @@
 @inject SignInManager<IdentityUser> SignInManager
-@{
-    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
-}
+@inject UserManager<IdentityUser> UserManager
 
 <nav class="orbi-account-nav">
     <a class="@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "active" : "")" id="profile" asp-page="./Index"><span class="material-symbols-outlined">person</span><span>Perfil</span></a>
     <a class="@(ManageNavPages.AddressesNavClass(ViewContext) == "active" ? "active" : "")" id="addresses" asp-page="./Addresses"><span class="material-symbols-outlined">location_on</span><span>Direcciones</span></a>
     <a class="@(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "active" : "")" id="email" asp-page="./Email"><span class="material-symbols-outlined">mail</span><span>Correo</span></a>
     <a class="@(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "active" : "")" id="change-password" asp-page="./ChangePassword"><span class="material-symbols-outlined">password</span><span>Clave</span></a>
-    @if (hasExternalLogins)
-    {
-        <a class="@(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active" ? "active" : "")" id="external-login" asp-page="./ExternalLogins"><span class="material-symbols-outlined">link</span><span>Accesos externos</span></a>
-    }
-    <a class="@(ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext) == "active" ? "active" : "")" id="two-factor" asp-page="./TwoFactorAuthentication"><span class="material-symbols-outlined">security</span><span>Doble factor</span></a>
-    <a class="@(ManageNavPages.PersonalDataNavClass(ViewContext) == "active" ? "active" : "")" id="personal-data" asp-page="./PersonalData"><span class="material-symbols-outlined">database</span><span>Datos</span></a>
+    <a class="@(ManageNavPages.SecurityNavClass(ViewContext) == "active" ? "active" : "")" id="security" asp-page="./Security"><span class="material-symbols-outlined">security</span><span>Seguridad</span></a>
+
+    <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--md-sys-color-outline-variant);">
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post" style="margin:0;">
+            <button type="submit" style="width:100%;border:none;background:none;cursor:pointer;font-family:inherit;padding:10px 14px;border-radius:var(--md-sys-shape-corner-large);display:flex;align-items:center;gap:10px;color:var(--md-sys-color-on-surface-variant);font-size:var(--md-sys-typescale-body-medium-size);transition:background var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Salir</span>
+            </button>
+        </form>
+    </div>
 </nav>
