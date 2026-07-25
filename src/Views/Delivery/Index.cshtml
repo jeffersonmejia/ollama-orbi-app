@@ -81,7 +81,7 @@
                             <span>Cantidad</span>
                             <div class="orbi-quantity-control">
                                 <button type="button" class="orbi-quantity-button" data-quantity-action="decrease" aria-label="Disminuir cantidad"><span class="material-symbols-outlined">remove</span></button>
-                                <input id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="20" inputmode="numeric" aria-label="Cantidad personalizada" required />
+                                <input id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="999" inputmode="numeric" aria-label="Cantidad personalizada, entre 1 y 999" required />
                                 <button type="button" class="orbi-quantity-button" data-quantity-action="increase" aria-label="Aumentar cantidad"><span class="material-symbols-outlined">add</span></button>
                             </div>
                         </div>
@@ -100,18 +100,23 @@
             const input = control.querySelector('input');
             control.querySelectorAll('[data-quantity-action]').forEach(button => button.addEventListener('click', () => {
                 const minimum = Number(input.min) || 1;
-                const maximum = Number(input.max) || 20;
+                const maximum = Number(input.max) || 999;
                 const current = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
                 input.value = button.dataset.quantityAction === 'increase'
                     ? Math.min(maximum, current + 1)
                     : Math.max(minimum, current - 1);
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             }));
-            input.addEventListener('change', () => {
+            const normalizeQuantity = () => {
                 const minimum = Number(input.min) || 1;
-                const maximum = Number(input.max) || 20;
+                const maximum = Number(input.max) || 999;
                 input.value = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
+            };
+            input.addEventListener('keydown', event => {
+                if (['-', '+', 'e', 'E', '.', ','].includes(event.key)) event.preventDefault();
             });
+            input.addEventListener('input', normalizeQuantity);
+            input.addEventListener('change', normalizeQuantity);
         });
     })();
 </script>

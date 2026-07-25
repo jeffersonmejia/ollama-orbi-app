@@ -70,9 +70,9 @@ public class DeliveryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateOrder(int productId, int quantity)
     {
-        if (quantity < 1 || CurrentUserId is not string userId)
+        if (quantity is < 1 or > 999 || CurrentUserId is not string userId)
         {
-            TempData["Error"] = "Indica una cantidad válida y selecciona una dirección guardada.";
+            TempData["Error"] = "La cantidad debe estar entre 1 y 999 y necesitas una dirección guardada.";
             return RedirectToAction(nameof(Index));
         }
 
