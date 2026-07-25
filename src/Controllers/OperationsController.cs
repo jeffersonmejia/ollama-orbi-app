@@ -41,8 +41,7 @@ public class OperationsController : Controller
                 OpenIncidents = await _context.DeliveryIncidents.CountAsync(item => item.Status == "Abierto" || item.Status == "En revisión"),
                 StatusChanges = await _context.OrderStatusHistories.CountAsync(),
                 PendingEmails = await _context.EmailQueue.CountAsync(item => item.Status == "Pendiente" || item.Status == "Fallido"),
-                AuditEvents = await _context.AuditLogs.CountAsync(),
-                AiRequests = await _context.AiConsumptionLogs.CountAsync()
+                AuditEvents = await _context.AuditLogs.CountAsync()
             };
         }
         else if (User.IsInRole("Vendedor"))
@@ -377,23 +376,6 @@ public class OperationsController : Controller
         AddAudit("Cancelar", "email_queue", id.ToString(), new { email.Status });
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(EmailQueue));
-    }
-
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> AiConsumptionLogs(string? buscar, int page = 1)
-    {
-        var query = _context.AiConsumptionLogs.AsNoTracking().Include(item => item.User).AsQueryable();
-        if (!string.IsNullOrWhiteSpace(buscar))
-        {
-            var pattern = $"%{buscar.Trim()}%";
-            query = query.Where(item => EF.Functions.ILike(item.ModelName, pattern) ||
-                EF.Functions.ILike(item.Operation, pattern) ||
-                EF.Functions.ILike(item.PromptText, pattern) ||
-                EF.Functions.ILike(item.IpAddress!, pattern) ||
-                (item.User != null && EF.Functions.ILike(item.User.Email!, pattern)));
-        }
-        ViewBag.Buscar = buscar;
-        return View(await PaginatedList<AiConsumptionLog>.CreateAsync(query.OrderByDescending(item => item.CreatedAt), Math.Max(1, page), 5));
     }
 
     private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);

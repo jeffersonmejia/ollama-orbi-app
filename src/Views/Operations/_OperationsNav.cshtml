@@ -4,8 +4,5 @@
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="DeliveryIncidents">Incidencias</a>
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="OrderStatusHistory">Historial</a>
     }
-    @if (User.IsInRole("Administrador"))
-    {
-        <a class="m3-outlined-button" asp-controller="Operations" asp-action="AiConsumptionLogs">Consumo IA</a>
-    }
+
 </nav>

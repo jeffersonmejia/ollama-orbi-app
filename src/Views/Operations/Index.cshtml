@@ -21,52 +21,30 @@
                     <span class="material-symbols-outlined">receipt_long</span><span>Pedidos</span>
                 </a>
             }
-            @if (User.IsInRole("Administrador"))
-            {
-                <a class="orbi-subnav-item @(activeSection == "ia" ? "active" : "")" asp-action="Index" asp-route-section="ia">
-                    <span class="material-symbols-outlined">neurology</span><span>Consumo IA</span>
-                </a>
-            }
+
         </nav>
 
         <div class="orbi-admin-content">
-            @if (activeSection == "ia" && User.IsInRole("Administrador"))
+            @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
             {
                 <div class="orbi-admin-table-card">
                     <div class="orbi-admin-table-heading">
                         <div>
-                            <h2>Consumo de inteligencia artificial</h2>
-                            <p>Registro de prompts, usuarios y origen.</p>
+                            <h2>Pedidos y entregas</h2>
+                            <p>Incidencias y historial de cambios de estado.</p>
                         </div>
-                        <div class="orbi-admin-row-actions">
-                            <a class="m3-outlined-button" asp-action="AiConsumptionLogs">Ver todos</a>
-                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; padding:0 18px 18px;">
+                        <a class="m3-card orbi-operation-card" asp-action="DeliveryIncidents">
+                            <span class="material-symbols-outlined">report</span>
+                            <h2>Incidencias</h2>
+                        </a>
+                        <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
+                            <span class="material-symbols-outlined">history</span>
+                            <h2>Historial de pedidos</h2>
+                        </a>
                     </div>
                 </div>
-            }
-            else
-            {
-                @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
-                {
-                    <div class="orbi-admin-table-card">
-                        <div class="orbi-admin-table-heading">
-                            <div>
-                                <h2>Pedidos y entregas</h2>
-                                <p>Incidencias y historial de cambios de estado.</p>
-                            </div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; padding:0 18px 18px;">
-                            <a class="m3-card orbi-operation-card" asp-action="DeliveryIncidents">
-                                <span class="material-symbols-outlined">report</span>
-                                <h2>Incidencias</h2>
-                            </a>
-                            <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
-                                <span class="material-symbols-outlined">history</span>
-                                <h2>Historial de pedidos</h2>
-                            </a>
-                        </div>
-                    </div>
-                }
             }
         </div>
     </div>

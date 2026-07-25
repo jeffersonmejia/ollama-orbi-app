@@ -22,20 +22,115 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
 
 private static readonly Dictionary<string, (string[] Products, decimal Min, decimal Max)> Catalog = new(StringComparer.Ordinal)
     {
-        ["Comida Rápida"] = (["Hamburguesa clásica", "Hamburguesa con queso", "Papas fritas medianas", "Papas fritas grandes", "Nuggets de pollo (6 pzs)", "Nuggets de pollo (10 pzs)", "Hot dog clásico", "Hot dog con queso", "Gaseosa 500ml", "Jugo natural 300ml", "Agua mineral 600ml", "Helado suave", "Sundae de chocolate", "Ensalada césar", "Pollo crujiente (2 pzs)", "Pollo crujiente (4 pzs)", "Wrap de pollo", "Tacos de carne (2 pzs)", "Pizza personal pepperoni", "Pizza personal hawaiana"], 1.50m, 12.50m),
-        ["Farmacia"] = (["Paracetamol 500mg (10 tabs)", "Ibuprofeno 400mg (10 tabs)", "Amoxicilina 500mg (12 caps)", "Alcohol antiséptico 120ml", "Alcohol en gel 60ml", "Protector solar FPS50 50ml", "Vitamina C 1000mg (20 tabs)", "Suero oral sobres (6 und)", "Curitas adhesivas (20 und)", "Jabón neutro 100g", "Gel antibacterial 250ml", "Algodón 50g", "Gasas estériles (5 und)", "Termómetro digital", "Tiritas impermeables (10 und)", "Crema antiinflamatoria 30g", "Antialérgico 10mg (10 tabs)", "Descongestionante nasal 15ml", "Jarabe para tos 120ml", "Vendas elásticas 5cm"], 0.50m, 18.50m),
-        ["Supermercado"] = (["Arroz blanco 1kg", "Arroz integral 1kg", "Azúcar blanca 1kg", "Azúcar morena 1kg", "Sal refinada 1kg", "Aceite vegetal 1L", "Aceite de girasol 1L", "Leche entera 1L", "Leche descremada 1L", "Yogur natural 170g", "Yogur de frutas 170g", "Queso fresco 250g", "Mantequilla 200g", "Huevos medianos (12 und)", "Huevos grandes (12 und)", "Pan de molde integral", "Pan de molde blanco", "Fideos espagueti 500g", "Fideos tallarines 500g", "Atún en agua 170g", "Atún en aceite 170g", "Sardinas en tomate 155g", "Frijoles negros 400g", "Lentejas 500g", "Garbanzos 400g", "Harina de trigo 1kg", "Harina de maíz 1kg", "Avena en hojuelas 500g", "Café molido 250g", "Café instantáneo 100g", "Té negro (25 bolsas)", "Chocolate en polvo 200g", "Galletas de agua 200g", "Galletas de chocolate 150g", "Papas fritas 150g", "Maní tostado 200g", "Pasas 100g", "Miel de abeja 350g", "Mermelada de fresa 350g", "Azúcar morena 500g", "Vinagre de manzana 500ml", "Salsa de soya 250ml", "Mayonesa 350g", "Kétchup 350g", "Mostaza 200g", "Aceitunas verdes 200g", "Pepinillos 350g", "Tomate triturado 400g", "Pasta de tomate 130g", "Caldo de pollo (6 cubos)", "Caldo de verduras (6 cubos)", "Pimienta negra 50g", "Comino molido 50g", "Orégano seco 20g", "Laurel (10 hojas)", "Canela en polvo 50g", "Vainilla esencia 60ml", "Levadura seca 10g", "Polvo de hornear 100g", "Bicarbonato de sodio 200g", "Maicena 200g", "Gelatina sin sabor 10g", "Coco rallado 100g", "Nueces 100g", "Almendras 100g", "Maní sin cáscara 200g", "Semillas de girasol 150g", "Chía 200g", "Quinoa 500g", "Amaranto 300g", "Cuscús 500g", "Bulgur 500g", "Mijo 500g"], 0.60m, 15.50m)
+        ["Comida Rápida"] = (
+        [
+            "Empanada de viento (3 pzs)", "Empanada de verde con queso (3 pzs)", "Empanada de carne (3 pzs)",
+            "Llapingachos (2 pzs)", "Hornado con llapingachos", "Fritada Quiteña",
+            "Seco de chivo con arroz y plátano", "Seco de pollo con arroz", "Encebollado de pescado",
+            "Ceviche de camarón", "Ceviche de pescado", "Caldo de gallina", "Caldo de maní",
+            "Locro de papas con aguacate", "Mote pillo", "Mote sucio",
+            "Choclo con queso", "Chifles con ají", "Salchipapas",
+            "Pan de yuca (6 pzs)", "Choclo asado", "Hamburguesa clásica",
+            "Hamburguesa con queso doble", "Papas fritas medianas", "Papas fritas grandes",
+            "Nuggets de pollo (6 pzs)", "Nuggets de pollo (10 pzs)", "Hot dog clásico",
+            "Hot dog ecuatoriano con totopo", "Pollo crujiente (2 pzs)", "Pollo crujiente (4 pzs)",
+            "Wrap de pollo", "Tacos de carne asada (2 pzs)", "Pizza personal pepperoni",
+            "Pizza personal hawaiana", "Gaseosa 500ml", "Jugo en agua 300ml",
+            "Jugo de naranja natural", "Jugo de guayaba", "Agua mineral 600ml",
+            "Helado de mandarina", "Sundae de chocolate", "Ensalada de frutas con helado",
+            "Corviche frito", "Canguil (palomitas)", "Patacones con ají (3 pzs)",
+            "Yuca frita con salsa", "Pastel de choclo", "Tamal de viento (2 pzs)",
+            "Hornado panzazo", "Fritada con arroz y aguacate", "Chuleta valluna",
+            "Arroz con menestra y carne", "Arroz con menestra y pollo", "Arroz marinero",
+            "Arroz con camarón", "Arroz con chuleta de cerdo", "Jugo de maracuyá",
+            "Jugo de limón conHierbabuena", "Colada morada (vaso)", "Morocho (vaso)"
+        ], 1.00m, 14.00m),
+        ["Farmacia"] = (
+        [
+            "Paracetamol 500mg (10 tabs)", "Ibuprofeno 400mg (10 tabs)", "Amoxicilina 500mg (12 caps)",
+            "Omeprazol 20mg (14 caps)", "Losartán 50mg (10 tabs)", "Amlodipino 5mg (10 tabs)",
+            "Metformina 850mg (10 tabs)", "Ciprofloxacino 500mg (10 tabs)", "Diclofenaco 100mg (10 tabs)",
+            "Naproxeno 250mg (10 tabs)", "Loratadina 10mg (10 tabs)", "Cetirizina 10mg (10 tabs)",
+            "Ranitidina 150mg (10 tabs)", "Salbutamol spray 100mcg", "Buscapina 10mg (10 tabs)",
+            "Aspirina 500mg (10 tabs)", "Novalgina 500mg (10 tabs)", "Complex B (30 caps)",
+            "Vitamina C 1000mg (20 tabs)", "Vitamina D3 1000UI (30 caps)", "Hierro + Ácido Fólico (30 tabs)",
+            "Calcitriol 0.25mcg (20 caps)", "Albendazol 400mg (2 tabs)", "Ivermectina 6mg (2 tabs)",
+            "Alcohol antiséptico 120ml", "Alcohol en gel 60ml", "Protector solar FPS50 50ml",
+            "Suero oral sobres (6 und)", "Curitas adhesivas (20 und)", "Jabón neutro 100g",
+            "Gel antibacterial 250ml", "Algodón 50g", "Gasas estériles (5 und)",
+            "Termómetro digital", "Tiritas impermeables (10 und)", "Crema antiinflamatoria 30g",
+            "Descongestionante nasal 15ml", "Jarabe para tos 120ml", "Vendas elásticas 5cm",
+            "Mascarilla quirúrgica (10 und)", "Guantes de látex (10 pares)", "Vitamina B12 1000mcg (30 tabs)",
+            "Magnesio 400mg (30 caps)", "Zinc 50mg (30 tabs)", "Aceite de onagra 1000mg (30 caps)",
+            "Probióticos (30 caps)", "Melatonina 3mg (30 tabs)", "Glucosamina 500mg (30 caps)",
+            "Colágeno hidrolizado 500g", "Multivitamínico (30 tabs)"
+        ], 0.50m, 22.00m),
+        ["Supermercado"] = (
+        [
+            "Arroz blanco Pillao 1kg", "Arrozintegral 1kg", "Arroz premium 1kg",
+            "Azúcar blanca 1kg", "Azúcar morena 1kg", "Azúcar gulupa 500g",
+            "Sal refinada 1kg", "Sal rosada 1kg",
+            "Aceite vegetal girasol 1L", "Aceite de palma 1L", "Aceite de oliva 500ml",
+            "Leche entera 1L", "Leche descremada 1L", "Leche de soya 1L",
+            "Yogur natural 170g", "Yogur de frutas 170g", "Yogur bebible 300ml",
+            "Queso fresco 250g", "Queso manaba 250g", "Queso de hoja 200g",
+            "Mantequilla 200g", "Margarina 250g",
+            "Huevos medianos (12 und)", "Huevos grandes (12 und)",
+            "Pan de yuca precocido (300g)", "Pan de molde integral", "Pan de molde blanco",
+            "Fideos espagueti 500g", "Fideos tallarines 500g", "Fideos maizena 200g",
+            "Atún en agua 170g", "Atún en aceite 170g", "Sardinas en tomate 155g",
+            "Frijoles rojos 400g", "Frijoles negros 400g", "Frejol blanco 500g",
+            "Lentejas 500g", "Garbanzos 400g", "Menestra de papas 500g",
+            "Harina de trigo 1kg", "Harina de maíz precocida 1kg", "Harina de plátano 500g",
+            "Avena en hojuelas 500g", "Avena integral 500g", "Quinoa 500g",
+            "Café molido 250g", "Café instantáneo 100g", "Café especial Loja 250g",
+            "Té negro (25 bolsas)", "Té de manzanilla (25 bolsas)", "Té de cedrón (25 bolsas)",
+            "Chocolate en polvo 200g", "Cacao en polvo 100g",
+            "Galletas de agua 200g", "Galletas de chocolate 150g", "Galletas María 200g",
+            "Papas fritas saborizado 150g", "Chifles de plátano 100g", "Maní tostado 200g",
+            "Pasas 100g", "Miel de abeja 350g", "Mermelada de fresa 350g",
+            "Vinagre de manzana 500ml", "Salsa de soya 250ml", "Salsa de tomate 500ml",
+            "Mayonesa 350g", "Kétchup 350g", "Mostaza 200g",
+            "Aceitunas verdes 200g", "Pepinillos 350g",
+            "Tomate triturado 400g", "Pasta de tomate 130g", "Salsa de ají 250ml",
+            "Caldo de pollo (6 cubos)", "Caldo de verduras (6 cubos)",
+            "Pimienta negra 50g", "Comino molido 50g", "Orégano seco 20g",
+            "Laurel (10 hojas)", "Canela en polvo 50g", "Achiote molido 50g",
+            "Vainilla esencia 60ml", "Levadura seca 10g", "Polvo de hornear 100g",
+            "Bicarbonato de sodio 200g", "Maicena 200g",
+            "Gelatina sin sabor 10g", "Coco rallado 100g",
+            "Nueces 100g", "Almendras 100g", "Maní sin cáscara 200g",
+            "Semillas de girasol 150g", "Chía 200g", "Amaranto 300g",
+            "Plátano verde (kg)", "Plátano maduro (kg)", "Yuca fresca (kg)",
+            "Papa criolla 1kg", "Papa pastusa 1kg", "Cebolla paiteña 1kg",
+            "Tomate italiano 1kg", "Ají verde 500g", "Ají rojo 500g",
+            "Cilantro manojo", "Perejil manojo", "Limón tahití 1kg",
+            "Naranja valencia 1kg", "Mandarina 1kg", "Manzana roja 1kg",
+            "Guayaba 1kg", "Mango Tommy 1kg", "Papaya 1kg", "Sandía pieza",
+            "Melón pieza", "Fresa 500g", "Mora 500g", "Durazno 1kg",
+            "Leche condensada 397g", "Crema de leche 200ml", "Mantequilla de maní 400g",
+            "Mermelada de guayaba 450g", "Salsa de maní 350g"
+        ], 0.50m, 16.00m)
     };
 
     public async Task RunAsync()
     {
         Randomizer.Seed = new Random(options.Seed);
         _clock.Start();
-        PrintPlan();
 
         await using var connection = new NpgsqlConnection(options.ConnectionString);
         _connection = connection;
         await connection.OpenAsync();
+
+        if (options.OnlyProducts)
+        {
+            await ApplySchemaAsync();
+            await GenerateProductsOnlyAsync();
+            Console.WriteLine($"Productos generados en {_clock.Elapsed:c}.");
+            return;
+        }
+
+        PrintPlan();
         await EnsureIdentitySchemaAsync();
         await ApplySchemaAsync();
         await PrepareDatabaseAsync();
@@ -147,6 +242,55 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
                 writer.Write(price, NpgsqlDbType.Numeric);
                 writer.Write(_faker.Random.Bool(0.94f), NpgsqlDbType.Boolean);
             });
+    }
+
+    private async Task GenerateProductsOnlyAsync()
+    {
+        const string truncateSql = "TRUNCATE TABLE delivery_product RESTART IDENTITY CASCADE;";
+        await using var truncateCmd = new NpgsqlCommand(truncateSql, _connection) { CommandTimeout = 300 };
+        await truncateCmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Tabla delivery_product reiniciada. Tiendas, perfiles y pedidos conservados.");
+
+        var storeCount = 0;
+        await using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM delivery_store", _connection))
+            storeCount = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+        if (storeCount == 0)
+            throw new InvalidOperationException("No hay tiendas en la base. Primero ejecute el generador completo.");
+
+        var storeCategories = new string[storeCount + 1];
+        await using (var command = new NpgsqlCommand("SELECT delivery_store_id, category FROM delivery_store ORDER BY delivery_store_id", _connection))
+        await using (var reader = await command.ExecuteReaderAsync())
+            while (await reader.ReadAsync()) storeCategories[reader.GetInt32(0)] = reader.GetString(1);
+
+        var productCount = (int)(storeCount * 40);
+        _products = new ProductInfo[productCount + 1];
+
+        Console.WriteLine($"Generando {productCount:N0} productos para {storeCount:N0} tiendas...");
+
+        await CopyBatchesAsync("productos", productCount,
+            "COPY delivery_product (delivery_product_id, delivery_store_id, name, price, is_available) FROM STDIN (FORMAT BINARY)",
+            (writer, index) =>
+            {
+                var storeId = ((index - 1) % storeCount) + 1;
+                var category = storeCategories[storeId];
+                if (!Catalog.TryGetValue(category, out var definition))
+                    definition = Catalog["Supermercado"];
+                var name = _faker.PickRandom(definition.Products);
+                var price = Money(_faker.Random.Decimal(definition.Min, definition.Max));
+                _products[index] = new(storeId, name, price);
+                writer.Write(index, NpgsqlDbType.Integer);
+                writer.Write(storeId, NpgsqlDbType.Integer);
+                writer.Write(name, NpgsqlDbType.Varchar);
+                writer.Write(price, NpgsqlDbType.Numeric);
+                writer.Write(_faker.Random.Bool(0.94f), NpgsqlDbType.Boolean);
+            });
+
+        await new NpgsqlCommand($"""
+            SELECT setval(pg_get_serial_sequence('delivery_product','delivery_product_id'),
+                COALESCE(MAX(delivery_product_id), 1), MAX(delivery_product_id) IS NOT NULL) FROM delivery_product;
+            """, _connection).ExecuteNonQueryAsync();
+
+        Console.WriteLine($"Generación de productos completada: {productCount:N0} registros.");
     }
 
     private async Task GenerateProfilesAsync()
@@ -449,7 +593,9 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
             var normalized = value.Normalize(NormalizationForm.FormD);
             return new string(normalized.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark && (char.IsLetterOrDigit(c) || c == '.')).ToArray()).ToLowerInvariant();
         }
-        return $"{Slug(first)}.{Slug(last)}.{index + 1:x}@datos.orbi.ec";
+        var domains = new[] { "gmail.com", "outlook.com", "hotmail.com" };
+        var domain = domains[index % domains.Length];
+        return $"{Slug(first)}.{Slug(last)}{index + 1}@{domain}";
     }
 
     private static string EcuadorianId(int index, int seed, out string provinceCode)

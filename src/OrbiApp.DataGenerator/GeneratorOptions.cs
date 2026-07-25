@@ -11,6 +11,7 @@ internal sealed record GeneratorOptions(
     string Locale,
     DateTimeOffset ReferenceDate,
     bool Reset,
+    bool OnlyProducts,
     string SchemaDirectory)
 {
     public static GeneratorOptions Parse(string[] args)
@@ -23,7 +24,7 @@ internal sealed record GeneratorOptions(
                 throw new ArgumentException($"Argumento no reconocido: {args[i]}");
 
             var key = args[i][2..];
-            if (key is "reset" or "help")
+            if (key is "reset" or "help" or "only-products")
             {
                 flags.Add(key);
                 continue;
@@ -54,6 +55,7 @@ internal sealed record GeneratorOptions(
             values.GetValueOrDefault("locale") ?? Environment.GetEnvironmentVariable("DATA_GENERATION_LOCALE") ?? section.Locale,
             DateTimeOffset.Parse(values.GetValueOrDefault("reference-date") ?? section.ReferenceDate, CultureInfo.InvariantCulture),
             flags.Contains("reset"),
+            flags.Contains("only-products"),
             schemaDirectory);
 
         if (options.TotalRecords < 1_000)
@@ -77,6 +79,7 @@ internal sealed record GeneratorOptions(
                                 ConnectionStrings__DefaultConnection
           --schema-dir PATH     Directorio que contiene orbi-schema.sql
           --reset               Vacía las tablas de negocio antes de generar
+          --only-products       Solo genera productos en tiendas existentes
           --help                Muestra esta ayuda
 
         Sin --reset el comando se niega a escribir en una base con datos de negocio.

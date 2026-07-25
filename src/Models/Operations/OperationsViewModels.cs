@@ -11,7 +11,6 @@ public sealed class OperationsDashboardViewModel
     public int StatusChanges { get; init; }
     public int PendingEmails { get; init; }
     public int AuditEvents { get; init; }
-    public int AiRequests { get; init; }
 }
 
 public sealed class InventoryMovementsViewModel

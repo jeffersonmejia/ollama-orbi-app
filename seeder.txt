@@ -1,0 +1,1 @@
+docker run --rm --network orbi_sakila_overlay -v "${PWD}/src:/src" -w /src mcr.microsoft.com/dotnet/sdk:10.0 dotnet run --project OrbiApp.DataGenerator -- --connection "Host=postgres;Port=5432;Database=orbi_app;Username=cruduser;Password=postgres" --schema-dir /src/db --only-products --records 1000000
