@@ -163,6 +163,29 @@
                 <small id="roleSummary" style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);"></small>
             </div>
 
+            <div class="orbi-register-full">
+                <label class="m3-text-field-label" style="margin-bottom:8px;display:block;">Método de pago preferido</label>
+                <div style="display:flex;gap:12px;">
+                    <label style="flex:1;cursor:pointer;">
+                        <input type="radio" asp-for="Input.PreferredPaymentMethod" value="PayPal" style="display:none;" />
+                        <div style="border:2px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:16px 12px;text-align:center;transition:border-color .2s,background .2s;" class="pay-option">
+                            <span class="material-symbols-outlined" style="font-size:28px;color:var(--md-sys-color-primary);display:block;margin-bottom:4px;">account_balance_wallet</span>
+                            <strong style="display:block;">PayPal</strong>
+                            <small style="color:var(--md-sys-color-on-surface-variant);">Pago rápido y seguro</small>
+                        </div>
+                    </label>
+                    <label style="flex:1;cursor:pointer;">
+                        <input type="radio" asp-for="Input.PreferredPaymentMethod" value="PayPhone" style="display:none;" />
+                        <div style="border:2px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:16px 12px;text-align:center;transition:border-color .2s,background .2s;" class="pay-option">
+                            <span class="material-symbols-outlined" style="font-size:28px;color:var(--md-sys-color-primary);display:block;margin-bottom:4px;">smartphone</span>
+                            <strong style="display:block;">PayPhone</strong>
+                            <small style="color:var(--md-sys-color-on-surface-variant);">Paga desde tu celular</small>
+                        </div>
+                    </label>
+                </div>
+                <span asp-validation-for="Input.PreferredPaymentMethod" class="text-danger"></span>
+            </div>
+
             <div class="orbi-register-actions">
                 <button type="button" class="m3-filled-button orbi-register-next">Siguiente</button>
             </div>
@@ -365,6 +388,22 @@
 
             const stepWithError = steps.findIndex(step => step.querySelector('.field-validation-error'));
             showStep(stepWithError >= 0 ? stepWithError : 0);
+        })();
+
+        (function () {
+            function refreshPayOptions() {
+                document.querySelectorAll('input[name="Input.PreferredPaymentMethod"]').forEach(function (radio) {
+                    var card = radio.nextElementSibling;
+                    if (!card) return;
+                    var isActive = radio.checked;
+                    card.style.borderColor = isActive ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-outline-variant)';
+                    card.style.background = isActive ? 'color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent)' : '';
+                });
+            }
+            document.querySelectorAll('input[name="Input.PreferredPaymentMethod"]').forEach(function (radio) {
+                radio.addEventListener('change', refreshPayOptions);
+            });
+            refreshPayOptions();
         })();
     </script>
 }

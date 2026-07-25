@@ -35,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<StockReservation> StockReservations => Set<StockReservation>();
     public DbSet<EmailQueueItem> EmailQueue => Set<EmailQueueItem>();
     public DbSet<AiConsumptionLog> AiConsumptionLogs => Set<AiConsumptionLog>();
+    public DbSet<DeliveryCartItem> DeliveryCartItems => Set<DeliveryCartItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -74,6 +75,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
             entity.Property(x => x.CityCode).HasColumnName("city_code").HasMaxLength(4);
             entity.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(240);
+            entity.Property(x => x.PreferredPaymentMethod).HasColumnName("preferred_payment_method").HasMaxLength(20).HasDefaultValue("PayPal");
             entity.Property(x => x.CreatedAt).HasColumnName("created_at");
             entity.HasIndex(x => x.Cedula).IsUnique();
             entity.HasOne<Microsoft.AspNetCore.Identity.IdentityUser>()
@@ -135,9 +137,15 @@ public class ApplicationDbContext : IdentityDbContext
             entity.ToTable("delivery_product");
             entity.Property(x => x.DeliveryProductId).HasColumnName("delivery_product_id");
             entity.Property(x => x.DeliveryStoreId).HasColumnName("delivery_store_id");
+            entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id").HasMaxLength(450);
             entity.Property(x => x.Name).HasColumnName("name");
             entity.Property(x => x.Price).HasColumnName("price");
+            entity.Property(x => x.UnitCost).HasColumnName("unit_cost").HasColumnType("numeric(10,2)").HasDefaultValue(0m);
+            entity.Property(x => x.Stock).HasColumnName("stock").HasDefaultValue(0);
             entity.Property(x => x.IsAvailable).HasColumnName("is_available");
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.HasIndex(x => x.CreatedByUserId).HasDatabaseName("ix_delivery_product_creator");
         });
 
         builder.Entity<DeliveryOrder>(entity =>
@@ -364,6 +372,19 @@ public class ApplicationDbContext : IdentityDbContext
             entity.HasIndex(x => new { x.ModelName, x.CreatedAt }).HasDatabaseName("ix_ai_consumption_log_model_created_at");
             entity.HasIndex(x => x.CreatedAt).HasDatabaseName("ix_ai_consumption_log_created_at");
             entity.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<DeliveryCartItem>(entity =>
+        {
+            entity.ToTable("delivery_cart_item");
+            entity.HasKey(x => x.DeliveryCartItemId);
+            entity.Property(x => x.DeliveryCartItemId).HasColumnName("delivery_cart_item_id").HasColumnType("bigint").ValueGeneratedOnAdd();
+            entity.Property(x => x.UserEmail).HasColumnName("user_email").HasMaxLength(256);
+            entity.Property(x => x.DeliveryProductId).HasColumnName("delivery_product_id");
+            entity.Property(x => x.Quantity).HasColumnName("quantity").HasDefaultValue(1);
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.HasIndex(x => x.UserEmail).HasDatabaseName("ix_delivery_cart_user");
+            entity.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.DeliveryProductId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

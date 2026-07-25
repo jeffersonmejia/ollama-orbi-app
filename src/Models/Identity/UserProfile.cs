@@ -11,6 +11,7 @@ public class UserProfile
     public string ProvinceCode { get; set; } = string.Empty;
     public string CityCode { get; set; } = string.Empty;
     public string? Reference { get; set; }
+    public string PreferredPaymentMethod { get; set; } = "PayPal";
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public EcuadorProvince Province { get; set; } = null!;

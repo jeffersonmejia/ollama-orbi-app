@@ -176,6 +176,119 @@ public class DeliveryController : Controller
         return View("Orders", orders);
     }
 
+    [Authorize(Roles = "Vendedor")]
+    public async Task<IActionResult> SellerInventory(string? buscar, int page = 1)
+    {
+        var userId = CurrentUserId;
+        var query = _context.DeliveryProducts
+            .AsNoTracking()
+            .Include(p => p.Store)
+            .Where(p => p.CreatedByUserId == userId)
+            .OrderByDescending(p => p.CreatedAt)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = buscar.Trim();
+            var pattern = $"%{term}%";
+            query = query.Where(p => EF.Functions.ILike(p.Name, pattern) || EF.Functions.ILike(p.Store.Name, pattern));
+        }
+
+        var products = await PaginatedList<DeliveryProduct>.CreateAsync(query, Math.Max(1, page), 10);
+        ViewBag.Buscar = buscar;
+        ViewData["PaginatedList"] = products;
+        ViewData["Stores"] = await _context.DeliveryStores.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).ToListAsync();
+        return View(products);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Vendedor")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock, int storeId)
+    {
+        var userId = CurrentUserId;
+        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999)
+        {
+            TempData["Error"] = "Completa todos los campos correctamente. Stock debe ser 0-999.";
+            return RedirectToAction(nameof(SellerInventory));
+        }
+
+        var store = await _context.DeliveryStores.FindAsync(storeId);
+        if (store == null)
+        {
+            TempData["Error"] = "La tienda seleccionada no existe.";
+            return RedirectToAction(nameof(SellerInventory));
+        }
+
+        _context.DeliveryProducts.Add(new DeliveryProduct
+        {
+            DeliveryStoreId = storeId,
+            CreatedByUserId = userId,
+            Name = name.Trim(),
+            Price = price,
+            UnitCost = unitCost,
+            Stock = stock,
+            IsAvailable = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"Producto '{name.Trim()}' creado correctamente.";
+        return RedirectToAction(nameof(SellerInventory));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Vendedor")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProduct(int productId, string name, decimal price, decimal unitCost, int stock)
+    {
+        var userId = CurrentUserId;
+        var product = await _context.DeliveryProducts.FirstOrDefaultAsync(p =>
+            p.DeliveryProductId == productId && p.CreatedByUserId == userId);
+
+        if (product == null)
+        {
+            TempData["Error"] = "Producto no encontrado o no tienes permiso para editarlo.";
+            return RedirectToAction(nameof(SellerInventory));
+        }
+
+        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999)
+        {
+            TempData["Error"] = "Completa todos los campos correctamente.";
+            return RedirectToAction(nameof(SellerInventory));
+        }
+
+        product.Name = name.Trim();
+        product.Price = price;
+        product.UnitCost = unitCost;
+        product.Stock = stock;
+        product.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"Producto '{name.Trim()}' actualizado.";
+        return RedirectToAction(nameof(SellerInventory));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Vendedor")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProduct(int productId)
+    {
+        var userId = CurrentUserId;
+        var product = await _context.DeliveryProducts.FirstOrDefaultAsync(p =>
+            p.DeliveryProductId == productId && p.CreatedByUserId == userId);
+
+        if (product == null)
+        {
+            TempData["Error"] = "Producto no encontrado o no tienes permiso para eliminarlo.";
+            return RedirectToAction(nameof(SellerInventory));
+        }
+
+        _context.DeliveryProducts.Remove(product);
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"Producto '{product.Name}' eliminado.";
+        return RedirectToAction(nameof(SellerInventory));
+    }
+
     [Authorize(Roles = "Administrador")]
     public IActionResult Admin()
     {

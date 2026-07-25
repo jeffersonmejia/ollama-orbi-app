@@ -82,7 +82,7 @@
                 }
                 <li>
                     <a class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" ? "active" : "")"
-                       asp-controller="Operations" asp-action="@(User.IsInRole("Administrador") ? "DeliveryIncidents" : "Index")">
+                       asp-controller="@(User.IsInRole("Vendedor") ? "Delivery" : "Operations")" asp-action="@(User.IsInRole("Vendedor") ? "SellerInventory" : User.IsInRole("Administrador") ? "DeliveryIncidents" : "Index")">
                         <span class="material-symbols-outlined">monitoring</span>
                         <span>@(User.IsInRole("Administrador") ? "Operación" : User.IsInRole("Vendedor") ? "Inventario" : "Seguimiento")</span>
                     </a>

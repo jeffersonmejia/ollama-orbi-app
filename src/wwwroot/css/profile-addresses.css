@@ -23,6 +23,7 @@
 .orbi-google-card-heading p,.orbi-account-link-card p,.orbi-saved-address p { margin:5px 0 0; color:var(--md-sys-color-on-surface-variant); }
 .orbi-google-card-heading>.material-symbols-outlined { color:var(--md-sys-color-primary); }
 .orbi-account-rows { display:grid; }
+.orbi-account-rows .m3-filled-button, .orbi-google-card .orbi-account-rows .m3-filled-button { width:auto; max-width:fit-content; }
 .orbi-account-row { display:grid; grid-template-columns:130px minmax(0,1fr) auto; align-items:center; gap:16px; min-height:58px; border-top:1px solid var(--md-sys-color-outline-variant); }
 .orbi-account-row label { color:var(--md-sys-color-on-surface-variant); font-size:13px; }
 .orbi-account-row>span:not(.material-symbols-outlined) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

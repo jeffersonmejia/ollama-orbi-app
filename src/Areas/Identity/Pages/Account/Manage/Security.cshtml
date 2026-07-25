@@ -31,7 +31,7 @@
                 <div class="orbi-account-rows"><div class="orbi-account-row"><span><strong>Te quedan @Model.RecoveryCodesLeft códigos de recuperación.</strong> Deberías <a asp-page="./GenerateRecoveryCodes">generar un nuevo conjunto</a>.</span></div></div>
             }
 
-            <div class="orbi-account-rows" style="gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 @if (Model.IsMachineRemembered)
                 {
                     <form method="post" asp-page-handler="ForgetBrowser" style="display:inline">
@@ -50,7 +50,7 @@
         }
         else
         {
-            <div class="orbi-account-rows" style="gap:8px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 <a asp-page="./EnableAuthenticator" class="m3-filled-button">Configurar aplicación</a>
                 <a asp-page="./ResetAuthenticator" class="m3-filled-button">Restablecer aplicación</a>
             </div>

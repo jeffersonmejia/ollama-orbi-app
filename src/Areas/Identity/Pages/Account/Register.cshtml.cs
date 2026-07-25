@@ -155,6 +155,10 @@ namespace SakilaApp.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "Seleccione un rol para el usuario.")]
             [Display(Name = "Rol")]
             public string Role { get; set; }
+
+            [Required(ErrorMessage = "Selecciona un método de pago.")]
+            [Display(Name = "Método de pago preferido")]
+            public string PreferredPaymentMethod { get; set; } = "PayPal";
         }
 
 
@@ -164,6 +168,7 @@ namespace SakilaApp.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             Input ??= new InputModel();
             Input.Role ??= "Usuario";
+            Input.PreferredPaymentMethod ??= "PayPal";
             LoadRoles();
             await LoadLocationsAsync();
         }
@@ -229,7 +234,8 @@ namespace SakilaApp.Areas.Identity.Pages.Account
                         AddressLine2 = Input.AddressLine2.Trim(),
                         ProvinceCode = Input.ProvinceCode,
                         CityCode = Input.CityCode,
-                        Reference = string.IsNullOrWhiteSpace(Input.Reference) ? null : Input.Reference.Trim()
+                        Reference = string.IsNullOrWhiteSpace(Input.Reference) ? null : Input.Reference.Trim(),
+                        PreferredPaymentMethod = Input.PreferredPaymentMethod
                     });
                     _context.UserAddresses.Add(new UserAddress
                     {

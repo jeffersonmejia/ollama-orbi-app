@@ -461,10 +461,21 @@
                 const W = 340, H = 140, ML = 36, MR = 8, MT = 8, MB = 24, CW = W - ML - MR, CH = H - MT - MB;
                 const fc = 'var(--md-sys-color-on-surface-variant)';
 
+                function niceMax(raw) {
+                    if (raw <= 0) return 1;
+                    if (raw <= 5) return raw;
+                    const step = Math.pow(10, Math.floor(Math.log10(raw)));
+                    return Math.ceil(raw / step) * step;
+                }
+
                 function yLabels(max) {
                     const lbls = [];
+                    const seen = new Set();
                     for (let g = 0; g <= 4; g++) {
-                        const val = Math.round((1 - g / 4) * max);
+                        const raw = (1 - g / 4) * max;
+                        const val = max <= 5 ? Math.round(raw) : Math.round(raw / 10) * 10;
+                        if (seen.has(val)) continue;
+                        seen.add(val);
                         const gy = MT + (g / 4) * CH;
                         lbls.push(`<text x="${ML - 6}" y="${gy + 3}" text-anchor="end" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${val}</text>`);
                     }
@@ -476,9 +487,9 @@
                             <line x1="${ML}" y1="${MT + CH}" x2="${ML + CW}" y2="${MT + CH}" stroke="${fc}" stroke-width="0.8" opacity="0.5"/>`;
                 }
 
-                function buildChart(data, color) {
+                function buildChart(data, color, chartId) {
                     if (!data || data.length === 0) return `<svg viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="${fc}" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>`;
-                    const max = Math.max(...data.map(d => d.count), 1);
+                    const max = niceMax(Math.max(...data.map(d => d.count)));
                     const grid = [0,1,2,3,4].map(g => {
                         const gy = MT + (g / 4) * CH;
                         return `<line x1="${ML}" y1="${gy}" x2="${ML + CW}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.3"/>`;
@@ -488,7 +499,7 @@
                         y: MT + CH - (d.count / max) * CH
                     }));
                     const polyline = pts.map(p => `${p.x},${p.y}`).join(' ');
-                    const dots = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="white" stroke-width="2"/>`).join('');
+                    const dots = pts.map((p, i) => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="white" stroke-width="2" class="orbi-chart-dot" data-chart="${chartId}" data-idx="${i}"/>`).join('');
                     const xLbl = data.map((d, i) => {
                         const x = data.length === 1 ? ML + CW/2 : ML + (i / (data.length - 1)) * CW;
                         return `<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${d.label}</text>`;
@@ -496,18 +507,42 @@
                     return `<svg viewBox="0 0 ${W} ${H}">${grid}${axes()}${yLabels(max)}<polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${xLbl}</svg>`;
                 }
 
+                let chartData = {};
+
                 async function loadCharts(range) {
                     const res = await fetch('/Home/ChartStats?range=' + encodeURIComponent(range));
                     const data = await res.json();
+                    chartData = data;
 
                     document.getElementById('chart-1-title').textContent = data.chart1Title;
                     document.getElementById('chart-1-total').textContent = data.chart1Total;
-                    document.getElementById('chart-1').innerHTML = buildChart(data.chart1, data.chart1Color);
+                    document.getElementById('chart-1').innerHTML = buildChart(data.chart1, data.chart1Color, 'c1');
 
                     document.getElementById('chart-2-title').textContent = data.chart2Title;
                     document.getElementById('chart-2-total').textContent = data.chart2Total;
-                    document.getElementById('chart-2').innerHTML = buildChart(data.chart2, data.chart2Color);
+                    document.getElementById('chart-2').innerHTML = buildChart(data.chart2, data.chart2Color, 'c2');
                 }
+
+                var tooltip = document.getElementById('orbi-chart-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.id = 'orbi-chart-tooltip';
+                    tooltip.style.cssText = 'position:fixed;display:none;background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);padding:4px 8px;border-radius:8px;font-size:11px;font-family:Inter,sans-serif;pointer-events:none;z-index:9999;white-space:nowrap;';
+                    document.body.appendChild(tooltip);
+                }
+
+                document.addEventListener('mousemove', function(e) {
+                    var dot = e.target.closest('.orbi-chart-dot');
+                    if (!dot) { tooltip.style.display = 'none'; return; }
+                    var chartId = dot.getAttribute('data-chart');
+                    var idx = parseInt(dot.getAttribute('data-idx'));
+                    var arr = chartId === 'c1' ? chartData.chart1 : chartData.chart2;
+                    if (!arr || !arr[idx]) return;
+                    tooltip.textContent = arr[idx].label + ': ' + arr[idx].count;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 12) + 'px';
+                    tooltip.style.top = (e.clientY - 28) + 'px';
+                });
 
                 document.getElementById('orbi-chart-range').addEventListener('change', function() { loadCharts(this.value); });
                 loadCharts('6h');

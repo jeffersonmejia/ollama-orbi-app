@@ -1,0 +1,146 @@
+@page
+@model PaginatedList<SakilaApp.Models.Delivery.DeliveryProduct>
+@{
+    ViewData["Title"] = "Mi inventario";
+}
+
+<div class="orbi-delivery-page">
+    <header class="orbi-delivery-header">
+        <h1>Mi inventario</h1>
+        <p>Productos que has registrado en tu catálogo.</p>
+    </header>
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="orbi-alert orbi-alert-error"><span class="material-symbols-outlined">error</span>@error</div>
+    }
+    @if (TempData["Success"] is string success)
+    {
+        <div class="orbi-alert orbi-alert-success"><span class="material-symbols-outlined">check_circle</span>@success</div>
+    }
+
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Nuevo producto</h2><p>Agrega un producto a tu catálogo.</p></div>
+            <span class="material-symbols-outlined">add_box</span>
+        </div>
+        <form method="post" asp-action="CreateProduct" class="orbi-account-rows" style="padding:0 16px 16px;">
+            @Html.AntiForgeryToken()
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Nombre</label>
+                    <input name="name" class="m3-text-field-input" required placeholder="Ej. Camisa" maxlength="100" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Precio de venta ($)</label>
+                    <input name="price" type="number" step="0.01" min="0" class="m3-text-field-input" required placeholder="0.00" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Costo por unidad ($)</label>
+                    <input name="unitCost" type="number" step="0.01" min="0" class="m3-text-field-input" required placeholder="0.00" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Stock</label>
+                    <input name="stock" type="number" min="0" max="999" class="m3-text-field-input" required placeholder="0" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Tienda</label>
+                    <select name="storeId" class="m3-text-field-input" required>
+                        <option value="">Selecciona una tienda</option>
+                        @foreach (var store in (ViewData["Stores"] as IEnumerable<SakilaApp.Models.Delivery.DeliveryStore>) ?? Enumerable.Empty<SakilaApp.Models.Delivery.DeliveryStore>())
+                        {
+                            <option value="@store.DeliveryStoreId">@store.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="orbi-form-actions" style="margin-top:8px;">
+                <button type="submit" class="m3-filled-button">Agregar producto</button>
+            </div>
+        </form>
+    </section>
+
+    <section style="margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <h2 style="margin:0;font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);">Productos registrados</h2>
+            <form method="get" asp-action="SellerInventory" style="display:flex;gap:8px;">
+                <input type="text" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Buscar producto..." style="height:40px;min-width:200px;" />
+                <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
+            </form>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="orbi-google-card" style="text-align:center;padding:32px;">
+                <span class="material-symbols-outlined" style="font-size:48px;color:var(--md-sys-color-on-surface-variant);display:block;margin-bottom:8px;">inventory_2</span>
+                <p style="color:var(--md-sys-color-on-surface-variant);">No tienes productos registrados aún.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var product in Model)
+            {
+                <article class="orbi-google-card" style="margin-bottom:12px;" id="product-@product.DeliveryProductId">
+                    <div style="display:flex;align-items:flex-start;gap:16px;padding:16px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:200px;">
+                            <h3 style="margin:0 0 4px;font-size:var(--md-sys-typescale-title-medium-size);color:var(--md-sys-color-on-surface);">@product.Name</h3>
+                            <p style="margin:0 0 4px;color:var(--md-sys-color-on-surface-variant);font-size:var(--md-sys-typescale-body-small-size);">
+                                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">store</span>
+                                @product.Store.Name
+                            </p>
+                            <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;">
+                                <span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">
+                                    <strong style="color:var(--md-sys-color-primary);">$@product.Price.ToString("F2")</strong> venta
+                                </span>
+                                <span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">
+                                    <strong>$@product.UnitCost.ToString("F2")</strong> costo
+                                </span>
+                                <span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">
+                                    Stock: <strong>@product.Stock</strong>
+                                </span>
+                                <span style="font-size:var(--md-sys-typescale-body-small-size);color:@(product.IsAvailable ? "var(--md-sys-color-primary)" : "var(--md-sys-color-error)");">
+                                    @(product.IsAvailable ? "Disponible" : "No disponible")
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                            <button type="button" class="m3-text-button" onclick="toggleEdit(@product.DeliveryProductId)" style="font-size:13px;">Editar</button>
+                            <form method="post" asp-action="DeleteProduct" style="display:inline;" onsubmit="return confirm('Eliminar producto @product.Name?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@product.DeliveryProductId" />
+                                <button type="submit" class="m3-text-button orbi-danger-button" style="font-size:13px;">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="edit-@product.DeliveryProductId" style="display:none;padding:0 16px 16px;border-top:1px solid var(--md-sys-color-outline-variant);">
+                        <form method="post" asp-action="UpdateProduct" style="padding-top:12px;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@product.DeliveryProductId" />
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+                                <div class="m3-text-field"><label class="m3-text-field-label">Nombre</label><input name="name" value="@product.Name" class="m3-text-field-input" required maxlength="100" /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label">Precio ($)</label><input name="price" type="number" step="0.01" min="0" value="@product.Price" class="m3-text-field-input" required /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label">Costo ($)</label><input name="unitCost" type="number" step="0.01" min="0" value="@product.UnitCost" class="m3-text-field-input" required /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label">Stock</label><input name="stock" type="number" min="0" max="999" value="@product.Stock" class="m3-text-field-input" required /></div>
+                            </div>
+                            <div class="orbi-form-actions" style="margin-top:8px;">
+                                <button type="button" class="m3-text-button" onclick="toggleEdit(@product.DeliveryProductId)">Cancelar</button>
+                                <button type="submit" class="m3-filled-button">Guardar cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </article>
+            }
+
+            @await Html.PartialAsync("_Pagination", ViewData["PaginatedList"])
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleEdit(id) {
+            var el = document.getElementById('edit-' + id);
+            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+}

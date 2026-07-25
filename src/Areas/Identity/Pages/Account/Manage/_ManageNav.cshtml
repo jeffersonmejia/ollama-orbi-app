@@ -4,6 +4,7 @@
 <nav class="orbi-account-nav">
     <a class="@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "active" : "")" id="profile" asp-page="./Index"><span class="material-symbols-outlined">person</span><span>Perfil</span></a>
     <a class="@(ManageNavPages.AddressesNavClass(ViewContext) == "active" ? "active" : "")" id="addresses" asp-page="./Addresses"><span class="material-symbols-outlined">location_on</span><span>Direcciones</span></a>
+    <a class="@(ManageNavPages.PaymentMethodsNavClass(ViewContext) == "active" ? "active" : "")" id="payment-methods" asp-page="./PaymentMethods"><span class="material-symbols-outlined">payment</span><span>Pago</span></a>
     <a class="@(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "active" : "")" id="email" asp-page="./Email"><span class="material-symbols-outlined">mail</span><span>Correo</span></a>
     <a class="@(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "active" : "")" id="change-password" asp-page="./ChangePassword"><span class="material-symbols-outlined">password</span><span>Clave</span></a>
     <a class="@(ManageNavPages.SecurityNavClass(ViewContext) == "active" ? "active" : "")" id="security" asp-page="./Security"><span class="material-symbols-outlined">security</span><span>Seguridad</span></a>

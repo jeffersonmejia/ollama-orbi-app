@@ -83,10 +83,10 @@ public class HomeController : Controller
     {
         var since = range switch
         {
-            "12h" => DateTimeOffset.UtcNow.AddHours(-12),
-            "1d" => DateTimeOffset.UtcNow.AddDays(-1),
-            "month" => new DateTimeOffset(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
-            _ => DateTimeOffset.UtcNow.AddHours(-6)
+            "12h" => DateTime.UtcNow.AddHours(-12),
+            "1d" => DateTime.UtcNow.AddDays(-1),
+            "month" => new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc),
+            _ => DateTime.UtcNow.AddHours(-6)
         };
 
         var email = User.Identity?.Name ?? "";
