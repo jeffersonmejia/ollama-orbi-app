@@ -23,19 +23,31 @@
         }
     </header>
 
+    <form asp-action="Index" method="get" class="orbi-store-filters">
+        <div class="orbi-store-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" />
+        </div>
+        <div class="m3-text-field"><label class="m3-text-field-label" for="precioMinimo">Precio mínimo</label><input class="m3-text-field-input" id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" /></div>
+        <div class="m3-text-field"><label class="m3-text-field-label" for="precioMaximo">Precio máximo</label><input class="m3-text-field-input" id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" /></div>
+        <input type="hidden" name="categoria" value="@ViewBag.Categoria" />
+        <button type="submit" class="m3-filled-button">Aplicar</button>
+        <a asp-action="Index" class="m3-text-button">Limpiar</a>
+    </form>
+
     <section class="orbi-category-grid" aria-label="Categorías de tiendas">
-        <button class="orbi-category-card" type="button" data-category="Restaurante" aria-pressed="false">
+        <a class="orbi-category-card @(ViewBag.Categoria == "Restaurante" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Restaurante" ? null : "Restaurante")" aria-pressed="@(ViewBag.Categoria == "Restaurante")">
             <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
             <span><strong>Comida rápida</strong><small>Restaurantes y antojos</small></span>
-        </button>
-        <button class="orbi-category-card" type="button" data-category="Farmacia" aria-pressed="false">
+        </a>
+        <a class="orbi-category-card @(ViewBag.Categoria == "Farmacia" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Farmacia" ? null : "Farmacia")" aria-pressed="@(ViewBag.Categoria == "Farmacia")">
             <img src="~/assets/categorias/farmacias.png" alt="Mostrador de farmacia" />
             <span><strong>Farmacias</strong><small>Salud y cuidado</small></span>
-        </button>
-        <button class="orbi-category-card" type="button" data-category="Supermercado" aria-pressed="false">
+        </a>
+        <a class="orbi-category-card @(ViewBag.Categoria == "Supermercado" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Supermercado" ? null : "Supermercado")" aria-pressed="@(ViewBag.Categoria == "Supermercado")">
             <img src="~/assets/categorias/supermercado.png" alt="Interior de supermercado" />
             <span><strong>Supermercado</strong><small>Compras para el hogar</small></span>
-        </button>
+        </a>
     </section>
 
     @if (TempData["Error"] is string error)
@@ -48,10 +60,14 @@
         <div class="orbi-alert">Agrega una dirección en tu perfil para realizar pedidos.</div>
     }
 
+    @if (!Model.Products.Any())
+    {
+        <div class="m3-card orbi-category-empty">No hay productos que coincidan con los filtros.</div>
+    }
     <div class="orbi-product-grid">
         @foreach (var product in Model.Products)
         {
-            <article class="m3-card orbi-product-card" data-product-category="@product.Store.Category">
+            <article class="m3-card orbi-product-card">
                 <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
                 <h2>@product.Name</h2>
                 <p class="orbi-store-location">@product.Store.Address</p>
@@ -75,32 +91,11 @@
             </article>
         }
     </div>
-    <div class="m3-card orbi-category-empty" id="orbi-category-empty" hidden>No hay productos disponibles en esta categoría por el momento.</div>
+    <partial name="_Pagination" />
 </div>
 
 <script>
     (() => {
-        const categoryButtons = Array.from(document.querySelectorAll('.orbi-category-card'));
-        const products = Array.from(document.querySelectorAll('.orbi-product-card'));
-        const emptyState = document.getElementById('orbi-category-empty');
-        let activeCategory = '';
-
-        categoryButtons.forEach(button => button.addEventListener('click', () => {
-            activeCategory = activeCategory === button.dataset.category ? '' : button.dataset.category;
-            categoryButtons.forEach(item => {
-                const active = item.dataset.category === activeCategory;
-                item.classList.toggle('active', active);
-                item.setAttribute('aria-pressed', String(active));
-            });
-            let visible = 0;
-            products.forEach(product => {
-                const matches = !activeCategory || product.dataset.productCategory === activeCategory;
-                product.hidden = !matches;
-                if (matches) visible++;
-            });
-            emptyState.hidden = visible > 0;
-        }));
-
         document.querySelectorAll('.orbi-quantity-control').forEach(control => {
             const input = control.querySelector('input');
             control.querySelectorAll('[data-quantity-action]').forEach(button => button.addEventListener('click', () => {

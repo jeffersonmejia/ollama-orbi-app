@@ -6,6 +6,7 @@
 .orbi-compact-address strong { color:var(--md-sys-color-primary); }
 .orbi-category-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
 .orbi-category-card { position:relative; min-height:126px; overflow:hidden; padding:0; border:1px solid var(--md-sys-color-outline-variant); border-radius:18px; background:var(--md-sys-color-surface-container); color:white; cursor:pointer; text-align:left; isolation:isolate; }
+.orbi-category-card:hover { color:white; text-decoration:none; }
 .orbi-category-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.12)); }
 .orbi-category-card img { position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; transition:transform .2s ease; }
 .orbi-category-card>span { display:grid; gap:3px; position:absolute; left:16px; bottom:14px; }
@@ -33,4 +34,30 @@
 .orbi-quantity-button:hover { background:var(--md-sys-color-primary-container); }
 .orbi-quantity-button .material-symbols-outlined { font-size:20px; }
 .orbi-category-empty { margin-top:16px; padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant); }
+.orbi-store-filters { display:grid; grid-template-columns:minmax(220px,1fr) 150px 150px auto auto; align-items:end; gap:10px; margin-bottom:14px; }
+.orbi-store-search,.orbi-order-search { display:flex; align-items:center; gap:8px; min-height:48px; padding:0 14px; border:1px solid var(--md-sys-color-outline-variant); border-radius:24px; background:var(--md-sys-color-surface-container-low); }
+.orbi-store-search input,.orbi-order-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; }
 @media(max-width:700px){.orbi-store-header{align-items:flex-start;flex-direction:column}.orbi-category-grid{grid-template-columns:1fr}.orbi-category-card{min-height:100px}}
+
+.orbi-orders-page { max-width:1180px; margin:0 auto; }
+.orbi-orders-header { margin-bottom:16px; }
+.orbi-orders-header h1 { margin:0; }
+.orbi-orders-header p { margin:4px 0 0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-order-search { max-width:720px; margin-bottom:14px; }
+.orbi-order-search>.m3-filled-button { flex:0 0 auto; }
+.orbi-orders-table-card { padding:0 18px 16px; overflow:hidden; }
+.orbi-orders-table-wrap { overflow-x:auto; }
+.orbi-orders-table { min-width:900px; }
+.orbi-orders-table td { vertical-align:middle; }
+.orbi-orders-table td>small,.orbi-orders-table td>strong+small { display:block; margin-top:4px; color:var(--md-sys-color-on-surface-variant); font-size:12px; }
+.orbi-order-address { max-width:260px; color:var(--md-sys-color-on-surface-variant); }
+.orbi-order-status { display:inline-flex; align-items:center; gap:7px; min-height:30px; padding:4px 11px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; }
+.orbi-status-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+.orbi-order-status.is-pending { color:#7a5700; background:#fff0c2; }
+.orbi-order-status.is-preparing { color:#744700; background:#ffe2b8; }
+.orbi-order-status.is-transit { color:#075c9b; background:#d9edff; }
+.orbi-order-status.is-delivered { color:#146c2e; background:#d8f5df; }
+.orbi-order-status.is-cancelled { color:var(--md-sys-color-error); background:var(--md-sys-color-error-container); }
+.orbi-delivery-actions { display:flex; gap:2px; }
+@media(max-width:900px){.orbi-store-filters{grid-template-columns:1fr 1fr}.orbi-store-search{grid-column:1/-1}.orbi-store-filters>.m3-filled-button{grid-column:1/2}}
+@media(max-width:560px){.orbi-store-filters{grid-template-columns:1fr}.orbi-store-search,.orbi-store-filters>.m3-filled-button{grid-column:auto}.orbi-order-search{border-radius:16px;flex-wrap:wrap;padding:10px}.orbi-order-search input{flex-basis:calc(100% - 34px)}}

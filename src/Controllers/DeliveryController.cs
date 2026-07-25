@@ -23,15 +23,31 @@ public class DeliveryController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1)
     {
-        var products = await _context.DeliveryProducts
+        var productsQuery = _context.DeliveryProducts
             .AsNoTracking()
             .Include(product => product.Store)
-            .Where(product => product.IsAvailable && product.Store.IsActive)
-            .OrderBy(product => product.Store.Name)
-            .ThenBy(product => product.Name)
-            .ToListAsync();
+            .Where(product => product.IsAvailable && product.Store.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = buscar.Trim();
+            productsQuery = productsQuery.Where(product => product.Name.Contains(term) ||
+                product.Store.Name.Contains(term) || product.Store.Category.Contains(term));
+        }
+        if (precioMinimo.HasValue) productsQuery = productsQuery.Where(product => product.Price >= precioMinimo.Value);
+        if (precioMaximo.HasValue) productsQuery = productsQuery.Where(product => product.Price <= precioMaximo.Value);
+        if (!string.IsNullOrWhiteSpace(categoria)) productsQuery = productsQuery.Where(product => product.Store.Category == categoria);
+
+        var products = await PaginatedList<DeliveryProduct>.CreateAsync(
+            productsQuery.OrderBy(product => product.Store.Name).ThenBy(product => product.Name),
+            Math.Max(1, page), 12);
+        ViewBag.Buscar = buscar;
+        ViewBag.PrecioMinimo = precioMinimo;
+        ViewBag.PrecioMaximo = precioMaximo;
+        ViewBag.Categoria = categoria;
+        ViewData["PaginatedList"] = products;
 
         var addresses = new List<UserAddress>();
         if (User.IsInRole("Usuario") && CurrentUserId is string userId)
@@ -116,22 +132,42 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> MyOrders()
+    public async Task<IActionResult> MyOrders(string? buscar, int page = 1)
     {
         var email = User.Identity!.Name!;
-        var orders = await OrderQuery()
-            .Where(order => order.CustomerEmail == email)
-            .ToListAsync();
+        var query = OrderQuery().Where(order => order.CustomerEmail == email);
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = buscar.Trim();
+            var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
+            query = query.Where(order => order.Store.Name.Contains(term) || order.Status.Contains(term) ||
+                order.Items.Any(item => item.ProductName.Contains(term)) ||
+                (hasOrderId && order.DeliveryOrderId == orderId));
+        }
+        var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
+            query, Math.Max(1, page), 5);
+        ViewBag.Buscar = buscar;
+        ViewData["PaginatedList"] = orders;
         return View("Orders", orders);
     }
 
     [Authorize(Roles = "Repartidor")]
-    public async Task<IActionResult> Deliveries()
+    public async Task<IActionResult> Deliveries(string? buscar, int page = 1)
     {
         var email = User.Identity!.Name!;
-        var orders = await OrderQuery()
-            .Where(order => order.DeliveryPersonEmail == email && order.Status != "Cancelado")
-            .ToListAsync();
+        var query = OrderQuery().Where(order => order.DeliveryPersonEmail == email && order.Status != "Cancelado");
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = buscar.Trim();
+            var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
+            query = query.Where(order => order.Store.Name.Contains(term) || order.Status.Contains(term) ||
+                order.CustomerEmail.Contains(term) || order.Items.Any(item => item.ProductName.Contains(term)) ||
+                (hasOrderId && order.DeliveryOrderId == orderId));
+        }
+        var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
+            query, Math.Max(1, page), 5);
+        ViewBag.Buscar = buscar;
+        ViewData["PaginatedList"] = orders;
         return View("Orders", orders);
     }
 

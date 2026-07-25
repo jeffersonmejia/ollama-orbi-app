@@ -1,51 +1,88 @@
 @using SakilaApp.Models.Delivery
-@model IReadOnlyList<DeliveryOrder>
+@model SakilaApp.Models.PaginatedList<DeliveryOrder>
 
 @{
-    ViewData["Title"] = User.IsInRole("Repartidor") ? "Mis entregas" : "Mis pedidos";
+    var isDeliveryPerson = User.IsInRole("Repartidor");
+    ViewData["Title"] = isDeliveryPerson ? "Mis entregas" : "Mis pedidos";
+    ViewData["PaginatedList"] = Model;
+    Func<string, string> statusClass = status => status switch
+    {
+        "Entregado" => "is-delivered",
+        "En camino" => "is-transit",
+        "En preparación" => "is-preparing",
+        "Cancelado" => "is-cancelled",
+        _ => "is-pending"
+    };
 }
 
-<div class="m3-page">
-    <h1 class="m3-page-title">@ViewData["Title"]</h1>
+<div class="m3-page orbi-orders-page">
+    <header class="orbi-orders-header">
+        <div><h1 class="m3-page-title">@ViewData["Title"]</h1><p>@(isDeliveryPerson ? "Pedidos asignados para entregar." : "Consulta el detalle y estado de tus compras.")</p></div>
+    </header>
+
+    <form asp-action="@(isDeliveryPerson ? "Deliveries" : "MyOrders")" method="get" class="orbi-order-search">
+        <span class="material-symbols-outlined">search</span>
+        <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar por pedido, tienda, producto o estado" aria-label="Buscar pedidos" />
+        <button type="submit" class="m3-filled-button">Buscar</button>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.Buscar as string))
+        {
+            <a asp-action="@(isDeliveryPerson ? "Deliveries" : "MyOrders")" class="m3-text-button">Limpiar</a>
+        }
+    </form>
 
     @if (TempData["Success"] is string success)
     {
-        <div class="m3-card" style="padding:16px;margin-bottom:16px;">@success</div>
+        <div class="orbi-alert">@success</div>
     }
 
-    @if (!Model.Any())
-    {
-        <div class="m3-card" style="padding:24px;">No hay pedidos para mostrar.</div>
-    }
-
-    <div style="display:grid;gap:16px;">
-        @foreach (var order in Model)
+    <section class="m3-card orbi-orders-table-card">
+        @if (!Model.Any())
         {
-            <article class="m3-card" style="padding:24px;">
-                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-                    <div>
-                        <h2 style="margin:0;">Pedido #@order.DeliveryOrderId · @order.Store.Name</h2>
-                        <p style="color:var(--md-sys-color-on-surface-variant);">@order.DeliveryAddress</p>
-                    </div>
-                    <strong>@order.Status</strong>
-                </div>
-                <ul>
-                    @foreach (var item in order.Items)
-                    {
-                        <li>@item.Quantity × @item.ProductName — @item.Subtotal.ToString("C")</li>
-                    }
-                </ul>
-                <strong>Total: @order.Total.ToString("C")</strong>
-
-                @if (User.IsInRole("Repartidor") && order.Status != "Entregado")
-                {
-                    <form asp-action="UpdateStatus" method="post" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
-                        <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
-                        <button class="m3-filled-button" name="status" value="En camino">Marcar en camino</button>
-                        <button class="m3-filled-button" name="status" value="Entregado">Marcar entregado</button>
-                    </form>
-                }
-            </article>
+            <div class="orbi-empty-state">No hay pedidos para mostrar.</div>
         }
-    </div>
+        else
+        {
+            <div class="orbi-orders-table-wrap">
+                <table class="m3-data-table orbi-orders-table">
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Tienda y productos</th>
+                            <th>Dirección</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            @if (isDeliveryPerson) { <th>Acciones</th> }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td><strong>#@order.DeliveryOrderId</strong><small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                                <td><strong>@order.Store.Name</strong><small>@string.Join(" · ", order.Items.Select(item => $"{item.Quantity}× {item.ProductName}"))</small></td>
+                                <td class="orbi-order-address">@order.DeliveryAddress</td>
+                                <td><strong>$@order.Total.ToString("0.00")</strong></td>
+                                <td><span class="orbi-order-status @statusClass(order.Status)"><span class="orbi-status-dot"></span>@order.Status</span></td>
+                                @if (isDeliveryPerson)
+                                {
+                                    <td>
+                                        @if (order.Status != "Entregado")
+                                        {
+                                            <form asp-action="UpdateStatus" method="post" class="orbi-delivery-actions">
+                                                <input type="hidden" name="orderId" value="@order.DeliveryOrderId" />
+                                                <button class="m3-text-button" name="status" value="En camino">En camino</button>
+                                                <button class="m3-text-button" name="status" value="Entregado">Entregado</button>
+                                            </form>
+                                        }
+                                        else { <span>—</span> }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <partial name="_Pagination" />
+    </section>
 </div>
