@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SakilaApp.Models.Commerce;
 using SakilaApp.Models.Delivery;
+using SakilaApp.Models.Identity;
 
 namespace SakilaApp.Data;
 
@@ -21,10 +22,63 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<DeliveryProduct> DeliveryProducts => Set<DeliveryProduct>();
     public DbSet<DeliveryOrder> DeliveryOrders => Set<DeliveryOrder>();
     public DbSet<DeliveryOrderItem> DeliveryOrderItems => Set<DeliveryOrderItem>();
+    public DbSet<EcuadorProvince> EcuadorProvinces => Set<EcuadorProvince>();
+    public DbSet<EcuadorCity> EcuadorCities => Set<EcuadorCity>();
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<EcuadorProvince>(entity =>
+        {
+            entity.ToTable("ecuador_province");
+            entity.HasKey(x => x.Code);
+            entity.Property(x => x.Code).HasColumnName("province_code").HasMaxLength(2);
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(100);
+        });
+
+        builder.Entity<EcuadorCity>(entity =>
+        {
+            entity.ToTable("ecuador_city");
+            entity.HasKey(x => x.Code);
+            entity.Property(x => x.Code).HasColumnName("city_code").HasMaxLength(4);
+            entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
+            entity.Property(x => x.Name).HasColumnName("name").HasMaxLength(100);
+            entity.HasOne(x => x.Province)
+                .WithMany(x => x.Cities)
+                .HasForeignKey(x => x.ProvinceCode)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<UserProfile>(entity =>
+        {
+            entity.ToTable("user_profile");
+            entity.HasKey(x => x.IdentityUserId);
+            entity.Property(x => x.IdentityUserId).HasColumnName("identity_user_id");
+            entity.Property(x => x.FirstName).HasColumnName("first_name").HasMaxLength(80);
+            entity.Property(x => x.LastName).HasColumnName("last_name").HasMaxLength(80);
+            entity.Property(x => x.Cedula).HasColumnName("cedula").HasMaxLength(10);
+            entity.Property(x => x.AddressLine1).HasColumnName("address_line_1").HasMaxLength(160);
+            entity.Property(x => x.AddressLine2).HasColumnName("address_line_2").HasMaxLength(160);
+            entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
+            entity.Property(x => x.CityCode).HasColumnName("city_code").HasMaxLength(4);
+            entity.Property(x => x.Reference).HasColumnName("reference").HasMaxLength(240);
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at");
+            entity.HasIndex(x => x.Cedula).IsUnique();
+            entity.HasOne<Microsoft.AspNetCore.Identity.IdentityUser>()
+                .WithOne()
+                .HasForeignKey<UserProfile>(x => x.IdentityUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Province)
+                .WithMany()
+                .HasForeignKey(x => x.ProvinceCode)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.City)
+                .WithMany()
+                .HasForeignKey(x => x.CityCode)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         builder.Entity<DeliveryStore>(entity =>
         {

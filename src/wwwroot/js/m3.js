@@ -160,7 +160,7 @@
 
     function updateRoleSummary() {
       roleSummary.textContent = descriptions[roleSelect.value] ||
-        'Selecciona un rol para ver el tipo de acceso que tendra el usuario.';
+        'Selecciona un rol para ver el tipo de acceso que tendrá el usuario.';
     }
 
     roleSelect.addEventListener('change', updateRoleSummary);

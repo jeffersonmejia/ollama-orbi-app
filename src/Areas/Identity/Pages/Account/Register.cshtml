@@ -4,13 +4,152 @@
     ViewData["Title"] = "Crear cuenta";
 }
 
-<div style="display:flex;align-items:center;justify-content:center;max-width:440px;margin:2rem auto;padding:0 1rem;">
+<style>
+    .orbi-register-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem 1.25rem;
+    }
+
+    .orbi-register-grid > .orbi-register-summary,
+    .orbi-register-grid > .orbi-register-step,
+    .orbi-register-grid > .orbi-register-progress {
+        grid-column: 1 / -1;
+    }
+
+    .orbi-register-progress {
+        display: flex;
+        justify-content: center;
+        gap: .5rem;
+        margin-bottom: .5rem;
+    }
+
+    .orbi-register-progress-dot {
+        width: 2.25rem;
+        height: .35rem;
+        border: 0;
+        border-radius: 999px;
+        background: var(--md-sys-color-surface-container-highest);
+        transition: background-color .2s ease;
+    }
+
+    .orbi-register-progress-dot.active,
+    .orbi-register-progress-dot.complete {
+        background: var(--md-sys-color-primary);
+    }
+
+    .orbi-register-step {
+        display: none;
+    }
+
+    .orbi-register-step.active {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem 1.25rem;
+    }
+
+    .orbi-register-step-title,
+    .orbi-register-actions,
+    .orbi-register-full {
+        grid-column: 1 / -1;
+    }
+
+    .orbi-register-step-title {
+        margin: 0;
+        color: var(--md-sys-color-on-surface);
+        font-size: var(--md-sys-typescale-title-medium-size);
+    }
+
+    .orbi-register-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .75rem;
+        margin-top: .5rem;
+    }
+
+    .orbi-register-google {
+        display: grid;
+        justify-items: stretch;
+        gap: .5rem;
+        padding-top: .25rem;
+        text-align: center;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: var(--md-sys-typescale-body-small-size);
+    }
+
+    @@media (max-width: 680px) {
+        .orbi-register-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .orbi-register-grid > .orbi-register-summary,
+        .orbi-register-grid > .orbi-register-step,
+        .orbi-register-grid > .orbi-register-progress {
+            grid-column: auto;
+        }
+
+        .orbi-register-step.active {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .orbi-register-step-title,
+        .orbi-register-actions,
+        .orbi-register-full {
+            grid-column: auto;
+        }
+    }
+</style>
+
+<div style="display:flex;align-items:center;justify-content:center;max-width:960px;margin:2rem auto;padding:0 1rem;">
     <div style="flex:1;width:100%;">
         <div class="m3-card" style="padding:2rem;">
         <h1 style="font-size:var(--md-sys-typescale-headline-small-size);font-weight:var(--md-sys-typescale-headline-small-weight);color:var(--md-sys-color-on-surface);margin:0 0 1.5rem;text-align:center;">@ViewData["Title"]</h1>
 
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" style="display:grid;gap:1rem;">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+        @if (TempData["ErrorMessage"] is string externalRegistrationError)
+        {
+            <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-error);margin:0 0 16px;padding:12px;background:var(--md-sys-color-error-container);border-radius:var(--md-sys-shape-corner-small);">
+                @externalRegistrationError
+            </div>
+        }
+
+        <form id="registerForm" class="orbi-register-grid" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger orbi-register-summary" role="alert"></div>
+
+            <div class="orbi-register-progress" aria-label="Progreso del registro">
+                <span class="orbi-register-progress-dot active" aria-hidden="true"></span>
+                <span class="orbi-register-progress-dot" aria-hidden="true"></span>
+                <span class="orbi-register-progress-dot" aria-hidden="true"></span>
+            </div>
+
+            <section class="orbi-register-step active" data-step="0">
+            <h2 class="orbi-register-step-title">1. Datos personales</h2>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.FirstName"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">person</span>
+                    <input asp-for="Input.FirstName" class="m3-text-field-input" style="padding-left:40px;" autocomplete="given-name" aria-required="true" placeholder="Nombres" />
+                </div>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.LastName"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">person</span>
+                    <input asp-for="Input.LastName" class="m3-text-field-input" style="padding-left:40px;" autocomplete="family-name" aria-required="true" placeholder="Apellidos" />
+                </div>
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.Cedula"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">id_card</span>
+                    <input asp-for="Input.Cedula" class="m3-text-field-input" style="padding-left:40px;" inputmode="numeric" maxlength="10" autocomplete="off" aria-required="true" placeholder="10 dígitos" />
+                </div>
+                <span asp-validation-for="Input.Cedula" class="text-danger"></span>
+            </div>
 
             <div class="m3-text-field">
                 <label class="m3-text-field-label" asp-for="Input.Role"></label>
@@ -24,11 +163,68 @@
                 <small id="roleSummary" style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);"></small>
             </div>
 
+            <div class="orbi-register-actions">
+                <button type="button" class="m3-filled-button orbi-register-next">Siguiente</button>
+            </div>
+            </section>
+
+            <section class="orbi-register-step" data-step="1">
+            <h2 class="orbi-register-step-title">2. Ubicación y dirección</h2>
+
             <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.ProvinceCode"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">map</span>
+                    <select asp-for="Input.ProvinceCode" asp-items="Model.AvailableProvinces" class="m3-text-field-input" style="padding-left:40px;" aria-required="true">
+                        <option value="">Selecciona una provincia</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Input.ProvinceCode" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.CityCode"></label>
+                <div style="position:relative;">
+                    <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">location_city</span>
+                    <select asp-for="Input.CityCode" class="m3-text-field-input" style="padding-left:40px;" aria-required="true" data-selected-city="@Model.Input?.CityCode">
+                        <option value="">Selecciona primero una provincia</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Input.CityCode" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.AddressLine1"></label>
+                <input asp-for="Input.AddressLine1" class="m3-text-field-input" autocomplete="address-line1" aria-required="true" placeholder="Ej. Av. Principal" />
+                <span asp-validation-for="Input.AddressLine1" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field">
+                <label class="m3-text-field-label" asp-for="Input.AddressLine2"></label>
+                <input asp-for="Input.AddressLine2" class="m3-text-field-input" autocomplete="address-line2" aria-required="true" placeholder="Ej. Calle secundaria" />
+                <span asp-validation-for="Input.AddressLine2" class="text-danger"></span>
+            </div>
+
+            <div class="m3-text-field orbi-register-full">
+                <label class="m3-text-field-label" asp-for="Input.Reference"></label>
+                <input asp-for="Input.Reference" class="m3-text-field-input" placeholder="Ej. Frente al parque, casa azul" />
+                <span asp-validation-for="Input.Reference" class="text-danger"></span>
+            </div>
+
+            <div class="orbi-register-actions">
+                <button type="button" class="m3-text-button orbi-register-previous">Anterior</button>
+                <button type="button" class="m3-filled-button orbi-register-next">Siguiente</button>
+            </div>
+            </section>
+
+            <section class="orbi-register-step" data-step="2">
+            <h2 class="orbi-register-step-title">3. Datos de acceso</h2>
+
+            <div class="m3-text-field orbi-register-full">
                 <label class="m3-text-field-label" asp-for="Input.Email"></label>
                 <div style="position:relative;">
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">mail</span>
-                    <input asp-for="Input.Email" class="m3-text-field-input" style="padding-left:40px;" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <input asp-for="Input.Email" class="m3-text-field-input" style="padding-left:40px;" autocomplete="username" aria-required="true" placeholder="correo@ejemplo.com" />
                 </div>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
@@ -37,8 +233,8 @@
                 <label class="m3-text-field-label" asp-for="Input.Password"></label>
                 <div class="m3-password-wrapper" style="position:relative;display:flex;align-items:center;">
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">lock</span>
-                    <input asp-for="Input.Password" class="m3-text-field-input" style="flex:1;padding-left:40px;padding-right:44px;" autocomplete="new-password" aria-required="true" placeholder="password" />
-                    <button type="button" class="m3-password-toggle m3-icon-btn" style="position:absolute;right:4px;" tabindex="-1" aria-label="Toggle password visibility">
+                    <input asp-for="Input.Password" class="m3-text-field-input" style="flex:1;padding-left:40px;padding-right:44px;" autocomplete="new-password" aria-required="true" placeholder="Contraseña" />
+                    <button type="button" class="m3-password-toggle m3-icon-btn" style="position:absolute;right:4px;" tabindex="-1" aria-label="Mostrar u ocultar contraseña">
                         <svg class="m3-eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         <svg class="m3-eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     </button>
@@ -50,8 +246,8 @@
                 <label class="m3-text-field-label" asp-for="Input.ConfirmPassword"></label>
                 <div class="m3-password-wrapper" style="position:relative;display:flex;align-items:center;">
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;z-index:1;">lock</span>
-                    <input asp-for="Input.ConfirmPassword" class="m3-text-field-input" style="flex:1;padding-left:40px;padding-right:44px;" autocomplete="new-password" aria-required="true" placeholder="confirm password" />
-                    <button type="button" class="m3-password-toggle m3-icon-btn" style="position:absolute;right:4px;" tabindex="-1" aria-label="Toggle password visibility">
+                    <input asp-for="Input.ConfirmPassword" class="m3-text-field-input" style="flex:1;padding-left:40px;padding-right:44px;" autocomplete="new-password" aria-required="true" placeholder="Confirmar contraseña" />
+                    <button type="button" class="m3-password-toggle m3-icon-btn" style="position:absolute;right:4px;" tabindex="-1" aria-label="Mostrar u ocultar contraseña">
                         <svg class="m3-eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         <svg class="m3-eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     </button>
@@ -59,28 +255,116 @@
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
 
-            <button id="registerSubmit" type="submit" class="m3-filled-button" style="width:100%;">Crear cuenta</button>
-        </form>
+            <div class="orbi-register-google orbi-register-full">
+                <span>O evita el correo y la contraseña</span>
+                <button type="submit"
+                        class="m3-outlined-button"
+                        name="provider"
+                        value="Google"
+                        formnovalidate
+                        formaction="@Url.Page("./ExternalLogin", values: new { returnUrl = Model.ReturnUrl, registration = true })">
+                    <img class="orbi-google-mark" src="~/assets/icons/google.png" alt="" aria-hidden="true" />
+                    Registrarse con Google
+                </button>
+            </div>
 
-        @if ((Model.ExternalLogins?.Count ?? 0) > 0)
-        {
-            <hr class="m3-divider" />
-            <p style="text-align:center;font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin:0;">Use another service to register</p>
-            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" style="display:grid;gap:8px;margin-top:8px;">
-                @foreach (var provider in Model.ExternalLogins!)
-                {
-                    <button type="submit" class="m3-outlined-button" style="width:100%;"
-                            name="provider" value="@provider.Name"
-                            title="Register using your @provider.DisplayName account">
-                        Continue with @provider.DisplayName
-                    </button>
-                }
-            </form>
-        }
+            <div class="orbi-register-actions">
+                <button type="button" class="m3-text-button orbi-register-previous">Anterior</button>
+                <button id="registerSubmit" type="submit" class="m3-filled-button">Crear cuenta</button>
+            </div>
+            </section>
+        </form>
     </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const citiesByProvince = @Html.Raw(Model.CitiesByProvinceJson);
+            const provinceSelect = document.getElementById('Input_ProvinceCode');
+            const citySelect = document.getElementById('Input_CityCode');
+
+            if (!provinceSelect || !citySelect) return;
+
+            function loadCities(selectedCity) {
+                const cities = citiesByProvince[provinceSelect.value] || [];
+                citySelect.replaceChildren();
+
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = cities.length
+                    ? 'Selecciona una ciudad'
+                    : 'Selecciona primero una provincia';
+                citySelect.appendChild(placeholder);
+
+                cities.forEach(function (city) {
+                    const option = document.createElement('option');
+                    option.value = city.Code;
+                    option.textContent = city.Name;
+                    option.selected = city.Code === selectedCity;
+                    citySelect.appendChild(option);
+                });
+
+                citySelect.disabled = cities.length === 0;
+            }
+
+            loadCities(citySelect.dataset.selectedCity || '');
+            provinceSelect.addEventListener('change', function () {
+                loadCities('');
+            });
+        })();
+
+        (function () {
+            const form = document.getElementById('registerForm');
+            const steps = Array.from(form.querySelectorAll('.orbi-register-step'));
+            const dots = Array.from(form.querySelectorAll('.orbi-register-progress-dot'));
+            let currentStep = 0;
+
+            function showStep(index) {
+                currentStep = Math.max(0, Math.min(index, steps.length - 1));
+                steps.forEach((step, position) => step.classList.toggle('active', position === currentStep));
+                dots.forEach((dot, position) => {
+                    dot.classList.toggle('active', position === currentStep);
+                    dot.classList.toggle('complete', position < currentStep);
+                });
+            }
+
+            function validateCurrentStep() {
+                const fields = Array.from(steps[currentStep].querySelectorAll('input, select'));
+                const validator = window.jQuery ? window.jQuery(form).data('validator') : null;
+                let valid = true;
+
+                fields.forEach(field => {
+                    if (validator) {
+                        valid = validator.element(field) && valid;
+                    } else if (!field.checkValidity()) {
+                        valid = false;
+                    }
+                });
+
+                if (!valid && !validator) {
+                    fields.find(field => !field.checkValidity())?.reportValidity();
+                }
+
+                return valid;
+            }
+
+            form.querySelectorAll('.orbi-register-next').forEach(button => {
+                button.addEventListener('click', function () {
+                    if (validateCurrentStep()) showStep(currentStep + 1);
+                });
+            });
+
+            form.querySelectorAll('.orbi-register-previous').forEach(button => {
+                button.addEventListener('click', function () {
+                    showStep(currentStep - 1);
+                });
+            });
+
+            const stepWithError = steps.findIndex(step => step.querySelector('.field-validation-error'));
+            showStep(stepWithError >= 0 ? stepWithError : 0);
+        })();
+    </script>
 }

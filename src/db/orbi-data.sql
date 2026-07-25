@@ -28,3 +28,27 @@ SELECT setval(pg_get_serial_sequence('delivery_store', 'delivery_store_id'), (SE
 SELECT setval(pg_get_serial_sequence('delivery_product', 'delivery_product_id'), (SELECT MAX(delivery_product_id) FROM delivery_product));
 SELECT setval(pg_get_serial_sequence('delivery_order', 'delivery_order_id'), (SELECT MAX(delivery_order_id) FROM delivery_order));
 SELECT setval(pg_get_serial_sequence('delivery_order_item', 'delivery_order_item_id'), (SELECT MAX(delivery_order_item_id) FROM delivery_order_item));
+
+INSERT INTO user_profile
+    (identity_user_id, first_name, last_name, cedula, address_line_1, address_line_2, province_code, city_code, reference)
+SELECT "Id", 'Jefferson', 'Mejía', '0912345675', 'Av. Principal 101', 'Calle 9 de Octubre', '09', '0901', 'Frente al parque'
+FROM "AspNetUsers" WHERE "NormalizedEmail" = 'JEFFERSON.MEJIA@ORBI.COM'
+ON CONFLICT (identity_user_id) DO NOTHING;
+
+INSERT INTO user_profile
+    (identity_user_id, first_name, last_name, cedula, address_line_1, address_line_2, province_code, city_code, reference)
+SELECT "Id", 'María', 'López', '1712345675', 'Av. Amazonas', 'Calle Naciones Unidas', '17', '1701', NULL
+FROM "AspNetUsers" WHERE "NormalizedEmail" = 'MARIA.LOPEZ@ORBI.COM'
+ON CONFLICT (identity_user_id) DO NOTHING;
+
+INSERT INTO user_profile
+    (identity_user_id, first_name, last_name, cedula, address_line_1, address_line_2, province_code, city_code, reference)
+SELECT "Id", 'Carlos', 'Pérez', '0923456784', 'Av. Nicolás Lapentti', 'Calle Loja', '09', '0907', NULL
+FROM "AspNetUsers" WHERE "NormalizedEmail" = 'CARLOS.PEREZ@ORBI.COM'
+ON CONFLICT (identity_user_id) DO NOTHING;
+
+INSERT INTO user_profile
+    (identity_user_id, first_name, last_name, cedula, address_line_1, address_line_2, province_code, city_code, reference)
+SELECT "Id", 'Ana', 'Torres', '0123456782', 'Av. de las Américas', 'Calle del Batán', '01', '0101', 'Casa esquinera'
+FROM "AspNetUsers" WHERE "NormalizedEmail" = 'ANA.TORRES@ORBI.COM'
+ON CONFLICT (identity_user_id) DO NOTHING;

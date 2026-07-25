@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using SakilaApp.Data;
+using SakilaApp.Models.Identity;
 
 namespace SakilaApp.Areas.Identity.Pages.Account
 {
@@ -29,13 +33,15 @@ namespace SakilaApp.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
+        private readonly ApplicationDbContext _context;
 
         public ExternalLoginModel(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ApplicationDbContext context)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -43,6 +49,7 @@ namespace SakilaApp.Areas.Identity.Pages.Account
             _emailStore = GetEmailStore();
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         /// <summary>
@@ -71,6 +78,9 @@ namespace SakilaApp.Areas.Identity.Pages.Account
         [TempData]
         public string ErrorMessage { get; set; }
 
+        [TempData]
+        public string PendingRegistrationProfile { get; set; }
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -88,8 +98,23 @@ namespace SakilaApp.Areas.Identity.Pages.Account
         
         public IActionResult OnGet() => RedirectToPage("./Login");
 
-        public IActionResult OnPost(string provider, string returnUrl = null)
+        public IActionResult OnPost(string provider, string returnUrl = null, bool registration = false)
         {
+            if (registration)
+            {
+                var form = Request.Form;
+                PendingRegistrationProfile = JsonSerializer.Serialize(new ExternalRegistrationProfile(
+                    form["Input.FirstName"].ToString(),
+                    form["Input.LastName"].ToString(),
+                    form["Input.Cedula"].ToString(),
+                    form["Input.Role"].ToString(),
+                    form["Input.ProvinceCode"].ToString(),
+                    form["Input.CityCode"].ToString(),
+                    form["Input.AddressLine1"].ToString(),
+                    form["Input.AddressLine2"].ToString(),
+                    form["Input.Reference"].ToString()));
+            }
+
             // Request a redirect to the external login provider.
             var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
@@ -124,6 +149,13 @@ namespace SakilaApp.Areas.Identity.Pages.Account
             }
             else
             {
+                var pendingProfile = DeserializePendingProfile();
+                var externalEmail = info.Principal.FindFirstValue(ClaimTypes.Email);
+                if (pendingProfile is not null && !string.IsNullOrWhiteSpace(externalEmail))
+                {
+                    return await CreateExternalRegistrationAsync(info, externalEmail, pendingProfile, returnUrl);
+                }
+
                 // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
@@ -210,6 +242,117 @@ namespace SakilaApp.Areas.Identity.Pages.Account
                     $"override the external login page in /Areas/Identity/Pages/Account/ExternalLogin.cshtml");
             }
         }
+
+        private ExternalRegistrationProfile DeserializePendingProfile()
+        {
+            if (string.IsNullOrWhiteSpace(PendingRegistrationProfile))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<ExternalRegistrationProfile>(PendingRegistrationProfile);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private async Task<IActionResult> CreateExternalRegistrationAsync(
+            ExternalLoginInfo info,
+            string email,
+            ExternalRegistrationProfile profile,
+            string returnUrl)
+        {
+            var publicRoles = new[] { "Usuario", "Vendedor", "Repartidor" };
+            var requiredValues = new[]
+            {
+                profile.FirstName, profile.LastName, profile.Cedula, profile.ProvinceCode,
+                profile.CityCode, profile.AddressLine1, profile.AddressLine2
+            };
+
+            var locationIsValid = await _context.EcuadorCities.AnyAsync(city =>
+                city.Code == profile.CityCode && city.ProvinceCode == profile.ProvinceCode);
+            var cedulaExists = await _context.UserProfiles.AnyAsync(item => item.Cedula == profile.Cedula);
+
+            if (requiredValues.Any(string.IsNullOrWhiteSpace) ||
+                !publicRoles.Contains(profile.Role) ||
+                !locationIsValid ||
+                cedulaExists)
+            {
+                ErrorMessage = cedulaExists
+                    ? "Ya existe una cuenta registrada con esa cédula."
+                    : "Revisa los datos personales y de ubicación antes de continuar con Google.";
+                return RedirectToPage("./Register", new { ReturnUrl = returnUrl, oauthError = "profile" });
+            }
+
+            var user = CreateUser();
+            user.EmailConfirmed = true;
+            await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+
+            var result = await _userManager.CreateAsync(user);
+            var userWasCreated = result.Succeeded;
+            if (result.Succeeded)
+            {
+                result = await _userManager.AddLoginAsync(user, info);
+            }
+            if (result.Succeeded)
+            {
+                result = await _userManager.AddToRoleAsync(user, profile.Role);
+            }
+
+            if (!result.Succeeded)
+            {
+                if (userWasCreated)
+                {
+                    await _userManager.DeleteAsync(user);
+                }
+                ErrorMessage = string.Join(" ", result.Errors.Select(error => error.Description));
+                return RedirectToPage("./Register", new { ReturnUrl = returnUrl, oauthError = "google" });
+            }
+
+            _context.UserProfiles.Add(new UserProfile
+            {
+                IdentityUserId = user.Id,
+                FirstName = profile.FirstName.Trim(),
+                LastName = profile.LastName.Trim(),
+                Cedula = profile.Cedula.Trim(),
+                AddressLine1 = profile.AddressLine1.Trim(),
+                AddressLine2 = profile.AddressLine2.Trim(),
+                ProvinceCode = profile.ProvinceCode,
+                CityCode = profile.CityCode,
+                Reference = string.IsNullOrWhiteSpace(profile.Reference) ? null : profile.Reference.Trim()
+            });
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                await _userManager.DeleteAsync(user);
+                ErrorMessage = "No fue posible guardar los datos del perfil.";
+                return RedirectToPage("./Register", new { ReturnUrl = returnUrl, oauthError = "profile" });
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+            _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+            return LocalRedirect(returnUrl);
+        }
+
+        private sealed record ExternalRegistrationProfile(
+            string FirstName,
+            string LastName,
+            string Cedula,
+            string Role,
+            string ProvinceCode,
+            string CityCode,
+            string AddressLine1,
+            string AddressLine2,
+            string Reference);
 
         private IUserEmailStore<IdentityUser> GetEmailStore()
         {

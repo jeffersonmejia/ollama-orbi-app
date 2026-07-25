@@ -20,6 +20,17 @@
 
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@{
+    var currentUserRole = string.Empty;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser is not null)
+        {
+            currentUserRole = (await UserManager.GetRolesAsync(currentUser)).FirstOrDefault() ?? "Sin rol";
+        }
+    }
+}
 <div class="m3-app-layout @(hasSharedChat ? "orbi-chat-layout" : string.Empty)">
     <nav class="m3-nav-rail">
         <div class="m3-nav-rail-header"></div>
@@ -33,7 +44,7 @@
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
-                    <span>Home</span>
+                    <span>Inicio</span>
                 </a>
             </li>
 
@@ -216,7 +227,10 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    <span>Perfil</span>
+                    <span class="orbi-profile-label">
+                        <span>Perfil</span>
+                        <small>@currentUserRole</small>
+                    </span>
                 </a>
 
                 <form asp-area="Identity" asp-page="/Account/Logout"
@@ -259,15 +273,15 @@
 
     <div class="m3-content-area">
         <header class="m3-top-app-bar">
-            <h1 class="m3-top-app-bar-title">@ViewData["Title"]</h1>
-            <div class="m3-top-app-bar-actions">
-                @if (SignInManager.IsSignedIn(User))
+            <h1 class="m3-top-app-bar-title @(currentController == "Home" ? "orbi-top-brand" : "")">
+                @if (currentController == "Home")
                 {
-                    <span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin-right:8px;">
-                        @UserManager.GetUserName(User)
+                    <span class="orbi-top-brand-mark" aria-hidden="true">
+                        <span class="material-symbols-outlined">shopping_bag</span>
                     </span>
                 }
-            </div>
+                <span>@ViewData["Title"]</span>
+            </h1>
         </header>
 
         <main class="m3-main">

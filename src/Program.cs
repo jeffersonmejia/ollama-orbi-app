@@ -94,31 +94,32 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
+    var identityDb = sp.GetRequiredService<ApplicationDbContext>();
+    await identityDb.Database.MigrateAsync();
+
     var sakilaDb = sp.GetRequiredService<SakilaContext>();
     var conn = sakilaDb.Database.GetDbConnection();
     await conn.OpenAsync();
     using var cmd = conn.CreateCommand();
 
-    bool orbiSchemaExists;
-    cmd.CommandText = "SELECT EXISTS (SELECT FROM pg_class WHERE relname = 'delivery_store' AND relkind = 'r')";
-    orbiSchemaExists = (bool)(await cmd.ExecuteScalarAsync() ?? false);
-
-    if (!orbiSchemaExists)
+    foreach (var fileName in new[] { "orbi-schema.sql", "orbi-locations.sql" })
     {
-        foreach (var fileName in new[] { "orbi-schema.sql", "orbi-data.sql" })
+        var sqlPath = Path.Combine(Environment.CurrentDirectory, "db", fileName);
+        if (File.Exists(sqlPath))
         {
-            var sqlPath = Path.Combine(Environment.CurrentDirectory, "db", fileName);
-            if (File.Exists(sqlPath))
-            {
-                cmd.CommandText = await File.ReadAllTextAsync(sqlPath);
-                await cmd.ExecuteNonQueryAsync();
-            }
+            cmd.CommandText = await File.ReadAllTextAsync(sqlPath);
+            await cmd.ExecuteNonQueryAsync();
         }
     }
 
-    var identityDb = sp.GetRequiredService<ApplicationDbContext>();
-    await identityDb.Database.MigrateAsync();
     await IdentitySeeder.SeedAsync(sp);
+
+    var dataPath = Path.Combine(Environment.CurrentDirectory, "db", "orbi-data.sql");
+    if (File.Exists(dataPath))
+    {
+        cmd.CommandText = await File.ReadAllTextAsync(dataPath);
+        await cmd.ExecuteNonQueryAsync();
+    }
 }
 
 if (!app.Environment.IsDevelopment())

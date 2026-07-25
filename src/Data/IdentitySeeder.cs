@@ -28,20 +28,6 @@ public static class IdentitySeeder
             }
         }
 
-        var allowedEmails = SeedUsers
-            .Select(user => user.Email)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var usersToDelete = userManager.Users
-            .AsEnumerable()
-            .Where(user => user.Email == null || !allowedEmails.Contains(user.Email))
-            .ToList();
-
-        foreach (var user in usersToDelete)
-        {
-            await userManager.DeleteAsync(user);
-        }
-
         var obsoleteRoles = roleManager.Roles
             .Where(role => role.Name != null && !ApplicationRoles.Contains(role.Name))
             .ToList();

@@ -2,7 +2,7 @@
 @inject UserManager<IdentityUser> UserManager
 
 @{
-    ViewData["Title"] = "Orbi App";
+    ViewData["Title"] = "Orbi";
     var chatContext = "public_home";
     var chatWelcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
     string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
@@ -42,6 +42,102 @@
 
     .orbi-home-layout.chat-collapsed {
         padding-right: 0;
+    }
+
+    .orbi-home-video-shell {
+        position: relative;
+        width: min(100%, 960px);
+        margin: 0 auto 2.5rem;
+        border-radius: var(--md-sys-shape-corner-large);
+        box-shadow: var(--md-sys-elevation-level2);
+        overflow: hidden;
+        background: #000;
+    }
+
+    .orbi-home-video {
+        display: block;
+        width: 100%;
+        max-height: 540px;
+        object-fit: cover;
+        opacity: .72;
+    }
+
+    .orbi-home-video-actions {
+        position: absolute;
+        right: 64px;
+        bottom: 16px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        transform: none;
+    }
+
+    .orbi-home-video-action {
+        display: inline-flex;
+        min-height: 46px;
+        padding: 0 22px;
+        border: 2px solid #fff;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease;
+    }
+
+    .orbi-home-video-action:hover,
+    .orbi-home-video-action:focus,
+    .orbi-home-video-action:active {
+        transform: translateY(-2px);
+        text-decoration: none !important;
+    }
+
+    .orbi-home-video-action-primary {
+        color: #171717;
+        background: #fff;
+    }
+
+    .orbi-home-video-action-secondary {
+        color: #fff;
+        background: transparent;
+    }
+
+    .orbi-home-video-action-secondary:hover {
+        color: #171717;
+        background: #fff;
+    }
+
+    .orbi-home-video-mute {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        color: #fff;
+        background: rgba(0, 0, 0, .62);
+        backdrop-filter: blur(8px);
+    }
+
+    .orbi-home-video-mute:hover {
+        background: rgba(0, 0, 0, .78);
+    }
+
+    @@media (max-width: 560px) {
+        .orbi-home-video-actions {
+            right: 56px;
+            bottom: 12px;
+            gap: 6px;
+        }
+
+        .orbi-home-video-action {
+            min-height: 40px;
+            padding: 0 12px;
+            font-size: 12px;
+        }
+
+        .orbi-home-video-mute {
+            right: 10px;
+            bottom: 12px;
+        }
     }
 
     .orbi-chat-typing span {
@@ -335,14 +431,36 @@
     }
     else
     {
-        <div class="m3-card" style="max-width:760px;margin:2rem auto;padding:48px 24px;">
-            <h1 style="font-size:var(--md-sys-typescale-display-small-size);margin-top:0;">Tus pedidos, más cerca con Orbi App</h1>
-            <p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:24px;">Compra en tiendas locales y consulta cada etapa de tu entrega.</p>
-            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                <a class="m3-filled-button" asp-area="Identity" asp-page="/Account/Login">Ingresar</a>
-                <a class="m3-filled-button" asp-area="Identity" asp-page="/Account/Register">Crear cuenta</a>
+        <div class="orbi-home-video-shell">
+            <video id="orbi-home-video" class="orbi-home-video" autoplay muted loop playsinline preload="metadata" aria-label="Presentación de Orbi App">
+                <source src="~/assets/video/home_publicidad.mp4" type="video/mp4" />
+                Tu navegador no puede reproducir este video.
+            </video>
+            <div class="orbi-home-video-actions" aria-label="Acceso a Orbi App">
+                <a class="orbi-home-video-action orbi-home-video-action-primary" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión</a>
+                <a class="orbi-home-video-action orbi-home-video-action-secondary" asp-area="Identity" asp-page="/Account/Register">Registrarme</a>
             </div>
+            <button id="orbi-home-video-mute" type="button" class="m3-icon-btn orbi-home-video-mute" aria-label="Activar sonido" title="Activar sonido">
+                <span class="material-symbols-outlined" aria-hidden="true">volume_off</span>
+            </button>
         </div>
+        <script>
+            (function () {
+                const video = document.getElementById('orbi-home-video');
+                const muteButton = document.getElementById('orbi-home-video-mute');
+                const muteIcon = muteButton?.querySelector('.material-symbols-outlined');
+
+                if (!video || !muteButton || !muteIcon) return;
+
+                muteButton.addEventListener('click', function () {
+                    video.muted = !video.muted;
+                    const isMuted = video.muted;
+                    muteIcon.textContent = isMuted ? 'volume_off' : 'volume_up';
+                    muteButton.setAttribute('aria-label', isMuted ? 'Activar sonido' : 'Silenciar video');
+                    muteButton.setAttribute('title', isMuted ? 'Activar sonido' : 'Silenciar video');
+                });
+            })();
+        </script>
     }
 </section>
 

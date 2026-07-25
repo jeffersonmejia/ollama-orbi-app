@@ -38,5 +38,32 @@ CREATE TABLE IF NOT EXISTS delivery_order_item (
     subtotal numeric(10,2) NOT NULL CHECK (subtotal >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS ecuador_province (
+    province_code varchar(2) PRIMARY KEY,
+    name varchar(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS ecuador_city (
+    city_code varchar(4) PRIMARY KEY,
+    province_code varchar(2) NOT NULL REFERENCES ecuador_province(province_code),
+    name varchar(100) NOT NULL,
+    UNIQUE (province_code, name)
+);
+
+CREATE TABLE IF NOT EXISTS user_profile (
+    identity_user_id text PRIMARY KEY REFERENCES "AspNetUsers"("Id") ON DELETE CASCADE,
+    first_name varchar(80) NOT NULL,
+    last_name varchar(80) NOT NULL,
+    cedula varchar(10) NOT NULL UNIQUE CHECK (cedula ~ '^[0-9]{10}$'),
+    address_line_1 varchar(160) NOT NULL,
+    address_line_2 varchar(160) NOT NULL,
+    province_code varchar(2) NOT NULL REFERENCES ecuador_province(province_code),
+    city_code varchar(4) NOT NULL REFERENCES ecuador_city(city_code),
+    reference varchar(240),
+    created_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS ix_delivery_order_customer ON delivery_order(customer_email);
 CREATE INDEX IF NOT EXISTS ix_delivery_order_driver ON delivery_order(delivery_person_email);
+CREATE INDEX IF NOT EXISTS ix_ecuador_city_province ON ecuador_city(province_code);
+CREATE INDEX IF NOT EXISTS ix_user_profile_location ON user_profile(province_code, city_code);

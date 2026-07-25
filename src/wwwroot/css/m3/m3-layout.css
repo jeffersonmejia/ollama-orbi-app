@@ -122,6 +122,146 @@ a:hover {
   height: 24px;
 }
 
+.orbi-profile-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.orbi-profile-label small {
+  max-width: 64px;
+  overflow: hidden;
+  color: var(--md-sys-color-primary);
+  font-size: 9px;
+  line-height: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orbi-register-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.orbi-register-progress-dot {
+  width: 36px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.orbi-register-progress-dot.active,
+.orbi-register-progress-dot.complete {
+  background: var(--md-sys-color-primary);
+}
+
+.orbi-register-step {
+  display: none;
+  grid-column: 1 / -1;
+}
+
+.orbi-register-step.active {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.orbi-register-step-title,
+.orbi-register-actions,
+.orbi-register-full {
+  grid-column: 1 / -1;
+}
+
+.orbi-register-step-title {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-title-medium-size);
+}
+
+.orbi-register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 680px) {
+  .orbi-register-step.active {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .orbi-register-step-title,
+  .orbi-register-actions,
+  .orbi-register-full {
+    grid-column: auto;
+  }
+}
+
+/* Posicionamiento desplegable sin recompilar las vistas Razor publicadas. */
+.orbi-home-video-actions {
+  top: auto !important;
+  right: 64px !important;
+  bottom: 16px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  transform: none !important;
+}
+
+.orbi-home-video-action,
+.orbi-home-video-action:hover,
+.orbi-home-video-action:focus,
+.orbi-home-video-action:active {
+  text-decoration: none !important;
+}
+
+.orbi-login-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+  gap: 12px;
+}
+
+.orbi-login-actions > button {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.orbi-google-mark {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+@media (max-width: 560px) {
+  .orbi-home-video-actions {
+    right: 56px !important;
+    bottom: 12px !important;
+    gap: 6px !important;
+  }
+
+  .orbi-home-video-action {
+    min-height: 40px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  .orbi-home-video-mute {
+    right: 10px !important;
+    bottom: 12px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .orbi-login-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 .m3-nav-divider {
   width: 40px;
   height: 1px;
@@ -167,6 +307,29 @@ a:hover {
   flex: 1;
   margin: 0;
   padding: 0;
+}
+
+.orbi-top-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.orbi-top-brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.orbi-top-brand-mark .material-symbols-outlined {
+  font-size: 22px;
 }
 
 .m3-top-app-bar-actions {
