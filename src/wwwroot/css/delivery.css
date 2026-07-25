@@ -1,20 +1,36 @@
 .orbi-store-page { max-width: 1180px; margin: 0 auto; }
-.orbi-store-header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:22px; }
-.orbi-store-header h1 { margin:4px 0; }
+.orbi-store-header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:16px; }
+.orbi-store-header h1 { margin:0 0 3px; }
 .orbi-store-header p { margin:0; color:var(--md-sys-color-on-surface-variant); }
-.orbi-store-eyebrow { color:var(--md-sys-color-primary); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
-.orbi-delivery-address-card { display:flex; align-items:center; gap:14px; padding:18px 20px; margin-bottom:22px; background:var(--md-sys-color-primary-container); }
-.orbi-delivery-address-card > .material-symbols-outlined { font-size:32px; color:var(--md-sys-color-on-primary-container); }
-.orbi-delivery-address-card div { display:grid; gap:2px; }
-.orbi-delivery-address-card small,.orbi-delivery-address-card span { color:var(--md-sys-color-on-surface-variant); }
-.orbi-product-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:18px; }
-.orbi-product-card { position:relative; overflow:hidden; padding:22px; border:1px solid var(--md-sys-color-outline-variant); }
+.orbi-compact-address { display:flex; align-items:center; gap:6px; max-width:760px; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.orbi-compact-address strong { color:var(--md-sys-color-primary); }
+.orbi-category-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
+.orbi-category-card { position:relative; min-height:126px; overflow:hidden; padding:0; border:1px solid var(--md-sys-color-outline-variant); border-radius:18px; background:var(--md-sys-color-surface-container); color:white; cursor:pointer; text-align:left; isolation:isolate; }
+.orbi-category-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.12)); }
+.orbi-category-card img { position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; transition:transform .2s ease; }
+.orbi-category-card>span { display:grid; gap:3px; position:absolute; left:16px; bottom:14px; }
+.orbi-category-card strong { font-size:18px; }
+.orbi-category-card small { color:rgba(255,255,255,.86); }
+.orbi-category-card:hover img,.orbi-category-card.active img { transform:scale(1.05); }
+.orbi-category-card.active { border:3px solid var(--md-sys-color-primary); }
+.orbi-product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+.orbi-product-card { position:relative; overflow:hidden; padding:16px; border:1px solid var(--md-sys-color-outline-variant); }
+.orbi-product-card[hidden] { display:none; }
 .orbi-product-card::before { content:""; position:absolute; inset:0 0 auto; height:4px; background:var(--md-sys-color-primary); }
 .orbi-product-store { display:flex; align-items:center; gap:7px; color:var(--md-sys-color-primary); font-size:13px; font-weight:700; }
 .orbi-product-store .material-symbols-outlined { font-size:19px; }
-.orbi-product-card h2 { margin:14px 0 4px; }
-.orbi-store-location { min-height:40px; margin:0 0 12px; color:var(--md-sys-color-on-surface-variant); }
-.orbi-product-price { display:block; font-size:22px; color:var(--md-sys-color-on-surface); }
-.orbi-product-order-form { display:grid; grid-template-columns:minmax(90px,120px) 1fr; align-items:end; gap:12px; margin-top:18px; }
-.orbi-product-order-form button { min-height:56px; }
-@media(max-width:700px){.orbi-store-header{align-items:flex-start;flex-direction:column}.orbi-product-order-form{grid-template-columns:1fr}}
+.orbi-product-card h2 { margin:10px 0 3px; font-size:18px; }
+.orbi-store-location { min-height:34px; margin:0 0 8px; font-size:13px; color:var(--md-sys-color-on-surface-variant); }
+.orbi-product-price { display:block; font-size:20px; color:var(--md-sys-color-on-surface); }
+.orbi-product-order-form { display:grid; gap:10px; margin-top:12px; }
+.orbi-product-order-form>.m3-filled-button { min-height:42px; }
+.orbi-quantity-field { display:grid; gap:5px; }
+.orbi-quantity-field>span { font-size:12px; color:var(--md-sys-color-on-surface-variant); }
+.orbi-quantity-control { display:grid; grid-template-columns:38px 1fr 38px; height:40px; overflow:hidden; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container-highest); }
+.orbi-quantity-control input { width:100%; min-width:0; border:0; border-inline:1px solid var(--md-sys-color-outline-variant); outline:0; background:transparent; color:var(--md-sys-color-on-surface); text-align:center; font:inherit; -moz-appearance:textfield; }
+.orbi-quantity-control input::-webkit-inner-spin-button,.orbi-quantity-control input::-webkit-outer-spin-button { margin:0; -webkit-appearance:none; }
+.orbi-quantity-button { display:grid; place-items:center; padding:0; border:0; background:transparent; color:var(--md-sys-color-primary); cursor:pointer; }
+.orbi-quantity-button:hover { background:var(--md-sys-color-primary-container); }
+.orbi-quantity-button .material-symbols-outlined { font-size:20px; }
+.orbi-category-empty { margin-top:16px; padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant); }
+@media(max-width:700px){.orbi-store-header{align-items:flex-start;flex-direction:column}.orbi-category-grid{grid-template-columns:1fr}.orbi-category-card{min-height:100px}}

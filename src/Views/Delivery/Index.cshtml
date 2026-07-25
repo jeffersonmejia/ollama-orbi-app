@@ -9,9 +9,11 @@
 <div class="m3-page orbi-store-page">
     <header class="orbi-store-header">
         <div>
-            <span class="orbi-store-eyebrow">Catálogo local</span>
-            <h1 class="m3-page-title">Tiendas y productos</h1>
-            <p>Elige lo que necesitas y recíbelo en una dirección guardada.</p>
+            <h1 class="m3-page-title">Tiendas</h1>
+            @if (User.IsInRole("Usuario") && defaultAddress is not null)
+            {
+                <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
+            }
         </div>
         @if (User.IsInRole("Usuario"))
         {
@@ -21,35 +23,35 @@
         }
     </header>
 
+    <section class="orbi-category-grid" aria-label="Categorías de tiendas">
+        <button class="orbi-category-card" type="button" data-category="Restaurante" aria-pressed="false">
+            <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
+            <span><strong>Comida rápida</strong><small>Restaurantes y antojos</small></span>
+        </button>
+        <button class="orbi-category-card" type="button" data-category="Farmacia" aria-pressed="false">
+            <img src="~/assets/categorias/farmacias.png" alt="Mostrador de farmacia" />
+            <span><strong>Farmacias</strong><small>Salud y cuidado</small></span>
+        </button>
+        <button class="orbi-category-card" type="button" data-category="Supermercado" aria-pressed="false">
+            <img src="~/assets/categorias/supermercado.png" alt="Interior de supermercado" />
+            <span><strong>Supermercado</strong><small>Compras para el hogar</small></span>
+        </button>
+    </section>
+
     @if (TempData["Error"] is string error)
     {
         <div class="orbi-alert orbi-alert-error">@error</div>
     }
 
-    @if (User.IsInRole("Usuario"))
+    @if (User.IsInRole("Usuario") && defaultAddress is null)
     {
-        <section class="m3-card orbi-delivery-address-card">
-            <span class="material-symbols-outlined">home_pin</span>
-            <div>
-                <small>Dirección de entrega predeterminada</small>
-                @if (defaultAddress is null)
-                {
-                    <strong>Aún no tienes una dirección disponible</strong>
-                    <a asp-area="Identity" asp-page="/Account/Manage/Index">Agregar dirección en mi perfil</a>
-                }
-                else
-                {
-                    <strong>@defaultAddress.Label</strong>
-                    <span>@defaultAddress.FormattedAddress</span>
-                }
-            </div>
-        </section>
+        <div class="orbi-alert">Agrega una dirección en tu perfil para realizar pedidos.</div>
     }
 
     <div class="orbi-product-grid">
         @foreach (var product in Model.Products)
         {
-            <article class="m3-card orbi-product-card">
+            <article class="m3-card orbi-product-card" data-product-category="@product.Store.Category">
                 <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
                 <h2>@product.Name</h2>
                 <p class="orbi-store-location">@product.Store.Address</p>
@@ -59,9 +61,13 @@
                 {
                     <form asp-action="CreateOrder" method="post" class="orbi-product-order-form">
                         <input type="hidden" name="productId" value="@product.DeliveryProductId" />
-                        <div class="m3-text-field">
-                            <label class="m3-text-field-label" for="quantity-@product.DeliveryProductId">Cantidad</label>
-                            <input class="m3-text-field-input" id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="20" required />
+                        <div class="orbi-quantity-field">
+                            <span>Cantidad</span>
+                            <div class="orbi-quantity-control">
+                                <button type="button" class="orbi-quantity-button" data-quantity-action="decrease" aria-label="Disminuir cantidad"><span class="material-symbols-outlined">remove</span></button>
+                                <input id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="20" inputmode="numeric" aria-label="Cantidad personalizada" required />
+                                <button type="button" class="orbi-quantity-button" data-quantity-action="increase" aria-label="Aumentar cantidad"><span class="material-symbols-outlined">add</span></button>
+                            </div>
                         </div>
                         <button type="submit" class="m3-filled-button" disabled="@(!Model.Addresses.Any())">Pedir ahora</button>
                     </form>
@@ -69,4 +75,48 @@
             </article>
         }
     </div>
+    <div class="m3-card orbi-category-empty" id="orbi-category-empty" hidden>No hay productos disponibles en esta categoría por el momento.</div>
 </div>
+
+<script>
+    (() => {
+        const categoryButtons = Array.from(document.querySelectorAll('.orbi-category-card'));
+        const products = Array.from(document.querySelectorAll('.orbi-product-card'));
+        const emptyState = document.getElementById('orbi-category-empty');
+        let activeCategory = '';
+
+        categoryButtons.forEach(button => button.addEventListener('click', () => {
+            activeCategory = activeCategory === button.dataset.category ? '' : button.dataset.category;
+            categoryButtons.forEach(item => {
+                const active = item.dataset.category === activeCategory;
+                item.classList.toggle('active', active);
+                item.setAttribute('aria-pressed', String(active));
+            });
+            let visible = 0;
+            products.forEach(product => {
+                const matches = !activeCategory || product.dataset.productCategory === activeCategory;
+                product.hidden = !matches;
+                if (matches) visible++;
+            });
+            emptyState.hidden = visible > 0;
+        }));
+
+        document.querySelectorAll('.orbi-quantity-control').forEach(control => {
+            const input = control.querySelector('input');
+            control.querySelectorAll('[data-quantity-action]').forEach(button => button.addEventListener('click', () => {
+                const minimum = Number(input.min) || 1;
+                const maximum = Number(input.max) || 20;
+                const current = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
+                input.value = button.dataset.quantityAction === 'increase'
+                    ? Math.min(maximum, current + 1)
+                    : Math.max(minimum, current - 1);
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }));
+            input.addEventListener('change', () => {
+                const minimum = Number(input.min) || 1;
+                const maximum = Number(input.max) || 20;
+                input.value = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
+            });
+        });
+    })();
+</script>
