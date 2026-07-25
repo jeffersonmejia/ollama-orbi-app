@@ -1,0 +1,72 @@
+@using SakilaApp.Models.Delivery
+@model SakilaApp.Models.PaginatedList<DeliveryStore>
+@{ ViewData["Title"] = "Tiendas"; ViewData["PaginatedList"] = Model; }
+
+<div class="orbi-account-shell orbi-delivery-admin-shell">
+    <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
+    <div class="orbi-account-layout">
+        <aside><partial name="_AdminNav" /></aside>
+        <main class="orbi-account-main">
+            <section class="orbi-account-section">
+                <header class="orbi-account-section-header">
+                    <div>
+                        <span class="material-symbols-outlined orbi-section-icon">storefront</span>
+                        <h2>Tiendas</h2>
+                    </div>
+                    <p>Edita la información y controla su disponibilidad.</p>
+                </header>
+                <div class="orbi-account-section-content">
+                    @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
+                    @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
+
+                    <div class="orbi-admin-grid">
+                        <section id="edit-store-section" class="m3-card orbi-admin-edit-card">
+                            <h3>Editar tienda</h3>
+                            <form asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
+                                <input id="edit-store-id" type="hidden" name="storeId" />
+                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-name">Nombre</label><input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Selecciona Editar en la tabla" /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-category">Categoría</label><input class="m3-text-field-input" id="edit-store-category" name="category" required /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-address">Dirección</label><input class="m3-text-field-input" id="edit-store-address" name="address" required /></div>
+                                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Guardar cambios</button></div>
+                            </form>
+                        </section>
+
+                        <section class="m3-card orbi-admin-table-card">
+                            <div class="orbi-admin-table-heading"><div><h3>Tiendas registradas</h3><p>Disponibilidad actual del catálogo local.</p></div></div>
+                            <div class="orbi-orders-table-wrap">
+                                <table class="m3-data-table orbi-orders-table">
+                                    <thead><tr><th>Tienda</th><th>Categoría</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                    @foreach (var store in Model)
+                                    {
+                                        <tr>
+                                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td><td>@store.Category</td><td class="orbi-order-address">@store.Address</td>
+                                            <td><span class="orbi-order-status @(store.IsActive ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(store.IsActive ? "Activa" : "Inactiva")</span></td>
+                                            <td><div class="orbi-admin-row-actions">
+                                                <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address"><span class="material-symbols-outlined">edit</span>Editar</button>
+                                                <form asp-action="ToggleStore" method="post" class="orbi-store-toggle-form"><input type="hidden" name="storeId" value="@store.DeliveryStoreId" /><label class="orbi-switch" title="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")"><input type="checkbox" checked="@store.IsActive" role="switch" aria-label="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")" onchange="this.form.requestSubmit()" /><span></span></label></form>
+                                            </div></td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <partial name="_Pagination" />
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
+    document.getElementById('edit-store-id').value = button.dataset.id;
+    document.getElementById('edit-store-name').value = button.dataset.name;
+    document.getElementById('edit-store-category').value = button.dataset.category;
+    document.getElementById('edit-store-address').value = button.dataset.address;
+    document.getElementById('edit-store-section').scrollIntoView({ behavior:'smooth', block:'start' });
+    document.getElementById('edit-store-name').focus();
+}));
+</script>

@@ -1,3 +1,4 @@
+/* ── Legacy admin panel (kept for other modules) ── */
 .admin-panel {
   width: min(1100px, 94vw);
   margin: 0 auto;
@@ -126,4 +127,185 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+}
+
+/* ── Delivery admin shell ── */
+.orbi-delivery-admin-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.orbi-delivery-admin-shell .orbi-account-shell-header {
+  margin-left: 0;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.orbi-delivery-admin-shell .orbi-account-shell-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 600;
+}
+
+.orbi-delivery-admin-shell .orbi-account-shell-header p {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ── Admin layout (overrides profile-addresses for admin pages) ── */
+.orbi-delivery-admin-shell .orbi-account-layout {
+  grid-template-columns: 200px 1fr;
+  gap: 1.5rem;
+}
+
+.orbi-delivery-admin-shell .orbi-account-layout > aside {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+}
+
+/* ── Admin sub-navigation (inside aside) ── */
+.orbi-admin-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container);
+  padding: 8px;
+}
+
+.orbi-admin-subnav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.orbi-admin-subnav a:hover {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+
+.orbi-admin-subnav a.active {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.orbi-admin-subnav .material-symbols-outlined {
+  font-size: 20px;
+  font-variation-settings: 'FILL' 0;
+}
+
+.orbi-admin-subnav a.active .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* ── Admin main content ── */
+.orbi-delivery-admin-shell .orbi-account-main {
+  min-width: 0;
+}
+
+/* ── Admin section grid (form + table) ── */
+.orbi-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.orbi-admin-edit-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.orbi-admin-edit-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+
+.orbi-admin-edit-form {
+  display: grid;
+  gap: 14px;
+}
+
+.orbi-admin-edit-form .orbi-form-actions {
+  padding-top: 4px;
+}
+
+/* ── Admin table card refinements ── */
+.orbi-admin-table-card {
+  overflow: hidden;
+}
+
+.orbi-admin-table-card .orbi-admin-table-heading {
+  padding: 0 0 8px;
+}
+
+.orbi-admin-table-card .orbi-admin-table-heading h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.orbi-admin-table-card .orbi-admin-table-heading p {
+  margin: 2px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.8125rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .orbi-delivery-admin-shell .orbi-account-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .orbi-delivery-admin-shell .orbi-account-layout > aside {
+    position: static;
+  }
+
+  .orbi-admin-subnav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .orbi-admin-subnav a {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
+  .orbi-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .orbi-delivery-admin-shell {
+    padding: 1rem 0.75rem;
+  }
+
+  .orbi-admin-subnav a {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .orbi-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orbi-account-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

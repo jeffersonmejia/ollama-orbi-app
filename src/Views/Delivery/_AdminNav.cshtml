@@ -1,0 +1,11 @@
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<nav class="orbi-admin-subnav" aria-label="Administración de delivery">
+    <a class="@(action == "AdminStores" ? "active" : "")" asp-action="AdminStores">
+        <span class="material-symbols-outlined">storefront</span><span>Tiendas</span>
+    </a>
+    <a class="@(action == "AdminOrders" ? "active" : "")" asp-action="AdminOrders">
+        <span class="material-symbols-outlined">receipt_long</span><span>Pedidos</span>
+    </a>
+</nav>

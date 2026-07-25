@@ -177,10 +177,23 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> Admin(int page = 1, int storePage = 1)
+    public IActionResult Admin()
     {
-        ViewBag.Stores = await PaginatedList<DeliveryStore>.CreateAsync(
-            _context.DeliveryStores.AsNoTracking().OrderBy(store => store.Name), Math.Max(1, storePage), 5);
+        return RedirectToAction(nameof(AdminStores));
+    }
+
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> AdminStores(int page = 1)
+    {
+        var stores = await PaginatedList<DeliveryStore>.CreateAsync(
+            _context.DeliveryStores.AsNoTracking().OrderBy(store => store.Name), Math.Max(1, page), 5);
+        ViewData["PaginatedList"] = stores;
+        return View(stores);
+    }
+
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> AdminOrders(int page = 1)
+    {
         var orders = await PaginatedList<DeliveryOrder>.CreateAsync(OrderQuery(), Math.Max(1, page), 5);
         ViewData["PaginatedList"] = orders;
         return View(orders);
@@ -205,7 +218,7 @@ public class DeliveryController : Controller
 
         var previousStatus = order.Status;
         if (previousStatus == status)
-            return RedirectToAction(User.IsInRole("Administrador") ? nameof(Admin) : nameof(Deliveries));
+            return RedirectToAction(User.IsInRole("Administrador") ? nameof(AdminOrders) : nameof(Deliveries));
 
         order.Status = status;
         _context.OrderStatusHistories.Add(new OrderStatusHistory
@@ -216,7 +229,7 @@ public class DeliveryController : Controller
             NewStatus = status
         });
         await _context.SaveChangesAsync();
-        return RedirectToAction(User.IsInRole("Administrador") ? nameof(Admin) : nameof(Deliveries));
+        return RedirectToAction(User.IsInRole("Administrador") ? nameof(AdminOrders) : nameof(Deliveries));
     }
 
     [HttpPost]
@@ -227,7 +240,7 @@ public class DeliveryController : Controller
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
         {
             TempData["Error"] = "Completa el nombre, la categoría y la dirección de la tienda.";
-            return RedirectToAction(nameof(Admin));
+            return RedirectToAction(nameof(AdminStores));
         }
 
         var store = await _context.DeliveryStores.FindAsync(storeId);
@@ -238,7 +251,7 @@ public class DeliveryController : Controller
         store.Address = address.Trim();
         await _context.SaveChangesAsync();
         TempData["Success"] = $"La tienda {store.Name} fue actualizada.";
-        return RedirectToAction(nameof(Admin));
+        return RedirectToAction(nameof(AdminStores));
     }
 
     [HttpPost]
@@ -252,7 +265,7 @@ public class DeliveryController : Controller
         store.IsActive = !store.IsActive;
         await _context.SaveChangesAsync();
         TempData["Success"] = $"{store.Name} ahora está {(store.IsActive ? "activa" : "inactiva")}.";
-        return RedirectToAction(nameof(Admin));
+        return RedirectToAction(nameof(AdminStores));
     }
 
     private IQueryable<DeliveryOrder> OrderQuery() => _context.DeliveryOrders
