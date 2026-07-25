@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,11 @@ using SakilaApp.Data;
 using SakilaApp.Services;
 using SakilaApp.Settings;
 using SakilaApp.Services.Payments;
+
+// Orbi opera en dólares estadounidenses. Una cultura monetaria explícita evita
+// que Linux muestre el símbolo genérico ¤ cuando las vistas usan formato "C".
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("es-EC");
 
 var builder = WebApplication.CreateBuilder(args);
 
