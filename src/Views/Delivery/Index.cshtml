@@ -10,9 +10,18 @@
     <header class="orbi-store-header">
         <div>
             <h1 class="m3-page-title">Tiendas</h1>
-            @if (User.IsInRole("Usuario") && defaultAddress is not null)
+            @if (User.IsInRole("Usuario"))
             {
-                <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
+                var provinceName = ViewBag.UserProvinceName as string;
+                var cityName = ViewBag.UserCityName as string;
+                if (!string.IsNullOrEmpty(provinceName))
+                {
+                    <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@provinceName</strong><span>·</span>@cityName</p>
+                }
+                else if (defaultAddress is not null)
+                {
+                    <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
+                }
             }
         </div>
         @if (User.IsInRole("Usuario"))
@@ -36,7 +45,7 @@
     </form>
 
     <section class="orbi-category-grid" aria-label="Categorías de tiendas">
-        <a class="orbi-category-card @(ViewBag.Categoria == "Restaurante" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Restaurante" ? null : "Restaurante")" aria-pressed="@(ViewBag.Categoria == "Restaurante")">
+        <a class="orbi-category-card @(ViewBag.Categoria == "Comida Rápida" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Comida Rápida" ? null : "Comida Rápida")" aria-pressed="@(ViewBag.Categoria == "Comida Rápida")">
             <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
             <span><strong>Comida rápida</strong><small>Restaurantes y antojos</small></span>
         </a>
@@ -70,7 +79,11 @@
             <article class="m3-card orbi-product-card">
                 <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
                 <h2>@product.Name</h2>
-                <p class="orbi-store-location">@product.Store.Address</p>
+                <p class="orbi-store-location"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_on</span>@product.Store.Address</p>
+                @if (product.Store.City is not null || product.Store.Province is not null)
+                {
+                    <p class="orbi-store-location" style="margin-top:2px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">map</span>@(product.Store.City?.Name ?? "")@(product.Store.City is not null && product.Store.Province is not null ? ", " : "")@(product.Store.Province?.Name ?? "")</p>
+                }
                 <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
 
                 @if (User.IsInRole("Usuario"))

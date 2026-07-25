@@ -206,14 +206,17 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         var categories = Catalog.Keys.ToArray();
         var suffixes = new[] { "Express", "Central", "La Esquina", "Del Valle", "Norte", "Sur", "Centro", "Los Ceibos" };
         await CopyBatchesAsync("tiendas", _plan.Stores,
-            "COPY delivery_store (delivery_store_id, name, category, address, is_active) FROM STDIN (FORMAT BINARY)",
+            "COPY delivery_store (delivery_store_id, name, category, address, province_code, city_code, is_active) FROM STDIN (FORMAT BINARY)",
             (writer, index) =>
             {
                 var category = _faker.PickRandom(categories);
+                var location = _faker.PickRandom(_locations);
                 writer.Write(index, NpgsqlDbType.Integer);
                 writer.Write($"{StorePrefix(category)} {_faker.PickRandom(suffixes)}", NpgsqlDbType.Varchar);
                 writer.Write(category, NpgsqlDbType.Varchar);
-                writer.Write(Address(_faker.PickRandom(_locations).City), NpgsqlDbType.Varchar);
+                writer.Write(Address(location.City), NpgsqlDbType.Varchar);
+                writer.Write(location.ProvinceCode, NpgsqlDbType.Varchar);
+                writer.Write(location.CityCode, NpgsqlDbType.Varchar);
                 writer.Write(_faker.Random.Bool(0.96f), NpgsqlDbType.Boolean);
             });
     }

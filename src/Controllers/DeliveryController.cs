@@ -27,8 +27,26 @@ public class DeliveryController : Controller
     {
         var productsQuery = _context.DeliveryProducts
             .AsNoTracking()
-            .Include(product => product.Store)
+            .Include(product => product.Store).ThenInclude(store => store!.Province)
+            .Include(product => product.Store).ThenInclude(store => store!.City)
             .Where(product => product.IsAvailable && product.Store.IsActive);
+
+        string? userProvinceCode = null;
+        string? userCityName = null;
+        if (User.IsInRole("Usuario") && CurrentUserId is string userId)
+        {
+            var profile = await _context.UserProfiles.AsNoTracking()
+                .Where(p => p.IdentityUserId == userId)
+                .Include(p => p.Province)
+                .Include(p => p.City)
+                .FirstOrDefaultAsync();
+            if (profile is not null)
+            {
+                userProvinceCode = profile.ProvinceCode;
+                userCityName = profile.City?.Name;
+                productsQuery = productsQuery.Where(product => product.Store.ProvinceCode == userProvinceCode);
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(buscar))
         {
@@ -48,14 +66,19 @@ public class DeliveryController : Controller
         ViewBag.PrecioMinimo = precioMinimo;
         ViewBag.PrecioMaximo = precioMaximo;
         ViewBag.Categoria = categoria;
+        ViewBag.UserProvinceName = await _context.EcuadorProvinces.AsNoTracking()
+            .Where(p => p.Code == userProvinceCode)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync();
+        ViewBag.UserCityName = userCityName;
         ViewData["PaginatedList"] = products;
 
         var addresses = new List<UserAddress>();
-        if (User.IsInRole("Usuario") && CurrentUserId is string userId)
+        if (User.IsInRole("Usuario") && CurrentUserId is string userId2)
         {
-            await EnsurePrimaryAddressAsync(userId);
+            await EnsurePrimaryAddressAsync(userId2);
             addresses = await _context.UserAddresses.AsNoTracking()
-                .Where(address => address.IdentityUserId == userId)
+                .Where(address => address.IdentityUserId == userId2)
                 .Include(address => address.Province)
                 .Include(address => address.City)
                 .OrderByDescending(address => address.IsDefault)
