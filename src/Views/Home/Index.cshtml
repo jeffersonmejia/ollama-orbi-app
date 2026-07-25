@@ -473,48 +473,69 @@
 
             <script>
             (function() {
-                const W = 300, H = 120, PX = 24, PY = 16, CW = W - PX*2, CH = H - PY*2;
+                const W = 340, H = 140, ML = 36, MR = 8, MT = 8, MB = 24, CW = W - ML - MR, CH = H - MT - MB;
+                const fc = 'var(--md-sys-color-on-surface-variant)';
+
+                function yLabels(max) {
+                    const lbls = [];
+                    for (let g = 0; g <= 4; g++) {
+                        const val = Math.round((1 - g / 4) * max);
+                        const gy = MT + (g / 4) * CH;
+                        lbls.push(`<text x="${ML - 6}" y="${gy + 3}" text-anchor="end" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${val}</text>`);
+                    }
+                    return lbls.join('');
+                }
+
+                function axes() {
+                    return `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + CH}" stroke="${fc}" stroke-width="0.8" opacity="0.5"/>
+                            <line x1="${ML}" y1="${MT + CH}" x2="${ML + CW}" y2="${MT + CH}" stroke="${fc}" stroke-width="0.8" opacity="0.5"/>`;
+                }
 
                 function buildChart(data, color) {
-                    if (!data || data.length === 0) return '<svg viewBox="0 0 300 120"><text x="150" y="65" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>';
+                    if (!data || data.length === 0) return `<svg viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="${fc}" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>`;
                     const max = Math.max(...data.map(d => d.Count), 1);
-                    const pts = data.map((d, i) => {
-                        const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
-                        const y = PY + CH - (d.Count / max) * CH;
-                        return { x, y };
-                    });
                     const grid = [0,1,2,3,4].map(g => {
-                        const gy = PY + (g / 4) * CH;
-                        return `<line x1="${PX}" y1="${gy}" x2="${W-PX}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35"/>`;
+                        const gy = MT + (g / 4) * CH;
+                        return `<line x1="${ML}" y1="${gy}" x2="${ML + CW}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.3"/>`;
                     }).join('');
-                    const line = pts.map(p => `${p.x},${p.y}`).join(' ');
+                    const pts = data.map((d, i) => ({
+                        x: data.length === 1 ? ML + CW/2 : ML + (i / (data.length - 1)) * CW,
+                        y: MT + CH - (d.Count / max) * CH
+                    }));
+                    const polyline = pts.map(p => `${p.x},${p.y}`).join(' ');
                     const dots = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="white" stroke-width="2"/>`).join('');
-                    const labels = data.map((d, i) => {
-                        const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
-                        return `<text x="${x}" y="${H-2}" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="9" font-family="Inter,sans-serif">${d.Label}</text>`;
+                    const xLbl = data.map((d, i) => {
+                        const x = data.length === 1 ? ML + CW/2 : ML + (i / (data.length - 1)) * CW;
+                        return `<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${d.Label}</text>`;
                     }).join('');
-                    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+                    return `<svg viewBox="0 0 ${W} ${H}">${grid}${axes()}${yLabels(max)}<polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${xLbl}</svg>`;
                 }
 
                 function buildMultiChart(delivered, transit, pending) {
                     const all = [...delivered, ...transit, ...pending];
-                    if (all.length === 0) return '<svg viewBox="0 0 300 120"><text x="150" y="65" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>';
+                    if (all.length === 0) return `<svg viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="${fc}" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>`;
                     const max = Math.max(...all.map(d => d.Count), 1);
                     const grid = [0,1,2,3,4].map(g => {
-                        const gy = PY + (g / 4) * CH;
-                        return `<line x1="${PX}" y1="${gy}" x2="${W-PX}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35"/>`;
+                        const gy = MT + (g / 4) * CH;
+                        return `<line x1="${ML}" y1="${gy}" x2="${ML + CW}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.3"/>`;
                     }).join('');
+                    const allLabels = [...delivered, ...transit, ...pending]
+                        .map(d => d.Label)
+                        .filter((v, i, a) => a.indexOf(v) === i);
                     function line(data, color) {
                         if (data.length === 0) return '';
-                        const pts = data.map((d, i) => {
-                            const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
-                            const y = PY + CH - (d.Count / max) * CH;
-                            return { x, y };
-                        });
+                        const pts = data.map(d => ({
+                            x: allLabels.length === 1 ? ML + CW/2 : ML + (allLabels.indexOf(d.Label) / Math.max(allLabels.length - 1, 1)) * CW,
+                            y: MT + CH - (d.Count / max) * CH
+                        }));
                         return `<polyline points="${pts.map(p => p.x+','+p.y).join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` +
                             pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`).join('');
                     }
-                    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${line(delivered,'#146c2e')}${line(transit,'#075c9b')}${line(pending,'#B85700')}</svg>`;
+                    const xLbl = allLabels.map((lbl, i) => {
+                        const x = allLabels.length === 1 ? ML + CW/2 : ML + (i / Math.max(allLabels.length - 1, 1)) * CW;
+                        return `<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${lbl}</text>`;
+                    }).join('');
+                    return `<svg viewBox="0 0 ${W} ${H}">${grid}${axes()}${yLabels(max)}${line(delivered,'#146c2e')}${line(transit,'#075c9b')}${line(pending,'#B85700')}${xLbl}</svg>`;
                 }
 
                 async function loadCharts(range) {
