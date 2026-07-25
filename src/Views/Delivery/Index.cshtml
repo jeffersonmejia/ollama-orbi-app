@@ -10,18 +10,17 @@
     <header class="orbi-store-header">
         <div>
             <h1 class="m3-page-title">Tiendas</h1>
-            @if (User.IsInRole("Usuario"))
-            {
+            @{
                 var provinceName = ViewBag.UserProvinceName as string;
                 var cityName = ViewBag.UserCityName as string;
-                if (!string.IsNullOrEmpty(provinceName))
-                {
-                    <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@provinceName</strong><span>·</span>@cityName</p>
-                }
-                else if (defaultAddress is not null)
-                {
-                    <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
-                }
+            }
+            @if (!string.IsNullOrEmpty(provinceName))
+            {
+                <p class="orbi-compact-address"><span class="material-symbols-outlined">location_on</span><strong>@provinceName</strong><span>·</span>@cityName</p>
+            }
+            else if (User.IsInRole("Usuario") && defaultAddress is not null)
+            {
+                <p class="orbi-compact-address"><strong>@defaultAddress.Label</strong><span>·</span>@defaultAddress.FormattedAddress</p>
             }
         </div>
         @if (User.IsInRole("Usuario"))
@@ -45,9 +44,9 @@
     </form>
 
     <section class="orbi-category-grid" aria-label="Categorías de tiendas">
-        <a class="orbi-category-card @(ViewBag.Categoria == "Comida Rápida" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Comida Rápida" ? null : "Comida Rápida")" aria-pressed="@(ViewBag.Categoria == "Comida Rápida")">
+        <a class="orbi-category-card @(ViewBag.Categoria == "Restaurantes" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Restaurantes" ? null : "Restaurantes")" aria-pressed="@(ViewBag.Categoria == "Restaurantes")">
             <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
-            <span><strong>Comida rápida</strong><small>Restaurantes y antojos</small></span>
+            <span><strong>Restaurantes</strong><small>Comida rápida y antojos</small></span>
         </a>
         <a class="orbi-category-card @(ViewBag.Categoria == "Farmacia" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Farmacia" ? null : "Farmacia")" aria-pressed="@(ViewBag.Categoria == "Farmacia")">
             <img src="~/assets/categorias/farmacias.png" alt="Mostrador de farmacia" />

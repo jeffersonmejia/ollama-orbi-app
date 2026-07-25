@@ -22,7 +22,7 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
 
 private static readonly Dictionary<string, (string[] Products, decimal Min, decimal Max)> Catalog = new(StringComparer.Ordinal)
     {
-        ["Comida Rápida"] = (
+        ["Restaurantes"] = (
         [
             "Empanada de viento (3 pzs)", "Empanada de verde con queso (3 pzs)", "Empanada de carne (3 pzs)",
             "Llapingachos (2 pzs)", "Hornado con llapingachos", "Fritada Quiteña",
@@ -586,7 +586,7 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
     private DateTimeOffset RandomDate(int daysBack) => options.ReferenceDate.AddDays(-_faker.Random.Int(0, daysBack)).AddMinutes(-_faker.Random.Int(0, 1439));
     private string Address(string city) => Trim($"{_faker.PickRandom("Av.", "Calle", "Cdla.", "Barrio", "Coop.")} {_faker.Address.StreetName()} {_faker.Random.Int(1, 999)}, {city}", 180);
     private static decimal Money(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
-    private static string StorePrefix(string category) => category switch { "Comida Rápida" => "Comida Rápida", "Farmacia" => "Farmacia", "Supermercado" => "Supermercado", _ => category };
+    private static string StorePrefix(string category) => category switch { "Restaurantes" => "Restaurante", "Farmacia" => "Farmacia", "Supermercado" => "Supermercado", _ => category };
     private static string Trim(string value, int max) => value.Length <= max ? value : value[..max];
 
     private static string UniqueEmail(string first, string last, int index)

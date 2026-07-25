@@ -33,7 +33,7 @@ public class DeliveryController : Controller
 
         string? userProvinceCode = null;
         string? userCityName = null;
-        if (User.IsInRole("Usuario") && CurrentUserId is string userId)
+        if (CurrentUserId is string userId)
         {
             var profile = await _context.UserProfiles.AsNoTracking()
                 .Where(p => p.IdentityUserId == userId)
@@ -44,7 +44,8 @@ public class DeliveryController : Controller
             {
                 userProvinceCode = profile.ProvinceCode;
                 userCityName = profile.City?.Name;
-                productsQuery = productsQuery.Where(product => product.Store.ProvinceCode == userProvinceCode);
+                if (User.IsInRole("Usuario"))
+                    productsQuery = productsQuery.Where(product => product.Store.ProvinceCode == userProvinceCode);
             }
         }
 
@@ -325,6 +326,40 @@ public class DeliveryController : Controller
             _context.DeliveryStores.AsNoTracking().OrderBy(store => store.Name), Math.Max(1, page), 5);
         ViewData["PaginatedList"] = stores;
         return View(stores);
+    }
+
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> AdminUsers(string? buscar, int page = 1)
+    {
+        var query = _context.Users.AsNoTracking().AsQueryable();
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            var term = buscar.Trim();
+            var pattern = $"%{term}%";
+            query = query.Where(u => EF.Functions.ILike(u.Email!, pattern) || EF.Functions.ILike(u.UserName!, pattern));
+        }
+        var users = await PaginatedList<Microsoft.AspNetCore.Identity.IdentityUser>.CreateAsync(
+            query.OrderBy(u => u.Email), Math.Max(1, page), 5);
+        ViewBag.Buscar = buscar;
+        ViewData["PaginatedList"] = users;
+        return View(users);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Administrador")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleUser(string userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+        user.LockoutEnd = isLocked
+            ? null
+            : new DateTimeOffset(DateTime.UtcNow.AddYears(100));
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"{user.Email} ahora está {(isLocked ? "habilitado" : "deshabilitado")}.";
+        return RedirectToAction(nameof(AdminUsers));
     }
 
     [Authorize(Roles = "Administrador")]
