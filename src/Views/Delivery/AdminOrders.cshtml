@@ -27,27 +27,7 @@
                 <div class="orbi-account-section-content">
                     @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
 
-                    <div class="orbi-admin-grid">
-                        <section id="edit-order-section" class="m3-card orbi-admin-edit-card">
-                            <h3>Actualizar pedido</h3>
-                            <form asp-action="UpdateStatus" method="post" class="orbi-admin-edit-form">
-                                <div class="m3-text-field">
-                                    <label class="m3-text-field-label" for="edit-order-id">Pedido</label>
-                                    <select class="m3-text-field-input" id="edit-order-id" name="orderId" required>
-                                        <option value="">Selecciona un pedido</option>
-                                        @foreach (var order in Model) { <option value="@order.DeliveryOrderId">#@order.DeliveryOrderId · @order.Store.Name</option> }
-                                    </select>
-                                </div>
-                                <div class="m3-text-field">
-                                    <label class="m3-text-field-label" for="edit-order-status">Nuevo estado</label>
-                                    <select class="m3-text-field-input" id="edit-order-status" name="status" required>
-                                        @foreach (var status in statuses) { <option value="@status">@status</option> }
-                                    </select>
-                                </div>
-                                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Actualizar estado</button></div>
-                            </form>
-                        </section>
-
+                    <div class="orbi-admin-stack">
                         <section class="m3-card orbi-admin-table-card">
                             <div class="orbi-admin-table-heading"><div><h3>Pedidos registrados</h3><p>Estado general de clientes y entregas.</p></div></div>
                             <div class="orbi-orders-table-wrap">
@@ -69,6 +49,28 @@
                             </div>
                             <partial name="_Pagination" />
                         </section>
+
+                        <section id="edit-order-section" class="m3-card orbi-admin-edit-card">
+                            <h3 id="order-form-title">Actualizar pedido</h3>
+                            <form asp-action="UpdateStatus" method="post" class="orbi-admin-edit-form">
+                                <div class="orbi-admin-form-grid">
+                                    <div class="m3-text-field">
+                                        <label class="m3-text-field-label" for="edit-order-id">Pedido</label>
+                                        <select class="m3-text-field-input" id="edit-order-id" name="orderId" required>
+                                            <option value="">Selecciona un pedido</option>
+                                            @foreach (var order in Model) { <option value="@order.DeliveryOrderId">#@order.DeliveryOrderId · @order.Store.Name</option> }
+                                        </select>
+                                    </div>
+                                    <div class="m3-text-field">
+                                        <label class="m3-text-field-label" for="edit-order-status">Nuevo estado</label>
+                                        <select class="m3-text-field-input" id="edit-order-status" name="status" required>
+                                            @foreach (var status in statuses) { <option value="@status">@status</option> }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="orbi-form-actions"><button class="m3-filled-button" id="order-form-btn" type="submit">Actualizar estado</button></div>
+                            </form>
+                        </section>
                     </div>
                 </div>
             </section>
@@ -77,10 +79,16 @@
 </div>
 
 <script>
-document.querySelectorAll('[data-edit-order]').forEach(button => button.addEventListener('click', () => {
-    document.getElementById('edit-order-id').value = button.dataset.id;
-    document.getElementById('edit-order-status').value = button.dataset.status;
-    document.getElementById('edit-order-section').scrollIntoView({ behavior:'smooth', block:'start' });
-    document.getElementById('edit-order-status').focus();
-}));
+(function(){
+    const title = document.getElementById('order-form-title');
+    const btn = document.getElementById('order-form-btn');
+    document.querySelectorAll('[data-edit-order]').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('edit-order-id').value = button.dataset.id;
+        document.getElementById('edit-order-status').value = button.dataset.status;
+        title.textContent = 'Editar pedido #' + button.dataset.id;
+        btn.textContent = 'Actualizar estado';
+        document.getElementById('edit-order-section').scrollIntoView({ behavior:'smooth', block:'start' });
+        document.getElementById('edit-order-status').focus();
+    }));
+})();
 </script>

@@ -19,18 +19,7 @@
                     @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
                     @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
 
-                    <div class="orbi-admin-grid">
-                        <section id="edit-store-section" class="m3-card orbi-admin-edit-card">
-                            <h3>Editar tienda</h3>
-                            <form asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
-                                <input id="edit-store-id" type="hidden" name="storeId" />
-                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-name">Nombre</label><input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Selecciona Editar en la tabla" /></div>
-                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-category">Categoría</label><input class="m3-text-field-input" id="edit-store-category" name="category" required /></div>
-                                <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-address">Dirección</label><input class="m3-text-field-input" id="edit-store-address" name="address" required /></div>
-                                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Guardar cambios</button></div>
-                            </form>
-                        </section>
-
+                    <div class="orbi-admin-stack">
                         <section class="m3-card orbi-admin-table-card">
                             <div class="orbi-admin-table-heading"><div><h3>Tiendas registradas</h3><p>Disponibilidad actual del catálogo local.</p></div></div>
                             <div class="orbi-orders-table-wrap">
@@ -53,6 +42,19 @@
                             </div>
                             <partial name="_Pagination" />
                         </section>
+
+                        <section id="edit-store-section" class="m3-card orbi-admin-edit-card">
+                            <h3 id="store-form-title">Nueva tienda</h3>
+                            <form asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
+                                <input id="edit-store-id" type="hidden" name="storeId" />
+                                <div class="orbi-admin-form-grid">
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-name">Nombre</label><input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Nombre de la tienda" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-category">Categoría</label><input class="m3-text-field-input" id="edit-store-category" name="category" required placeholder="Ej: Restaurante" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-address">Dirección</label><input class="m3-text-field-input" id="edit-store-address" name="address" required placeholder="Dirección completa" /></div>
+                                </div>
+                                <div class="orbi-form-actions"><button class="m3-filled-button" id="store-form-btn" type="submit">Crear tienda</button></div>
+                            </form>
+                        </section>
                     </div>
                 </div>
             </section>
@@ -61,12 +63,22 @@
 </div>
 
 <script>
-document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
-    document.getElementById('edit-store-id').value = button.dataset.id;
-    document.getElementById('edit-store-name').value = button.dataset.name;
-    document.getElementById('edit-store-category').value = button.dataset.category;
-    document.getElementById('edit-store-address').value = button.dataset.address;
-    document.getElementById('edit-store-section').scrollIntoView({ behavior:'smooth', block:'start' });
-    document.getElementById('edit-store-name').focus();
-}));
+(function(){
+    const title = document.getElementById('store-form-title');
+    const btn = document.getElementById('store-form-btn');
+    document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('edit-store-id').value = button.dataset.id;
+        document.getElementById('edit-store-name').value = button.dataset.name;
+        document.getElementById('edit-store-category').value = button.dataset.category;
+        document.getElementById('edit-store-address').value = button.dataset.address;
+        title.textContent = 'Editar tienda';
+        btn.textContent = 'Actualizar tienda';
+        document.getElementById('edit-store-section').scrollIntoView({ behavior:'smooth', block:'start' });
+        document.getElementById('edit-store-name').focus();
+    }));
+    document.getElementById('edit-store-section').addEventListener('reset', () => {
+        title.textContent = 'Nueva tienda';
+        btn.textContent = 'Crear tienda';
+    });
+})();
 </script>

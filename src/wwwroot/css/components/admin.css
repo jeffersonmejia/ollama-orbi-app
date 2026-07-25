@@ -214,12 +214,17 @@
   min-width: 0;
 }
 
-/* ── Admin section grid (form + table) ── */
-.orbi-admin-grid {
+/* ── Admin vertical stack (table + form below) ── */
+.orbi-admin-stack {
   display: grid;
-  grid-template-columns: minmax(280px, 360px) 1fr;
   gap: 1.25rem;
-  align-items: start;
+}
+
+/* ── Admin form inline grid (fields row inside form card) ── */
+.orbi-admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
 }
 
 .orbi-admin-edit-card {
@@ -236,7 +241,7 @@
 
 .orbi-admin-edit-form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .orbi-admin-edit-form .orbi-form-actions {
@@ -284,10 +289,6 @@
     justify-content: center;
     min-width: 120px;
   }
-
-  .orbi-admin-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 768px) {
@@ -298,10 +299,6 @@
   .orbi-admin-subnav a {
     padding: 8px 12px;
     font-size: 0.8125rem;
-  }
-
-  .orbi-admin-grid {
-    grid-template-columns: 1fr;
   }
 
   .orbi-account-section-header {
