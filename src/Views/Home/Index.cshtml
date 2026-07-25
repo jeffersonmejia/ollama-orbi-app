@@ -414,13 +414,6 @@
 
         @if (User.IsInRole("Administrador"))
         {
-            var usersData = ViewBag.UsersPerMonth as IEnumerable<dynamic>;
-            var ordersData = ViewBag.OrdersPerMonth as IEnumerable<dynamic>;
-            var storesData = ViewBag.StoresPerMonth as IEnumerable<dynamic>;
-            int totalUsers = ViewBag.TotalUsers;
-            int totalOrders = ViewBag.TotalOrders;
-            int totalStores = ViewBag.TotalStores;
-
             <style>
                 .orbi-home-charts { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; max-width:1100px; margin:0 auto; text-align:left; }
                 .orbi-home-chart-card { background:var(--md-sys-color-surface); border:1px solid var(--md-sys-color-outline-variant); border-radius:16px; padding:24px; display:flex; flex-direction:column; min-height:260px; }
@@ -432,115 +425,119 @@
                 .orbi-home-chart-legend { display:flex; gap:16px; margin-top:10px; }
                 .orbi-home-chart-legend span { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--md-sys-color-on-surface-variant); }
                 .orbi-home-chart-legend i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+                .orbi-home-range-bar { display:flex; align-items:center; justify-content:flex-end; gap:10px; max-width:1100px; margin:0 auto 16px; }
+                .orbi-home-range-bar select { padding:6px 12px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container); color:var(--md-sys-color-on-surface); font:inherit; font-size:13px; cursor:pointer; }
+                .orbi-home-range-bar select:focus { border-color:var(--md-sys-color-primary); outline:none; }
                 @@media(max-width:900px){.orbi-home-charts{grid-template-columns:1fr}}
                 @@media(min-width:901px) and (max-width:1200px){.orbi-home-charts{grid-template-columns:repeat(2,1fr)}}
             </style>
 
+            <div class="orbi-home-range-bar">
+                <label for="orbi-chart-range" style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Rango:</label>
+                <select id="orbi-chart-range">
+                    <option value="6h" selected>Últimas 6 horas</option>
+                    <option value="12h">Últimas 12 horas</option>
+                    <option value="1d">Último día</option>
+                    <option value="month">Este mes</option>
+                </select>
+            </div>
+
             <div class="orbi-home-charts">
-                @{
-                    int cw = 300, ch = 120, px = 24, py = 16;
-                    int cW = cw - px * 2, cH = ch - py * 2;
-
-                    Func<List<dynamic>, string, string> makeChart = (data, color) =>
-                    {
-                        if (data == null || data.Count == 0) return "<svg viewBox='0 0 300 120'></svg>";
-                        int count = data.Count;
-                        int max = data.Max(x => (int)x.Count);
-                        if (max == 0) max = 1;
-
-                        var lines = new List<string>();
-                        var dots = new List<string>();
-                        var labels = new List<string>();
-
-                        for (int i = 0; i < count; i++)
-                        {
-                            int x = count == 1 ? px + cW / 2 : px + (int)((double)i / (count - 1) * cW);
-                            int val = (int)data[i].Count;
-                            int y = py + cH - (int)((double)val / max * cH);
-                            lines.Add($"{x},{y}");
-                            dots.Add($"<circle cx='{x}' cy='{y}' r='3.5' fill='{color}' stroke='white' stroke-width='2'/>");
-                            string lbl = $"{data[i].Month}/{((int)data[i].Year).ToString()[^2..]}";
-                            labels.Add($"<text x='{x}' y='{ch - 2}' text-anchor='middle' fill='var(--md-sys-color-on-surface-variant)' font-size='9' font-family='Inter,sans-serif'>{lbl}</text>");
-                        }
-
-                        var grid = new List<string>();
-                        for (int g = 0; g <= 4; g++)
-                        {
-                            int gy = py + (int)((double)g / 4 * cH);
-                            grid.Add($"<line x1='{px}' y1='{gy}' x2='{cw - px}' y2='{gy}' stroke='var(--md-sys-color-outline-variant)' stroke-width='0.5' opacity='0.35'/>");
-                        }
-
-                        return $@"<svg viewBox='0 0 {cw} {ch}' preserveAspectRatio='none'>
-                            {string.Join("", grid)}
-                            <polyline points='{string.Join(" ", lines)}' fill='none' stroke='{color}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>
-                            {string.Join("", dots)}
-                            {string.Join("", labels)}
-                        </svg>";
-                    };
-
-                    var allOrders = ordersData?.ToList() ?? new List<dynamic>();
-                    var delivered = allOrders.Where(x => ((string)x.Status) == "Entregado").ToList();
-                    var transit = allOrders.Where(x => ((string)x.Status) == "En camino").ToList();
-                    var pending = allOrders.Where(x => x.Status != "Entregado" && x.Status != "En camino").ToList();
-                    int maxO = new[] { delivered.Any() ? delivered.Max(x => (int)x.Count) : 0, transit.Any() ? transit.Max(x => (int)x.Count) : 0, pending.Any() ? pending.Max(x => (int)x.Count) : 0 }.Max();
-                    if (maxO == 0) maxO = 1;
-
-                    Func<List<dynamic>, string, string> multiLine = (data, color) =>
-                    {
-                        if (data.Count == 0) return "";
-                        var pts = new List<string>();
-                        var ds = new List<string>();
-                        for (int i = 0; i < data.Count; i++)
-                        {
-                            int x = data.Count == 1 ? px + cW / 2 : px + (int)((double)i / (data.Count - 1) * cW);
-                            int y = py + cH - (int)((double)(int)data[i].Count / maxO * cH);
-                            pts.Add($"{x},{y}");
-                            ds.Add($"<circle cx='{x}' cy='{y}' r='3' fill='{color}' stroke='white' stroke-width='1.5'/>");
-                        }
-                        return $"<polyline points='{string.Join(" ", pts)}' fill='none' stroke='{color}' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>{string.Join("", ds)}";
-                    };
-                }
-
                 <div class="orbi-home-chart-card">
                     <div class="orbi-home-chart-header">
                         <span class="orbi-home-chart-title">Usuarios registrados</span>
-                        <span class="orbi-home-chart-value">@totalUsers</span>
+                        <span class="orbi-home-chart-value" id="chart-users-total">—</span>
                     </div>
-                    <div class="orbi-home-chart-body">@Html.Raw(makeChart(usersData?.ToList() ?? new List<dynamic>(), "#C2185B"))</div>
+                    <div class="orbi-home-chart-body" id="chart-users"></div>
                 </div>
-
                 <div class="orbi-home-chart-card">
                     <div class="orbi-home-chart-header">
                         <span class="orbi-home-chart-title">Pedidos</span>
-                        <span class="orbi-home-chart-value">@totalOrders</span>
+                        <span class="orbi-home-chart-value" id="chart-orders-total">—</span>
                     </div>
-                    <div class="orbi-home-chart-body">
-                        <svg viewBox="0 0 @cw @ch" preserveAspectRatio="none">
-                            @for (int g = 0; g <= 4; g++)
-                            {
-                                int gy = py + (int)((double)g / 4 * cH);
-                                <line x1="@px" y1="@gy" x2="@(cw - px)" y2="@gy" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35" />
-                            }
-                            @Html.Raw(multiLine(delivered, "#146c2e"))
-                            @Html.Raw(multiLine(transit, "#075c9b"))
-                            @Html.Raw(multiLine(pending, "#B85700"))
-                        </svg>
-                    </div>
+                    <div class="orbi-home-chart-body" id="chart-orders"></div>
                     <div class="orbi-home-chart-legend">
                         <span><i style="background:#146c2e"></i>Entregados</span>
                         <span><i style="background:#075c9b"></i>En camino</span>
                         <span><i style="background:#B85700"></i>Pendientes</span>
                     </div>
                 </div>
-
                 <div class="orbi-home-chart-card">
                     <div class="orbi-home-chart-header">
                         <span class="orbi-home-chart-title">Tiendas registradas</span>
-                        <span class="orbi-home-chart-value">@totalStores</span>
+                        <span class="orbi-home-chart-value" id="chart-stores-total">—</span>
                     </div>
-                    <div class="orbi-home-chart-body">@Html.Raw(makeChart(storesData?.ToList() ?? new List<dynamic>(), "#075c9b"))</div>
+                    <div class="orbi-home-chart-body" id="chart-stores"></div>
                 </div>
             </div>
+
+            <script>
+            (function() {
+                const W = 300, H = 120, PX = 24, PY = 16, CW = W - PX*2, CH = H - PY*2;
+
+                function buildChart(data, color) {
+                    if (!data || data.length === 0) return '<svg viewBox="0 0 300 120"><text x="150" y="65" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>';
+                    const max = Math.max(...data.map(d => d.Count), 1);
+                    const pts = data.map((d, i) => {
+                        const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
+                        const y = PY + CH - (d.Count / max) * CH;
+                        return { x, y };
+                    });
+                    const grid = [0,1,2,3,4].map(g => {
+                        const gy = PY + (g / 4) * CH;
+                        return `<line x1="${PX}" y1="${gy}" x2="${W-PX}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35"/>`;
+                    }).join('');
+                    const line = pts.map(p => `${p.x},${p.y}`).join(' ');
+                    const dots = pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${color}" stroke="white" stroke-width="2"/>`).join('');
+                    const labels = data.map((d, i) => {
+                        const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
+                        return `<text x="${x}" y="${H-2}" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="9" font-family="Inter,sans-serif">${d.Label}</text>`;
+                    }).join('');
+                    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}<polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+                }
+
+                function buildMultiChart(delivered, transit, pending) {
+                    const all = [...delivered, ...transit, ...pending];
+                    if (all.length === 0) return '<svg viewBox="0 0 300 120"><text x="150" y="65" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>';
+                    const max = Math.max(...all.map(d => d.Count), 1);
+                    const grid = [0,1,2,3,4].map(g => {
+                        const gy = PY + (g / 4) * CH;
+                        return `<line x1="${PX}" y1="${gy}" x2="${W-PX}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.35"/>`;
+                    }).join('');
+                    function line(data, color) {
+                        if (data.length === 0) return '';
+                        const pts = data.map((d, i) => {
+                            const x = data.length === 1 ? PX + CW/2 : PX + (i / (data.length - 1)) * CW;
+                            const y = PY + CH - (d.Count / max) * CH;
+                            return { x, y };
+                        });
+                        return `<polyline points="${pts.map(p => p.x+','+p.y).join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` +
+                            pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`).join('');
+                    }
+                    return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${line(delivered,'#146c2e')}${line(transit,'#075c9b')}${line(pending,'#B85700')}</svg>`;
+                }
+
+                async function loadCharts(range) {
+                    const res = await fetch('/Home/ChartStats?range=' + encodeURIComponent(range));
+                    const data = await res.json();
+
+                    document.getElementById('chart-users-total').textContent = data.totalUsers;
+                    document.getElementById('chart-orders-total').textContent = data.totalOrders;
+                    document.getElementById('chart-stores-total').textContent = data.totalStores;
+
+                    document.getElementById('chart-users').innerHTML = buildChart(data.users, '#C2185B');
+                    document.getElementById('chart-stores').innerHTML = buildChart(data.stores, '#075c9b');
+
+                    const delivered = data.orders.filter(o => o.status === 'Entregado');
+                    const transit = data.orders.filter(o => o.status === 'En camino');
+                    const pending = data.orders.filter(o => o.status !== 'Entregado' && o.status !== 'En camino');
+                    document.getElementById('chart-orders').innerHTML = buildMultiChart(delivered, transit, pending);
+                }
+
+                document.getElementById('orbi-chart-range').addEventListener('change', function() { loadCharts(this.value); });
+                loadCharts('6h');
+            })();
+            </script>
         }
     }
     else

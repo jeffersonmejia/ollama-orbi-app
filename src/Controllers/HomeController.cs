@@ -77,6 +77,53 @@ public class HomeController : Controller
         return View();
     }
 
+    [Authorize(Roles = "Administrador")]
+    [HttpGet]
+    public async Task<IActionResult> ChartStats(string range = "6h")
+    {
+        var since = range switch
+        {
+            "12h" => DateTimeOffset.UtcNow.AddHours(-12),
+            "1d" => DateTimeOffset.UtcNow.AddDays(-1),
+            "month" => new DateTimeOffset(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero),
+            _ => DateTimeOffset.UtcNow.AddHours(-6)
+        };
+
+        var users = await _identityContext.UserProfiles
+            .AsNoTracking()
+            .Where(p => p.CreatedAt >= since)
+            .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month, p.CreatedAt.Day, p.CreatedAt.Hour })
+            .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
+            .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+            .ToListAsync();
+
+        var orders = await _identityContext.DeliveryOrders
+            .AsNoTracking()
+            .Where(o => o.CreatedAt >= since)
+            .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour, o.Status })
+            .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Status = g.Key.Status, Count = g.Count() })
+            .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+            .ToListAsync();
+
+        var stores = await _identityContext.DeliveryStores
+            .AsNoTracking()
+            .Where(s => s.CreatedAt >= since)
+            .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month, s.CreatedAt.Day, s.CreatedAt.Hour })
+            .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
+            .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+            .ToListAsync();
+
+        return Json(new
+        {
+            Users = users.Select(u => new { Label = $"{u.Hour:D2}:00", Count = u.Count }),
+            Orders = orders.Select(o => new { Label = $"{o.Hour:D2}:00", o.Status, Count = o.Count }),
+            Stores = stores.Select(s => new { Label = $"{s.Hour:D2}:00", Count = s.Count }),
+            TotalUsers = users.Sum(u => u.Count),
+            TotalOrders = orders.Sum(o => o.Count),
+            TotalStores = stores.Sum(s => s.Count)
+        });
+    }
+
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
