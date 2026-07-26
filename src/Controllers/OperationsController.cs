@@ -218,16 +218,27 @@ public class OperationsController : Controller
     [Authorize(Roles = "Administrador,Repartidor,Usuario")]
     public async Task<IActionResult> DeliveryIncidents(int page = 1)
     {
-        var orders = AccessibleOrders();
+        List<int> orderIds;
+        IQueryable<DeliveryOrder> ordersQuery;
+        if (User.IsInRole("Administrador"))
+        {
+            orderIds = new List<int>();
+            ordersQuery = _context.DeliveryOrders.AsNoTracking();
+        }
+        else
+        {
+            orderIds = await AccessibleOrders().Select(o => o.DeliveryOrderId).ToListAsync();
+            ordersQuery = _context.DeliveryOrders.AsNoTracking().Where(o => orderIds.Contains(o.DeliveryOrderId));
+        }
         var model = new DeliveryIncidentsViewModel
         {
             Incidents = await PaginatedList<DeliveryIncident>.CreateAsync(_context.DeliveryIncidents
                 .AsNoTracking()
-                .Where(incident => orders.Any(order => order.DeliveryOrderId == incident.DeliveryOrderId))
+                .Where(incident => User.IsInRole("Administrador") || orderIds.Contains(incident.DeliveryOrderId))
                 .Include(incident => incident.Order).ThenInclude(order => order.Store)
                 .Include(incident => incident.ReportedByUser)
-                .OrderByDescending(incident => incident.CreatedAt), Math.Max(1, page), 5),
-            Orders = await orders.AsNoTracking().Include(order => order.Store)
+                .OrderByDescending(incident => incident.CreatedAt), Math.Max(1, page), 12),
+            Orders = await ordersQuery.Include(order => order.Store)
                 .OrderByDescending(order => order.CreatedAt).Take(100).ToListAsync()
         };
         return View(model);
@@ -286,18 +297,25 @@ public class OperationsController : Controller
     [Authorize(Roles = "Administrador,Repartidor,Usuario")]
     public async Task<IActionResult> OrderStatusHistory(int? orderId, string? status, int page = 1)
     {
-        var orders = AccessibleOrders();
-        var query = _context.OrderStatusHistories
-            .AsNoTracking()
-            .Where(history => orders.Any(order => order.DeliveryOrderId == history.DeliveryOrderId))
+        IQueryable<OrderStatusHistory> query;
+        if (User.IsInRole("Administrador"))
+        {
+            query = _context.OrderStatusHistories.AsNoTracking();
+        }
+        else
+        {
+            var orderIds = await AccessibleOrders().Select(o => o.DeliveryOrderId).ToListAsync();
+            query = _context.OrderStatusHistories.AsNoTracking()
+                .Where(h => orderIds.Contains(h.DeliveryOrderId));
+        }
+        query = query
             .Include(history => history.Order).ThenInclude(order => order.Store)
-            .Include(history => history.ChangedByUser)
-            .AsQueryable();
+            .Include(history => history.ChangedByUser);
         if (orderId.HasValue) query = query.Where(item => item.DeliveryOrderId == orderId.Value);
         if (!string.IsNullOrWhiteSpace(status)) query = query.Where(item => item.NewStatus == status);
         ViewBag.OrderId = orderId;
         ViewBag.Status = status;
-        var histories = await PaginatedList<OrderStatusHistory>.CreateAsync(query.OrderByDescending(history => history.ChangedAt), Math.Max(1, page), 5);
+        var histories = await PaginatedList<OrderStatusHistory>.CreateAsync(query.OrderByDescending(history => history.ChangedAt), Math.Max(1, page), 12);
         return View(histories);
     }
 

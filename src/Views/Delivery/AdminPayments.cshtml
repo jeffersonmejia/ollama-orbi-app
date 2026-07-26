@@ -1,0 +1,52 @@
+@using SakilaApp.Models.Delivery
+@model SakilaApp.Models.PaginatedList<DeliveryPayment>
+@{ ViewData["Title"] = "Pagos"; ViewData["PaginatedList"] = Model; }
+
+<div class="orbi-account-shell orbi-delivery-admin-shell">
+    <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
+    <div class="orbi-account-layout">
+        <aside><partial name="_AdminNav" /></aside>
+        <main class="orbi-account-main">
+            <section class="orbi-account-section">
+                <header class="orbi-account-section-header">
+                    <div><span class="material-symbols-outlined orbi-section-icon">payments</span><h2>Pagos</h2></div>
+                    <p>Historial de transacciones de pago.</p>
+                </header>
+                <div class="orbi-account-section-content">
+                    @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
+                    <form asp-action="AdminPayments" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="m3-text-field" style="margin:0;flex:1;min-width:180px;">
+                            <label class="m3-text-field-label">Buscar</label>
+                            <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Proveedor, estado, cliente..." style="height:40px;" />
+                        </div>
+                        <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
+                        <a asp-action="AdminPayments" class="m3-text-button" style="height:40px;line-height:40px;">Limpiar</a>
+                    </form>
+                    <div class="orbi-admin-table-card">
+                        <div class="orbi-orders-table-wrap">
+                            <table class="m3-data-table orbi-orders-table">
+                                <thead><tr><th>Pago</th><th>Pedido</th><th>Cliente</th><th>Proveedor</th><th>Externo</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead>
+                                <tbody>
+                                @foreach (var p in Model)
+                                {
+                                    <tr>
+                                        <td><strong>#@p.PaymentId</strong></td>
+                                        <td><strong>#@p.DeliveryOrderId</strong><small>@p.Order.Store.Name</small></td>
+                                        <td>@p.Order.CustomerEmail</td>
+                                        <td><span class="orbi-order-status is-preparing"><span class="orbi-status-dot"></span>@p.Provider</span></td>
+                                        <td><small>@p.ExternalId</small></td>
+                                        <td><strong>$@p.Amount.ToString("0.00")</strong></td>
+                                        <td><span class="orbi-order-status @(p.Status == "Aprobado" ? "is-delivered" : p.Status == "Rechazado" ? "is-cancelled" : "is-preparing")"><span class="orbi-status-dot"></span>@p.Status</span></td>
+                                        <td>@p.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                        <partial name="_Pagination" />
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>

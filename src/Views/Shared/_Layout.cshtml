@@ -71,6 +71,8 @@
                 @if (User.IsInRole("Usuario"))
                 {
                     <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="MyOrders"><span class="material-symbols-outlined">receipt_long</span><span>Pedidos</span></a></li>
+                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="MyPayments"><span class="material-symbols-outlined">payments</span><span>Pagos</span></a></li>
+                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="Cart"><span class="material-symbols-outlined">shopping_cart</span><span>Carrito</span></a></li>
                 }
                 @if (User.IsInRole("Repartidor"))
                 {

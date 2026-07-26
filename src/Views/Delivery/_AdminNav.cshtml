@@ -8,7 +8,19 @@
     <a class="@(action == "AdminOrders" ? "active" : "")" asp-action="AdminOrders">
         <span class="material-symbols-outlined">receipt_long</span><span>Pedidos</span>
     </a>
+    <a class="@(action == "AdminPayments" ? "active" : "")" asp-action="AdminPayments">
+        <span class="material-symbols-outlined">payments</span><span>Pagos</span>
+    </a>
     <a class="@(action == "AdminUsers" ? "active" : "")" asp-action="AdminUsers">
         <span class="material-symbols-outlined">people</span><span>Usuarios</span>
+    </a>
+    <a class="@(action == "AdminLocations" ? "active" : "")" asp-action="AdminLocations">
+        <span class="material-symbols-outlined">location_city</span><span>Ubicaciones</span>
+    </a>
+    <a class="@(action == "AdminInventory" ? "active" : "")" asp-action="AdminInventory">
+        <span class="material-symbols-outlined">inventory_2</span><span>Inventario</span>
+    </a>
+    <a class="@(action == "AdminAuditLog" ? "active" : "")" asp-action="AdminAuditLog">
+        <span class="material-symbols-outlined">shield</span><span>Auditoría</span>
     </a>
 </nav>

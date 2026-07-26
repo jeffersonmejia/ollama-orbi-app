@@ -75,7 +75,7 @@
 
                 @if (User.IsInRole("Usuario"))
                 {
-                    <form asp-action="CreateOrder" method="post" class="orbi-product-order-form">
+                    <form asp-action="AddToCart" method="post" class="orbi-product-order-form">
                         <input type="hidden" name="productId" value="@product.DeliveryProductId" />
                         <div class="orbi-quantity-field">
                             <span>Cantidad</span>
@@ -85,7 +85,7 @@
                                 <button type="button" class="orbi-quantity-button" data-quantity-action="increase" aria-label="Aumentar cantidad"><span class="material-symbols-outlined">add</span></button>
                             </div>
                         </div>
-                        <button type="submit" class="m3-filled-button" disabled="@(!Model.Addresses.Any())">Pedir ahora</button>
+                        <button type="submit" class="m3-filled-button"><span class="material-symbols-outlined" style="font-size:18px;">add_shopping_cart</span> Agregar al carrito</button>
                     </form>
                 }
             </article>

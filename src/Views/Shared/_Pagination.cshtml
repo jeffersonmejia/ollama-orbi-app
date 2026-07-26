@@ -19,7 +19,7 @@
     };
 }
 
-<p class="m3-pagination-meta">Página @paginatedList.PageIndex de @Math.Max(1, paginatedList.TotalPages) · @paginatedList.TotalCount registros totales · máximo @paginatedList.PageSize por página</p>
+<p class="m3-pagination-meta">Página @paginatedList.PageIndex.ToString("N0") de @Math.Max(1, paginatedList.TotalPages).ToString("N0") · @paginatedList.TotalCount.ToString("N0") registros totales · máximo @paginatedList.PageSize.ToString("N0") por página</p>
 
 @if (paginatedList.TotalPages > 1)
 {

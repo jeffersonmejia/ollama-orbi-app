@@ -1,0 +1,95 @@
+@using SakilaApp.Models.Identity
+@model SakilaApp.Models.PaginatedList<EcuadorCity>
+@{ ViewData["Title"] = "Ubicaciones"; ViewData["PaginatedList"] = Model; }
+
+<div class="orbi-account-shell orbi-delivery-admin-shell">
+    <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
+    <div class="orbi-account-layout">
+        <aside><partial name="_AdminNav" /></aside>
+        <main class="orbi-account-main">
+            <section class="orbi-account-section">
+                <header class="orbi-account-section-header">
+                    <div><span class="material-symbols-outlined orbi-section-icon">location_city</span><h2>Ubicaciones</h2></div>
+                    <p>Provincias y ciudades de Ecuador.</p>
+                </header>
+                <div class="orbi-account-section-content">
+                    @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
+                    @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
+
+                    <div class="orbi-admin-stack">
+                        <section class="m3-card orbi-admin-edit-card">
+                            <h3>Agregar ciudad</h3>
+                            <form asp-action="CreateCity" method="post" class="orbi-admin-edit-form">
+                                <div class="orbi-admin-form-grid">
+                                    <div class="m3-text-field"><label class="m3-text-field-label">Código ciudad</label><input class="m3-text-field-input" name="code" required placeholder="Ej: 0901" maxlength="4" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label">Provincia</label><select class="m3-text-field-input" name="provinceCode" required><option value="">Selecciona</option>@foreach (var p in (IEnumerable<EcuadorProvince>)ViewBag.Provincias){<option value="@p.Code">@p.Name</option>}</select></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label">Nombre</label><input class="m3-text-field-input" name="name" required placeholder="Nombre de la ciudad" /></div>
+                                </div>
+                                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Crear ciudad</button></div>
+                            </form>
+                        </section>
+
+                        <section class="m3-card orbi-admin-edit-card">
+                            <h3>Agregar provincia</h3>
+                            <form asp-action="CreateProvince" method="post" class="orbi-admin-edit-form">
+                                <div class="orbi-admin-form-grid">
+                                    <div class="m3-text-field"><label class="m3-text-field-label">Código</label><input class="m3-text-field-input" name="code" required placeholder="Ej: 09" maxlength="2" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label">Nombre</label><input class="m3-text-field-input" name="name" required placeholder="Nombre de la provincia" /></div>
+                                </div>
+                                <div class="orbi-form-actions"><button class="m3-filled-button" type="submit">Crear provincia</button></div>
+                            </form>
+                        </section>
+
+                        <section class="m3-card orbi-admin-table-card">
+                            <div class="orbi-admin-table-heading"><div><h3>Ciudades registradas</h3><p>@Model.TotalCount ciudades en total.</p></div></div>
+                            <form asp-action="AdminLocations" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+                                <div class="m3-text-field" style="margin:0;flex:1;min-width:180px;">
+                                    <label class="m3-text-field-label">Buscar</label>
+                                    <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Ciudad o provincia..." style="height:40px;" />
+                                </div>
+                                <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
+                                <a asp-action="AdminLocations" class="m3-text-button" style="height:40px;line-height:40px;">Limpiar</a>
+                            </form>
+                            <div class="orbi-orders-table-wrap">
+                                <table class="m3-data-table orbi-orders-table">
+                                    <thead><tr><th>Código</th><th>Ciudad</th><th>Provincia</th><th>Cód. Prov.</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                    @foreach (var city in Model)
+                                    {
+                                        <tr id="city-@city.Code">
+                                            <td><strong>@city.Code</strong></td>
+                                            <td id="city-name-@city.Code">@city.Name</td>
+                                            <td id="city-province-@city.Code">@city.Province.Name</td>
+                                            <td><small>@city.ProvinceCode</small></td>
+                                            <td>
+                                                <div class="orbi-admin-row-actions">
+                                                    <button type="button" class="m3-text-button" data-edit-city data-code="@city.Code" data-name="@city.Name"><span class="material-symbols-outlined">edit</span>Editar</button>
+                                                    <form asp-action="DeleteCity" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar @city.Name?')"><input type="hidden" name="code" value="@city.Code" /><button type="submit" class="m3-text-button" style="color:var(--md-sys-color-error);"><span class="material-symbols-outlined">delete</span>Eliminar</button></form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <partial name="_Pagination" />
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+(function(){
+    document.querySelectorAll('[data-edit-city]').forEach(button => button.addEventListener('click', () => {
+        const code = button.dataset.code;
+        const name = button.dataset.name;
+        const row = document.getElementById('city-' + code);
+        const nameCell = document.getElementById('city-name-' + code);
+        nameCell.innerHTML = '<form asp-action="UpdateCity" method="post" style="display:flex;gap:4px;align-items:center;"><input type="hidden" name="code" value="' + code + '" /><input class="m3-text-field-input" name="name" value="' + name + '" style="height:32px;flex:1;" required /><button type="submit" class="m3-filled-button" style="height:32px;padding:0 8px;font-size:12px;">Guardar</button></form>';
+        nameCell.querySelector('input').focus();
+    }));
+})();
+</script>

@@ -1,0 +1,192 @@
+@model List<SakilaApp.Models.Identity.UserAddress>
+@{
+    SakilaApp.Models.Identity.UserProfile profile = ViewBag.Profile;
+    List<SakilaApp.Models.Identity.EcuadorProvince> provinces = ViewBag.Provinces;
+    List<SakilaApp.Models.Identity.EcuadorCity> cities = ViewBag.Cities;
+    var success = TempData["Success"] as string;
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title"><span class="material-symbols-outlined" style="font-size:32px;vertical-align:middle;margin-right:8px;">person</span>Mi Perfil</h1>
+
+    @if (!string.IsNullOrEmpty(success))
+    {
+        <div style="padding:12px 16px;border-radius:12px;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);margin-bottom:1rem;font-size:var(--md-sys-typescale-body-medium-size);">@success</div>
+    }
+
+    <!-- Profile form -->
+    <div class="m3-card" style="padding:24px;margin-bottom:1.5rem;">
+        <h2 style="font-size:var(--md-sys-typescale-title-medium-size);font-weight:var(--md-sys-typescale-title-medium-weight);color:var(--md-sys-color-on-surface);margin:0 0 16px;">Datos personales</h2>
+        <form asp-action="UpdateProfile" method="post" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            @Html.AntiForgeryToken()
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Nombre</label>
+                <input name="firstName" value="@profile?.FirstName" required class="m3-input" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Apellido</label>
+                <input name="lastName" value="@profile?.LastName" required class="m3-input" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Cédula</label>
+                <input name="cedula" value="@profile?.Cedula" required class="m3-input" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Dirección línea 1</label>
+                <input name="addressLine1" value="@profile?.AddressLine1" required class="m3-input" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Dirección línea 2</label>
+                <input name="addressLine2" value="@profile?.AddressLine2" class="m3-input" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Provincia</label>
+                <select name="provinceCode" required class="m3-input">
+                    @foreach (var p in provinces)
+                    {
+                        <option value="@p.Code" selected="@(p.Code == profile?.ProvinceCode)">@p.Name</option>
+                    }
+                </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Ciudad</label>
+                <select name="cityCode" required class="m3-input">
+                    @foreach (var c in cities.Where(c => c.ProvinceCode == profile?.ProvinceCode))
+                    {
+                        <option value="@c.Code" selected="@(c.Code == profile?.CityCode)">@c.Name</option>
+                    }
+                </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+                <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Referencia</label>
+                <input name="reference" value="@profile?.Reference" class="m3-input" />
+            </div>
+            <div style="grid-column:1/-1;margin-top:8px;">
+                <button type="submit" class="m3-filled-button">
+                    <span class="material-symbols-outlined" style="font-size:18px;">save</span> Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Addresses -->
+    <div class="m3-card" style="padding:24px;margin-bottom:1.5rem;">
+        <h2 style="font-size:var(--md-sys-typescale-title-medium-size);font-weight:var(--md-sys-typescale-title-medium-weight);color:var(--md-sys-color-on-surface);margin:0 0 16px;">Mis direcciones</h2>
+
+        @if (!Model.Any())
+        {
+            <div style="color:var(--md-sys-color-on-surface-variant);font-size:var(--md-sys-typescale-body-medium-size);padding:16px 0;">No tienes direcciones registradas.</div>
+        }
+
+        @foreach (var addr in Model)
+        {
+            <div style="border:1px solid var(--md-sys-color-outline-variant);border-radius:12px;padding:16px;margin-bottom:12px;@(addr.IsDefault ? "background:var(--md-sys-color-primary-container);border-color:var(--md-sys-color-primary);" : "")">
+                <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">
+                    <div>
+                        <div style="font-weight:600;color:var(--md-sys-color-on-surface);font-size:var(--md-sys-typescale-body-large-size);">
+                            @addr.Label
+                            @if (addr.IsDefault)
+                            {
+                                <span style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-primary);margin-left:6px;">[Predeterminada]</span>
+                            }
+                        </div>
+                        <div style="font-size:var(--md-sys-typescale-body-medium-size);color:var(--md-sys-color-on-surface-variant);margin-top:4px;">@addr.FormattedAddress</div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-shrink:0;">
+                        @if (!addr.IsDefault)
+                        {
+                            <form asp-action="SetDefaultAddress" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="addressId" value="@addr.UserAddressId" />
+                                <button type="submit" class="m3-text-button" style="font-size:12px;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">star</span> Predeterminar
+                                </button>
+                            </form>
+                        }
+                        <form asp-action="DeleteAddress" method="post"
+                              onsubmit="return confirm('¿Eliminar esta dirección?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="addressId" value="@addr.UserAddressId" />
+                            <button type="submit" class="orbi-icon-button" style="color:var(--md-sys-color-error);" aria-label="Eliminar dirección">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Add new address -->
+        <div style="margin-top:16px;border-top:1px solid var(--md-sys-color-outline-variant);padding-top:16px;">
+            <h3 style="font-size:var(--md-sys-typescale-title-small-size);font-weight:var(--md-sys-typescale-title-small-weight);color:var(--md-sys-color-on-surface);margin:0 0 12px;">
+                <span class="material-symbols-outlined" style="font-size:20px;vertical-align:middle;margin-right:4px;">add_location</span>Agregar nueva dirección
+            </h3>
+            <form asp-action="CreateAddress" method="post" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                @Html.AntiForgeryToken()
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Etiqueta</label>
+                    <input name="label" placeholder="Casa, Oficina, etc." value="Casa" required class="m3-input" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Dirección línea 1</label>
+                    <input name="addressLine1" required class="m3-input" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Dirección línea 2</label>
+                    <input name="addressLine2" class="m3-input" />
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Provincia</label>
+                    <select name="provinceCode" required class="m3-input">
+                        <option value="">Seleccionar provincia</option>
+                        @foreach (var p in provinces)
+                        {
+                            <option value="@p.Code">@p.Name</option>
+                        }
+                    </select>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Ciudad</label>
+                    <select name="cityCode" required class="m3-input">
+                        <option value="">Seleccionar ciudad</option>
+                    </select>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                    <label style="font-size:var(--md-sys-typescale-label-small-size);color:var(--md-sys-color-on-surface-variant);">Referencia</label>
+                    <input name="reference" class="m3-input" />
+                </div>
+                <div style="grid-column:1/-1;margin-top:4px;">
+                    <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-secondary);color:var(--md-sys-color-on-secondary);">
+                        <span class="material-symbols-outlined" style="font-size:18px;">add</span> Agregar dirección
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+        <a class="m3-text-button" asp-action="Cart">
+            <span class="material-symbols-outlined" style="font-size:18px;margin-right:4px;">arrow_back</span>
+            Volver al carrito
+        </a>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('select[name="provinceCode"]').forEach(sel => {
+    sel.addEventListener('change', function() {
+        const form = this.closest('form');
+        const citySelect = form.querySelector('select[name="cityCode"]');
+        if (!citySelect) return;
+        const provinceCode = this.value;
+        const cities = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(cities.Select(c => new { c.Code, c.ProvinceCode, c.Name })));
+        citySelect.innerHTML = '<option value="">Seleccionar ciudad</option>';
+        cities.filter(c => c.ProvinceCode === provinceCode).forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.Code;
+            opt.textContent = c.Name;
+            citySelect.appendChild(opt);
+        });
+    });
+});
+</script>

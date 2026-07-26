@@ -1,0 +1,59 @@
+@using SakilaApp.Models.Operations
+@model SakilaApp.Models.PaginatedList<InventoryMovement>
+@{ ViewData["Title"] = "Movimientos de Inventario"; ViewData["PaginatedList"] = Model; }
+
+<div class="orbi-account-shell orbi-delivery-admin-shell">
+    <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
+    <div class="orbi-account-layout">
+        <aside><partial name="_AdminNav" /></aside>
+        <main class="orbi-account-main">
+            <section class="orbi-account-section">
+                <header class="orbi-account-section-header">
+                    <div><span class="material-symbols-outlined orbi-section-icon">inventory_2</span><h2>Movimientos de Inventario</h2></div>
+                    <p>Entradas, salidas y ajustes de productos.</p>
+                </header>
+                <div class="orbi-account-section-content">
+                    @if (TempData["Success"] is string success) { <div class="orbi-alert">@success</div> }
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding:16px;border-radius:12px;background:var(--md-sys-color-surface-container-low);border:1px solid var(--md-sys-color-outline-variant);">
+                        <div style="width:100%;font-weight:600;font-size:var(--md-sys-typescale-title-small-size);color:var(--md-sys-color-on-surface);margin-bottom:4px;">Leyenda de movimientos</div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span class="orbi-order-status is-delivered"><span class="orbi-status-dot"></span>Entrada</span><span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">+ cantidad, stock sube</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span class="orbi-order-status is-cancelled"><span class="orbi-status-dot"></span>Salida</span><span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">- cantidad, stock baja (venta/envío)</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span class="orbi-order-status is-preparing"><span class="orbi-status-dot"></span>Ajuste</span><span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">-/+ cantidad, corrección manual</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span class="orbi-order-status" style="background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);"><span class="orbi-status-dot"></span>Reserva</span><span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">- cantidad, stock bloqueado para pedido</span></div>
+                        <div style="display:flex;align-items:center;gap:6px;"><span class="orbi-order-status" style="background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);"><span class="orbi-status-dot"></span>Liberación</span><span style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);">+ cantidad, reserva cancelada, stock devuelve</span></div>
+                    </div>
+                    <form asp-action="AdminInventory" method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="m3-text-field" style="margin:0;flex:1;min-width:180px;">
+                            <label class="m3-text-field-label">Buscar</label>
+                            <input type="search" name="buscar" value="@ViewBag.Buscar" class="m3-text-field-input" placeholder="Tipo, producto, tienda..." style="height:40px;" />
+                        </div>
+                        <button type="submit" class="m3-filled-button" style="height:40px;padding:0 16px;">Buscar</button>
+                        <a asp-action="AdminInventory" class="m3-text-button" style="height:40px;line-height:40px;">Limpiar</a>
+                    </form>
+                    <div class="orbi-admin-table-card">
+                        <div class="orbi-orders-table-wrap">
+                            <table class="m3-data-table orbi-orders-table">
+                                <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Costo</th><th>Pedido</th><th>Usuario</th></tr></thead>
+                                <tbody>
+                                @foreach (var m in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@m.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</strong></td>
+                                        <td><strong>@m.Product.Store.Name</strong><small>@m.Product.Name</small></td>
+                                        <td><span class="orbi-order-status @(m.MovementType == "Entrada" ? "is-delivered" : m.MovementType == "Salida" ? "is-cancelled" : m.MovementType == "Liberación" ? "is-approved" : "is-preparing")"><span class="orbi-status-dot"></span>@m.MovementType</span></td>
+                                        <td><strong>@m.QuantityDelta</strong></td>
+                                        <td>@(m.UnitCost?.ToString("C") ?? "—")</td>
+                                        <td>@(m.DeliveryOrderId.HasValue ? $"#{m.DeliveryOrderId}" : "—")</td>
+                                        <td><small>@(m.PerformedByUser?.Email ?? "Sistema")</small></td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                        <partial name="_Pagination" />
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>

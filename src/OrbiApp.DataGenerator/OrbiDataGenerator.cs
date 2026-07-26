@@ -16,6 +16,7 @@ internal sealed class OrbiDataGenerator(GeneratorOptions options)
     private readonly Stopwatch _clock = new();
     private NpgsqlConnection _connection = null!;
     private Location[] _locations = [];
+    private Location[] _allLocations = [];
     private UserInfo[] _users = [];
     private ProductInfo[] _products = [];
     private OrderInfo[] _orders = [];
@@ -184,6 +185,7 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         await ApplySchemaAsync();
         await PrepareDatabaseAsync();
         _locations = await ReadLocationsAsync();
+        _allLocations = await ReadAllLocationsAsync();
 
         await GenerateStoresAsync();
         await GenerateProductsAsync();
@@ -258,9 +260,18 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         return result.ToArray();
     }
 
+    private async Task<Location[]> ReadAllLocationsAsync()
+    {
+        var result = new List<Location>();
+        await using var command = new NpgsqlCommand("SELECT city_code, province_code, name FROM ecuador_city ORDER BY city_code", _connection);
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) result.Add(new(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        return result.ToArray();
+    }
+
     private async Task GenerateStoresAsync()
     {
-        var categories = Catalog.Keys.ToArray();
+        var categories = new[] { "Restaurantes", "Farmacia", "Supermercado" };
         var suffixes = new[] { "Express", "Central", "La Esquina", "Del Valle", "Norte", "Sur", "Centro", "Los Ceibos" };
         await CopyBatchesAsync("tiendas", _plan.Stores,
             "COPY delivery_store (delivery_store_id, name, category, address, province_code, city_code, is_active) FROM STDIN (FORMAT BINARY)",
@@ -372,6 +383,10 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
                     var id = DeterministicGuid(options.Seed, i).ToString();
                     var cedula = EcuadorianId(i, options.Seed, out var provinceCode);
                     var candidates = _locations.Where(x => x.ProvinceCode == provinceCode).ToArray();
+                    if (candidates.Length == 0)
+                        candidates = _allLocations.Where(x => x.ProvinceCode == provinceCode).ToArray();
+                    if (candidates.Length == 0)
+                        candidates = _allLocations;
                     var location = _faker.PickRandom(candidates);
                     _users[i] = new(id, email, person.FirstName, person.LastName, cedula, location);
 

@@ -1,0 +1,46 @@
+@using SakilaApp.Models.Delivery
+@model SakilaApp.Models.PaginatedList<DeliveryPayment>
+@{ ViewData["Title"] = "Mis pagos"; ViewData["PaginatedList"] = Model; }
+
+<div class="m3-page orbi-orders-page">
+    <header class="orbi-orders-header">
+        <div><h1>Mis pagos</h1><p>Historial de transacciones asociadas a tus pedidos.</p></div>
+    </header>
+
+    <form asp-action="MyPayments" method="get" class="orbi-store-filters">
+        <div class="orbi-store-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar por proveedor, estado o tienda..." />
+        </div>
+        <button type="submit" class="m3-filled-button">Aplicar</button>
+        <a asp-action="MyPayments" class="m3-text-button">Limpiar</a>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="m3-card orbi-category-empty">No hay pagos registrados para tu cuenta.</div>
+    }
+    else
+    {
+        <div class="orbi-orders-table-wrap">
+            <table class="m3-data-table orbi-orders-table">
+                <thead><tr><th>Pago</th><th>Pedido</th><th>Tienda</th><th>Proveedor</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead>
+                <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td><strong>#@p.PaymentId</strong></td>
+                        <td><strong>#@p.DeliveryOrderId</strong></td>
+                        <td>@p.Order.Store.Name</td>
+                        <td><span class="orbi-order-status is-preparing"><span class="orbi-status-dot"></span>@p.Provider</span></td>
+                        <td><strong>$@p.Amount.ToString("0.00")</strong></td>
+                        <td><span class="orbi-order-status @(p.Status == "Aprobado" ? "is-delivered" : p.Status == "Rechazado" ? "is-cancelled" : "is-preparing")"><span class="orbi-status-dot"></span>@p.Status</span></td>
+                        <td>@p.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <partial name="_Pagination" />
+    }
+</div>

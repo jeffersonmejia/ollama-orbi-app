@@ -104,7 +104,7 @@
         </div>
         <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-area="" asp-controller="Home" asp-action="ProductChat">
             <input type="hidden" name="context" value="@contextKey" />
-            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="300" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
+            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="250" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
             <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Dictar mensaje" title="Dictar mensaje"><span class="material-symbols-outlined">mic</span></button>
             <button id="orbi-chat-voice-mode" class="m3-icon-btn orbi-chat-voice-mode" type="button" aria-pressed="false" aria-label="Iniciar modo voz" title="Modo voz"><span class="material-symbols-outlined">headset_mic</span></button>
             <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;"><span class="material-symbols-outlined">arrow_upward</span></button>

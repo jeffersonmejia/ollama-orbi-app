@@ -1,0 +1,115 @@
+@model List<SakilaApp.Models.Delivery.DeliveryCartItem>
+@{
+    decimal total = ViewBag.CartTotal ?? 0m;
+    bool hasAddress = ViewBag.HasAddress ?? false;
+    var success = TempData["Success"] as string;
+    var error = TempData["Error"] as string;
+}
+
+<div class="m3-page">
+    <h1 class="m3-page-title"><span class="material-symbols-outlined" style="font-size:32px;vertical-align:middle;margin-right:8px;">shopping_cart</span>Mi Carrito</h1>
+
+    @if (!string.IsNullOrEmpty(success))
+    {
+        <div style="padding:12px 16px;border-radius:12px;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);margin-bottom:1rem;font-size:var(--md-sys-typescale-body-medium-size);">@success</div>
+    }
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div style="padding:12px 16px;border-radius:12px;background:var(--md-sys-color-error-container);color:var(--md-sys-color-on-error-container);margin-bottom:1rem;font-size:var(--md-sys-typescale-body-medium-size);">@error</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="m3-card" style="text-align:center;padding:3rem 2rem;color:var(--md-sys-color-on-surface-variant);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:1rem;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <p style="font-size:var(--md-sys-typescale-body-large-size);margin:0;">Tu carrito está vacío</p>
+            <a class="m3-filled-button" asp-action="Index" style="margin-top:1.5rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">storefront</span> Ir a la tienda
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="m3-card" style="overflow:hidden;padding:0;">
+            <table style="width:100%;border-collapse:collapse;font-size:var(--md-sys-typescale-body-medium-size);">
+                <thead>
+                    <tr style="background:var(--md-sys-color-surface-container-highest);color:var(--md-sys-color-on-surface-variant);font-weight:var(--md-sys-typescale-label-medium-weight);font-size:var(--md-sys-typescale-label-medium-size);">
+                        <th style="text-align:left;padding:16px;">Tienda</th>
+                        <th style="text-align:left;padding:16px;">Producto</th>
+                        <th style="text-align:center;padding:16px;">Cantidad</th>
+                        <th style="text-align:right;padding:16px;">Precio</th>
+                        <th style="text-align:right;padding:16px;">Subtotal</th>
+                        <th style="text-align:center;padding:16px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr style="border-top:1px solid var(--md-sys-color-outline-variant);">
+                            <td style="padding:16px;color:var(--md-sys-color-on-surface);font-weight:500;">@(item.Product?.Store?.Name ?? "—")</td>
+                            <td style="padding:16px;color:var(--md-sys-color-on-surface);">@item.Product?.Name</td>
+                            <td style="padding:16px;">
+                                <form asp-action="UpdateCartItem" method="post" style="display:flex;align-items:center;justify-content:center;gap:4px;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.DeliveryCartItemId" />
+                                    <button type="submit" name="quantity" value="@(item.Quantity - 1)" class="orbi-quantity-button" aria-label="Disminuir"><span class="material-symbols-outlined">remove</span></button>
+                                    <span style="min-width:32px;text-align:center;font-weight:600;color:var(--md-sys-color-on-surface);">@item.Quantity</span>
+                                    <button type="submit" name="quantity" value="@(item.Quantity + 1)" class="orbi-quantity-button" aria-label="Aumentar"><span class="material-symbols-outlined">add</span></button>
+                                </form>
+                            </td>
+                            <td style="text-align:right;padding:16px;color:var(--md-sys-color-on-surface-variant);">$@((item.Product?.Price ?? 0m).ToString("N2"))</td>
+                            <td style="text-align:right;padding:16px;color:var(--md-sys-color-on-surface);font-weight:600;">$@(((item.Product?.Price ?? 0m) * item.Quantity).ToString("N2"))</td>
+                            <td style="text-align:center;padding:16px;">
+                                <form asp-action="RemoveFromCart" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.DeliveryCartItemId" />
+                                    <button type="submit" class="orbi-icon-button" style="color:var(--md-sys-color-error);" aria-label="Eliminar del carrito"><span class="material-symbols-outlined">delete</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="m3-card" style="margin-top:1rem;padding:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+            <div style="font-size:var(--md-sys-typescale-headline-small-size);font-weight:var(--md-sys-typescale-headline-small-weight);color:var(--md-sys-color-on-surface);">
+                Total: $@(total.ToString("N2"))
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <form asp-controller="Delivery" asp-action="Checkout" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="provider" value="PayPal" />
+                    <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);">
+                        <span class="material-symbols-outlined" style="font-size:18px;">account_balance_wallet</span> Pagar con PayPal
+                    </button>
+                </form>
+
+                <form asp-controller="Delivery" asp-action="Checkout" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="provider" value="PayPhone" />
+                    <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-secondary);color:var(--md-sys-color-on-secondary);">
+                        <span class="material-symbols-outlined" style="font-size:18px;">phone_iphone</span> Pagar con PayPhone
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @if (!hasAddress)
+        {
+            <div class="m3-card" style="margin-top:1rem;padding:16px;border-left:4px solid var(--md-sys-color-error);background:var(--md-sys-color-error-container);color:var(--md-sys-color-on-error-container);">
+                <span class="material-symbols-outlined" style="vertical-align:middle;margin-right:6px;">location_off</span>
+                Necesitas agregar una dirección de entrega en tu <a asp-controller="Delivery" asp-action="Profile" style="color:var(--md-sys-color-primary);font-weight:600;">perfil</a> antes de proceder al pago.
+            </div>
+        }
+    }
+
+    <div style="margin-top:1rem;">
+        <a class="m3-text-button" asp-action="Index">
+            <span class="material-symbols-outlined" style="font-size:18px;margin-right:4px;">arrow_back</span>
+            Seguir comprando
+        </a>
+    </div>
+</div>
