@@ -9,3 +9,47 @@ Password
 
 LINK PAYPAL CUENTA: 
 https://developer.paypal.com/dashboard/accounts/edit/5331459183775273804?accountName=sb-ge3h252241612@business.example.com
+
+
+PAYPHONE SANDBOX (Entorno de pruebas)
+En sandbox TODAS las transacciones se aprueban automaticamente.
+No se conecta a ningun banco, no se cobra nada real.
+
+Tarjetas de prueba (cualquier formato valido funciona en sandbox):
+
+  Visa (debito):
+    Numero:     4000 0566 5566 5556
+    CVV:        123
+    Vencimiento: 12/28
+    Titular:    Juan Perez
+
+  Mastercard (credito):
+    Numero:     5200 0024 7490 0009
+    CVV:        123
+    Vencimiento: 12/28
+    Titular:    Maria Garcia
+
+  Visa (credito):
+    Numero:     4035 1111 1111 1112
+    CVV:        123
+    Vencimiento: 12/28
+    Titular:    Carlos Lopez
+
+  Mastercard (debito):
+    Numero:     5416 7816 1616 1616
+    CVV:        123
+    Vencimiento: 12/28
+    Titular:    Ana Torres
+
+  Diners Club:
+    Numero:     3611 0361 1036 11
+    CVV:        123
+    Vencimiento: 12/28
+    Titular:    Pedro Sanchez
+
+NOTAS PAYPHONE:
+- En sandbox cualquier numero con formato valido (16 digitos, pass Luhn) se aprueba
+- No importa el CVV ni la fecha, siempre aprueba
+- Para registrar app en PayPhone Developer: https://developers.payphone.app
+- La app debe ser tipo "WEB" para obtener Token y StoreId
+- Dominio configurado debe coincidir con donde se ejecuta la app
