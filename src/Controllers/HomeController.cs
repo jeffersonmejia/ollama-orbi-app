@@ -87,129 +87,180 @@ public class HomeController : Controller
             _ => DateTime.UtcNow.AddHours(-6)
         };
 
+        bool isMonth = range == "month";
         var email = User.Identity?.Name ?? "";
+        Func<int, int, string> fmt = isMonth
+            ? (d, m) => $"{d:D2}/{m:D2}"
+            : (d, m) => $"{d:D2}:00";
 
         if (User.IsInRole("Administrador"))
         {
-            var users = await _identityContext.UserProfiles
-                .AsNoTracking()
-                .Where(p => p.CreatedAt >= since)
-                .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month, p.CreatedAt.Day, p.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var users = isMonth
+                ? (await _identityContext.UserProfiles.AsNoTracking()
+                    .Where(p => p.CreatedAt >= since)
+                    .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month, p.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.UserProfiles.AsNoTracking()
+                    .Where(p => p.CreatedAt >= since)
+                    .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month, p.CreatedAt.Day, p.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
-            var stores = await _identityContext.DeliveryStores
-                .AsNoTracking()
-                .Where(s => s.CreatedAt >= since)
-                .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month, s.CreatedAt.Day, s.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var stores = isMonth
+                ? (await _identityContext.DeliveryStores.AsNoTracking()
+                    .Where(s => s.CreatedAt >= since)
+                    .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month, s.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryStores.AsNoTracking()
+                    .Where(s => s.CreatedAt >= since)
+                    .GroupBy(s => new { s.CreatedAt.Year, s.CreatedAt.Month, s.CreatedAt.Day, s.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
             return Json(new
             {
                 Chart1Title = "Usuarios registrados",
                 Chart1Color = "#C2185B",
-                Chart1 = users.Select(u => new { Label = $"{u.Hour:D2}:00", Count = u.Count }),
+                Chart1 = users.Select(u => new { Label = fmt(u.Hour, u.Month), Count = u.Count }),
                 Chart1Total = users.Sum(u => u.Count),
                 Chart2Title = "Tiendas registradas",
                 Chart2Color = "#075c9b",
-                Chart2 = stores.Select(s => new { Label = $"{s.Hour:D2}:00", Count = s.Count }),
+                Chart2 = stores.Select(s => new { Label = fmt(s.Hour, s.Month), Count = s.Count }),
                 Chart2Total = stores.Sum(s => s.Count)
             });
         }
 
         if (User.IsInRole("Vendedor"))
         {
-            var pedidos = await _identityContext.DeliveryOrders
-                .AsNoTracking()
-                .Where(o => o.CreatedAt >= since)
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var pedidos = isMonth
+                ? (await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
-            var productos = await _identityContext.DeliveryProducts
-                .AsNoTracking()
-                .Include(p => p.Store)
-                .Where(p => p.Store.CreatedAt <= since)
-                .GroupBy(p => new { p.Store.CreatedAt.Year, p.Store.CreatedAt.Month, p.Store.CreatedAt.Day, p.Store.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var productos = isMonth
+                ? (await _identityContext.DeliveryProducts.AsNoTracking().Include(p => p.Store)
+                    .Where(p => p.Store.CreatedAt <= since)
+                    .GroupBy(p => new { p.Store.CreatedAt.Year, p.Store.CreatedAt.Month, p.Store.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryProducts.AsNoTracking().Include(p => p.Store)
+                    .Where(p => p.Store.CreatedAt <= since)
+                    .GroupBy(p => new { p.Store.CreatedAt.Year, p.Store.CreatedAt.Month, p.Store.CreatedAt.Day, p.Store.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
             return Json(new
             {
                 Chart1Title = "Pedidos recibidos",
                 Chart1Color = "#B85700",
-                Chart1 = pedidos.Select(o => new { Label = $"{o.Hour:D2}:00", Count = o.Count }),
+                Chart1 = pedidos.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = pedidos.Sum(o => o.Count),
                 Chart2Title = "Productos en catálogo",
                 Chart2Color = "#146c2e",
-                Chart2 = productos.Select(p => new { Label = $"{p.Hour:D2}:00", Count = p.Count }),
+                Chart2 = productos.Select(p => new { Label = fmt(p.Hour, p.Month), Count = p.Count }),
                 Chart2Total = productos.Sum(p => p.Count)
             });
         }
 
         if (User.IsInRole("Repartidor"))
         {
-            var asignados = await _identityContext.DeliveryOrders
-                .AsNoTracking()
-                .Where(o => o.DeliveryPersonEmail == email && o.CreatedAt >= since)
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var asignados = isMonth
+                ? (await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.DeliveryPersonEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.DeliveryPersonEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
-            var completadas = await _identityContext.DeliveryOrders
-                .AsNoTracking()
-                .Where(o => o.DeliveryPersonEmail == email && o.Status == "Entregado" && o.CreatedAt >= since)
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var completadas = isMonth
+                ? (await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.DeliveryPersonEmail == email && o.Status == "Entregado" && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.DeliveryPersonEmail == email && o.Status == "Entregado" && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
             return Json(new
             {
                 Chart1Title = "Mis entregas",
                 Chart1Color = "#146c2e",
-                Chart1 = asignados.Select(o => new { Label = $"{o.Hour:D2}:00", Count = o.Count }),
+                Chart1 = asignados.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = asignados.Sum(o => o.Count),
                 Chart2Title = "Completadas",
                 Chart2Color = "#075c9b",
-                Chart2 = completadas.Select(o => new { Label = $"{o.Hour:D2}:00", Count = o.Count }),
+                Chart2 = completadas.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart2Total = completadas.Sum(o => o.Count)
             });
         }
 
         if (User.IsInRole("Usuario"))
         {
-            var misPedidos = await _identityContext.DeliveryOrders
-                .AsNoTracking()
-                .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Count = g.Count() })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var misPedidos = isMonth
+                ? (await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Count = g.Count() })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
-            var gasto = await _identityContext.DeliveryOrders
-                .AsNoTracking()
-                .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
-                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Day = g.Key.Day, Hour = g.Key.Hour, Total = g.Sum(o => o.Total) })
-                .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
-                .ToListAsync();
+            var gasto = isMonth
+                ? (await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, Hour = 0, Total = g.Sum(o => o.Total) })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day)
+                    .ToListAsync())
+                : await _identityContext.DeliveryOrders.AsNoTracking()
+                    .Where(o => o.CustomerEmail == email && o.CreatedAt >= since)
+                    .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month, o.CreatedAt.Day, o.CreatedAt.Hour })
+                    .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.Hour, Total = g.Sum(o => o.Total) })
+                    .OrderBy(g => g.Year).ThenBy(g => g.Month).ThenBy(g => g.Day).ThenBy(g => g.Hour)
+                    .ToListAsync();
 
             return Json(new
             {
                 Chart1Title = "Mis pedidos",
                 Chart1Color = "#C2185B",
-                Chart1 = misPedidos.Select(o => new { Label = $"{o.Hour:D2}:00", Count = o.Count }),
+                Chart1 = misPedidos.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = misPedidos.Sum(o => o.Count),
                 Chart2Title = "Gasto acumulado",
                 Chart2Color = "#B85700",
-                Chart2 = gasto.Select(o => new { Label = $"{o.Hour:D2}:00", Count = (int)o.Total }),
+                Chart2 = gasto.Select(o => new { Label = fmt(o.Hour, o.Month), Count = (int)o.Total }),
                 Chart2Total = (decimal)gasto.Sum(o => o.Total)
             });
         }
