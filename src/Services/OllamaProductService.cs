@@ -7,11 +7,13 @@ public sealed class OllamaProductService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<OllamaProductService> _logger;
 
-    public OllamaProductService(HttpClient httpClient, IConfiguration configuration)
+    public OllamaProductService(HttpClient httpClient, IConfiguration configuration, ILogger<OllamaProductService> logger)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<OllamaSuggestion> SuggestAsync(
@@ -47,6 +49,8 @@ public sealed class OllamaProductService
             {question}
             """;
 
+        _logger.LogInformation("Ollama request: model={Model}, promptLength={Len}", model, prompt.Length);
+
         using var response = await _httpClient.PostAsJsonAsync("api/generate", new
         {
             model,
@@ -61,7 +65,13 @@ public sealed class OllamaProductService
             }
         }, cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Ollama returned {StatusCode}: {Body}", response.StatusCode, body);
+            throw new HttpRequestException($"Ollama responded with {response.StatusCode}: {body}");
+        }
+
         var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(cancellationToken);
         var answer = string.IsNullOrWhiteSpace(result?.Response)
             ? "No pude generar una recomendación en este momento."

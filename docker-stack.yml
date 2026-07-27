@@ -96,6 +96,8 @@ services:
       - type: bind
         source: ./backups
         target: /backups
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - sakila_overlay
     deploy:

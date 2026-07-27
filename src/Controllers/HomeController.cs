@@ -311,13 +311,15 @@ public class HomeController : Controller
             : string.Join("\n", products.Select(item =>
                 $"- Producto: {item.Product}; Tienda: {item.Store}; Categoría: {item.Category}; Dirección: {item.Address}; Precio: ${item.Price:0.00}; Disponible: sí"));
 
-        var statsResult = await Task.WhenAll(
-            _identityContext.DeliveryStores.CountAsync(),
-            _identityContext.DeliveryProducts.CountAsync(),
-            _identityContext.DeliveryOrders.CountAsync(),
-            _identityContext.DeliveryPayments.CountAsync(),
-            _identityContext.UserProfiles.CountAsync());
-        var dbStats = $"Estadísticas: {statsResult[0]} tiendas, {statsResult[1]} productos, {statsResult[2]} pedidos, {statsResult[3]} pagos, {statsResult[4]} usuarios.";
+        if (catalog.Length > 3000)
+            catalog = catalog[..3000] + "\n... (catálogo truncado, hay más productos disponibles)";
+
+        var storeCount = await _identityContext.DeliveryStores.CountAsync(cancellationToken);
+        var productCount = await _identityContext.DeliveryProducts.CountAsync(cancellationToken);
+        var orderCount = await _identityContext.DeliveryOrders.CountAsync(cancellationToken);
+        var paymentCount = await _identityContext.DeliveryPayments.CountAsync(cancellationToken);
+        var userCount = await _identityContext.UserProfiles.CountAsync(cancellationToken);
+        var dbStats = $"Estadísticas: {storeCount} tiendas, {productCount} productos, {orderCount} pedidos, {paymentCount} pagos, {userCount} usuarios.";
 
         var assistantContext = GetAssistantContext(context) + "\nDATOS_REALES_DE_LA_APP: " + dbStats;
 
@@ -330,6 +332,11 @@ public class HomeController : Controller
         {
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { message = "El asistente no está disponible. Verifica que Ollama esté encendido." });
+        }
+        catch (Exception exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { message = $"Error al consultar al asistente: {exception.Message}" });
         }
     }
 
