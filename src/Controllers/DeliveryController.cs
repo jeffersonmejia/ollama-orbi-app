@@ -22,15 +22,18 @@ public class DeliveryController : Controller
     private readonly ApplicationDbContext _context;
     private readonly PayPalService _payPalService;
     private readonly PayPhoneApiLinkService _payPhoneService;
+    private readonly SakilaApp.Services.OllamaProductService _ollamaService;
 
     public DeliveryController(
         ApplicationDbContext context,
         PayPalService payPalService,
-        PayPhoneApiLinkService payPhoneService)
+        PayPhoneApiLinkService payPhoneService,
+        SakilaApp.Services.OllamaProductService ollamaService)
     {
         _context = context;
         _payPalService = payPalService;
         _payPhoneService = payPhoneService;
+        _ollamaService = ollamaService;
     }
 
     public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1)
@@ -570,7 +573,7 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Vendedor")]
-    public async Task<IActionResult> SellerInventory(string? buscar, int page = 1)
+    public async Task<IActionResult> SellerInventory(string? buscar, decimal? precioMinimo, decimal? precioMaximo, int page = 1)
     {
         var userId = CurrentUserId;
         var myStore = await _context.DeliveryStores.AsNoTracking()
@@ -595,9 +598,13 @@ public class DeliveryController : Controller
             var pattern = $"%{term}%";
             query = query.Where(p => EF.Functions.ILike(p.Name, pattern));
         }
+        if (precioMinimo.HasValue) query = query.Where(p => p.Price >= precioMinimo.Value);
+        if (precioMaximo.HasValue) query = query.Where(p => p.Price <= precioMaximo.Value);
 
-        var products = await PaginatedList<DeliveryProduct>.CreateAsync(query, Math.Max(1, page), 10);
+        var products = await PaginatedList<DeliveryProduct>.CreateAsync(query, Math.Max(1, page), 5);
         ViewBag.Buscar = buscar;
+        ViewBag.PrecioMinimo = precioMinimo;
+        ViewBag.PrecioMaximo = precioMaximo;
         ViewBag.MyStore = myStore;
         ViewData["PaginatedList"] = products;
         return View(products);
@@ -668,6 +675,53 @@ public class DeliveryController : Controller
         await _context.SaveChangesAsync();
         TempData["Success"] = $"Producto '{name.Trim()}' actualizado.";
         return RedirectToAction(nameof(SellerInventory));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Vendedor")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SuggestPrice(string productName)
+    {
+        if (string.IsNullOrWhiteSpace(productName))
+            return Json(new { ok = false, message = "Escribe el nombre del producto." });
+
+        var userId = CurrentUserId;
+        var profile = await _context.UserProfiles.AsNoTracking()
+            .Include(p => p.Province).Include(p => p.City)
+            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
+
+        var provinceName = profile?.Province?.Name ?? "Guayaquil";
+        var cityName = profile?.City?.Name ?? "Guayaquil";
+
+        var context = $"""
+            Eres un consultor de precios minoristas en Ecuador.
+            Analiza el producto indicado y sugiere un precio de venta sugerido en dólares USD
+            para la ciudad de {cityName}, provincia de {provinceName}, Ecuador.
+            El contexto es una tienda local pequeña (farmacia, restaurante o supermercado).
+            Responde SOLO con un número decimal (sin símbolo $, sin texto adicional).
+            Si no puedes estimar, responde 0.
+            """;
+
+        try
+        {
+            var result = await _ollamaService.SuggestAsync(
+                $"Producto: {productName.Trim()}. Ciudad: {cityName}, Provincia: {provinceName}, Ecuador.",
+                "",
+                context,
+                CancellationToken.None);
+
+            var raw = result.Response.Replace("$", "").Replace(",", ".").Trim();
+            if (decimal.TryParse(raw, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var price) && price > 0)
+            {
+                return Json(new { ok = true, price, province = provinceName, city = cityName });
+            }
+            return Json(new { ok = false, message = "La IA no pudo estimar un precio para este producto." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { ok = false, message = "Error al conectar con la IA: " + ex.Message });
+        }
     }
 
     [HttpPost]
