@@ -412,140 +412,133 @@
             })();
         </script>
 
-        @if (User.IsInRole("Administrador") || User.IsInRole("Vendedor") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
+        @if (User.IsInRole("Administrador"))
         {
             <style>
-                .orbi-home-charts { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; max-width:1100px; margin:0 auto; text-align:left; }
-                .orbi-home-chart-card { background:var(--md-sys-color-surface); border:1px solid var(--md-sys-color-outline-variant); border-radius:16px; padding:24px; display:flex; flex-direction:column; min-height:260px; }
-                .orbi-home-chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-                .orbi-home-chart-title { font-size:13px; font-weight:500; color:var(--md-sys-color-on-surface-variant); letter-spacing:0.02em; text-transform:uppercase; }
-                .orbi-home-chart-value { font-size:28px; font-weight:600; color:var(--md-sys-color-on-surface); letter-spacing:-0.02em; }
-                .orbi-home-chart-body { flex:1; display:flex; align-items:flex-end; }
-                .orbi-home-chart-body svg { width:100%; height:100%; min-height:130px; }
-                .orbi-home-range-bar { display:flex; align-items:center; justify-content:flex-end; gap:10px; max-width:1100px; margin:0 auto 16px; }
-                .orbi-home-range-bar select { padding:6px 12px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container); color:var(--md-sys-color-on-surface); font:inherit; font-size:13px; cursor:pointer; }
-                .orbi-home-range-bar select:focus { border-color:var(--md-sys-color-primary); outline:none; }
-                @@media(max-width:900px){.orbi-home-charts{grid-template-columns:1fr}}
-                @@media(min-width:901px) and (max-width:1200px){.orbi-home-charts{grid-template-columns:repeat(2,1fr)}}
+                .orbi-pie-section { max-width: 900px; margin: 0 auto; text-align: left; }
+                .orbi-pie-wrapper { display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; padding: 24px 0; }
+                .orbi-pie-svg { flex: 0 0 auto; }
+                .orbi-pie-legend { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
+                .orbi-pie-legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--md-sys-color-on-surface); }
+                .orbi-pie-legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+                .orbi-pie-legend-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .orbi-pie-legend-count { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+                .orbi-pie-total { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--md-sys-color-outline-variant); font-size: 15px; font-weight: 600; color: var(--md-sys-color-on-surface); display: flex; justify-content: space-between; }
+                .orbi-pie-title { font-size: var(--md-sys-typescale-title-medium-size); font-weight: var(--md-sys-typescale-title-medium-weight); color: var(--md-sys-color-on-surface); margin-bottom: 4px; text-align: center; }
+                .orbi-backup-bar { max-width: 900px; margin: 0 auto 8px; padding: 10px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low, #f5f5f5); border: 1px solid var(--md-sys-color-outline-variant); display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
+                .orbi-backup-bar .material-symbols-outlined { font-size: 18px; color: var(--md-sys-color-primary); }
+                .orbi-backup-track { flex: 1; height: 6px; border-radius: 3px; background: var(--md-sys-color-outline-variant, #e0e0e0); overflow: hidden; }
+                .orbi-backup-fill { height: 100%; border-radius: 3px; background: var(--md-sys-color-primary, #075c9b); transition: width 1s linear; }
+                .orbi-backup-time { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+                @@media(max-width: 640px) { .orbi-pie-wrapper { flex-direction: column; gap: 24px; } }
             </style>
 
-            <div class="orbi-home-range-bar">
-                <label for="orbi-chart-range" style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Rango:</label>
-                <select id="orbi-chart-range">
-                    <option value="6h" selected>Últimas 6 horas</option>
-                    <option value="12h">Últimas 12 horas</option>
-                    <option value="1d">Último día</option>
-                    <option value="month">Este mes</option>
-                </select>
+            <div class="orbi-backup-bar" id="orbi-backup-bar">
+                <span class="material-symbols-outlined">history</span>
+                <span>Próximo backup automático en</span>
+                <div class="orbi-backup-track"><div class="orbi-backup-fill" id="orbi-backup-fill" style="width:100%"></div></div>
+                <span class="orbi-backup-time" id="orbi-backup-time">--:--</span>
             </div>
 
-            <div class="orbi-home-charts">
-                <div class="orbi-home-chart-card">
-                    <div class="orbi-home-chart-header">
-                        <span class="orbi-home-chart-title" id="chart-1-title">—</span>
-                        <span class="orbi-home-chart-value" id="chart-1-total">—</span>
-                    </div>
-                    <div class="orbi-home-chart-body" id="chart-1"></div>
-                </div>
-                <div class="orbi-home-chart-card">
-                    <div class="orbi-home-chart-header">
-                        <span class="orbi-home-chart-title" id="chart-2-title">—</span>
-                        <span class="orbi-home-chart-value" id="chart-2-total">—</span>
-                    </div>
-                    <div class="orbi-home-chart-body" id="chart-2"></div>
+            <div class="orbi-pie-section">
+                <p class="orbi-pie-title">Registros por tabla</p>
+                <div class="orbi-pie-wrapper">
+                    <svg class="orbi-pie-svg" id="orbi-pie-chart" viewBox="0 0 260 260" width="260" height="260"></svg>
+                    <div class="orbi-pie-legend" id="orbi-pie-legend"></div>
                 </div>
             </div>
 
             <script>
             (function() {
-                const W = 340, H = 140, ML = 36, MR = 8, MT = 8, MB = 24, CW = W - ML - MR, CH = H - MT - MB;
-                const fc = 'var(--md-sys-color-on-surface-variant)';
+                const pastel = [
+                    '#FFB3BA','#FFDFBA','#FFFFBA','#BAFFC9','#BAE1FF',
+                    '#D4BAFF','#FFBAE1','#BFFFD4','#FFE4BA','#BADCFF',
+                    '#FFD4E8','#D4F0FF','#E8FFBA','#FFB3D9','#C9E8FF',
+                    '#B3FFD9','#FFE0CC','#CCFFEE','#F0CCFF','#CCE5FF'
+                ];
 
-                function niceMax(raw) {
-                    if (raw <= 0) return 1;
-                    if (raw <= 5) return raw;
-                    const step = Math.pow(10, Math.floor(Math.log10(raw)));
-                    return Math.ceil(raw / step) * step;
-                }
+                function fmt(n) { return n.toLocaleString('es-EC'); }
 
-                function yLabels(max) {
-                    const lbls = [];
-                    const seen = new Set();
-                    for (let g = 0; g <= 4; g++) {
-                        const raw = (1 - g / 4) * max;
-                        const val = max <= 5 ? Math.round(raw) : Math.round(raw / 10) * 10;
-                        if (seen.has(val)) continue;
-                        seen.add(val);
-                        const gy = MT + (g / 4) * CH;
-                        lbls.push(`<text x="${ML - 6}" y="${gy + 3}" text-anchor="end" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${val}</text>`);
+                async function loadPie() {
+                    try {
+                        const res = await fetch('/Home/TableCounts', { credentials: 'same-origin' });
+                        if (!res.ok) throw new Error(res.status);
+                        const data = await res.json();
+                        const items = data.items || [];
+                        const total = data.total || 0;
+
+                        if (!items.length) {
+                            document.getElementById('orbi-pie-chart').innerHTML = '<text x="130" y="135" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="13" font-family="Inter,sans-serif">Sin datos</text>';
+                            return;
+                        }
+
+                        const cx = 130, cy = 130, r = 100, ir = 55;
+                        let cum = 0;
+                        let paths = '';
+
+                        items.forEach(function(item, i) {
+                            const start = cum / total * 2 * Math.PI - Math.PI / 2;
+                            cum += item.count;
+                            const end = cum / total * 2 * Math.PI - Math.PI / 2;
+                            const large = (end - start) > Math.PI ? 1 : 0;
+
+                            const x1 = cx + r * Math.cos(start);
+                            const y1 = cy + r * Math.sin(start);
+                            const x2 = cx + r * Math.cos(end);
+                            const y2 = cy + r * Math.sin(end);
+                            const ix1 = cx + ir * Math.cos(start);
+                            const iy1 = cy + ir * Math.sin(start);
+                            const ix2 = cx + ir * Math.cos(end);
+                            const iy2 = cy + ir * Math.sin(end);
+
+                            const d = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${large} 0 ${ix1} ${iy1} Z`;
+                            paths += '<path d="' + d + '" fill="' + pastel[i % pastel.length] + '" stroke="var(--md-sys-color-surface)" stroke-width="2" opacity="0.92"><title>' + item.table + ': ' + fmt(item.count) + '</title></path>';
+                        });
+
+                        document.getElementById('orbi-pie-chart').innerHTML = paths;
+
+                        let legend = '';
+                        items.forEach(function(item, i) {
+                            legend += '<div class="orbi-pie-legend-item">' +
+                                '<span class="orbi-pie-legend-swatch" style="background:' + pastel[i % pastel.length] + '"></span>' +
+                                '<span class="orbi-pie-legend-name">' + item.table + '</span>' +
+                                '<span class="orbi-pie-legend-count">' + fmt(item.count) + '</span></div>';
+                        });
+                        legend += '<div class="orbi-pie-total"><span>TOTAL</span><span>' + fmt(total) + '</span></div>';
+                        document.getElementById('orbi-pie-legend').innerHTML = legend;
+                    } catch(e) {
+                        document.getElementById('orbi-pie-chart').innerHTML = '<text x="130" y="135" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="13" font-family="Inter,sans-serif">Error al cargar</text>';
                     }
-                    return lbls.join('');
                 }
 
-                function axes() {
-                    return `<line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + CH}" stroke="${fc}" stroke-width="0.8" opacity="0.5"/>
-                            <line x1="${ML}" y1="${MT + CH}" x2="${ML + CW}" y2="${MT + CH}" stroke="${fc}" stroke-width="0.8" opacity="0.5"/>`;
+                loadPie();
+
+                var backupInterval = 300;
+                var remaining = backupInterval;
+
+                async function loadBackupStatus() {
+                    try {
+                        const res = await fetch('/Home/BackupStatus', { credentials: 'same-origin' });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        remaining = data.secondsRemaining || 0;
+                    } catch {}
                 }
 
-                function buildChart(data, color, chartId) {
-                    if (!data || data.length === 0) return `<svg viewBox="0 0 ${W} ${H}"><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="${fc}" font-size="11" font-family="Inter,sans-serif">Sin datos</text></svg>`;
-                    const max = niceMax(Math.max(...data.map(d => d.count)));
-                    const grid = [0,1,2,3,4].map(g => {
-                        const gy = MT + (g / 4) * CH;
-                        return `<line x1="${ML}" y1="${gy}" x2="${ML + CW}" y2="${gy}" stroke="var(--md-sys-color-outline-variant)" stroke-width="0.5" opacity="0.3"/>`;
-                    }).join('');
-                    const pts = data.map((d, i) => ({
-                        x: data.length === 1 ? ML + CW/2 : ML + (i / (data.length - 1)) * CW,
-                        y: MT + CH - (d.count / max) * CH
-                    }));
-                    const polyline = pts.map(p => `${p.x},${p.y}`).join(' ');
-                    const dots = pts.map((p, i) => `<rect x="${p.x - 4}" y="${p.y - 4}" width="8" height="8" rx="2" fill="${color}" stroke="white" stroke-width="2" class="orbi-chart-dot" data-chart="${chartId}" data-idx="${i}"/>`).join('');
-                    const xLbl = data.map((d, i) => {
-                        const x = data.length === 1 ? ML + CW/2 : ML + (i / (data.length - 1)) * CW;
-                        return `<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${fc}" font-size="9" font-family="Inter,sans-serif">${d.label}</text>`;
-                    }).join('');
-                    return `<svg viewBox="0 0 ${W} ${H}">${grid}${axes()}${yLabels(max)}<polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${xLbl}</svg>`;
+                function updateCountdown() {
+                    if (remaining > 0) remaining--;
+                    var pct = (remaining / backupInterval) * 100;
+                    var min = Math.floor(remaining / 60);
+                    var sec = Math.floor(remaining % 60);
+                    var fill = document.getElementById('orbi-backup-fill');
+                    var time = document.getElementById('orbi-backup-time');
+                    if (fill) fill.style.width = pct + '%';
+                    if (time) time.textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
                 }
 
-                let chartData = {};
-
-                async function loadCharts(range) {
-                    const res = await fetch('/Home/ChartStats?range=' + encodeURIComponent(range));
-                    const data = await res.json();
-                    chartData = data;
-
-                    document.getElementById('chart-1-title').textContent = data.chart1Title;
-                    document.getElementById('chart-1-total').textContent = data.chart1Total;
-                    document.getElementById('chart-1').innerHTML = buildChart(data.chart1, data.chart1Color, 'c1');
-
-                    document.getElementById('chart-2-title').textContent = data.chart2Title;
-                    document.getElementById('chart-2-total').textContent = data.chart2Total;
-                    document.getElementById('chart-2').innerHTML = buildChart(data.chart2, data.chart2Color, 'c2');
-                }
-
-                var tooltip = document.getElementById('orbi-chart-tooltip');
-                if (!tooltip) {
-                    tooltip = document.createElement('div');
-                    tooltip.id = 'orbi-chart-tooltip';
-                    tooltip.style.cssText = 'position:fixed;display:none;background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);padding:4px 8px;border-radius:8px;font-size:11px;font-family:Inter,sans-serif;pointer-events:none;z-index:9999;white-space:nowrap;';
-                    document.body.appendChild(tooltip);
-                }
-
-                document.addEventListener('mousemove', function(e) {
-                    var dot = e.target.closest('.orbi-chart-dot');
-                    if (!dot) { tooltip.style.display = 'none'; return; }
-                    var chartId = dot.getAttribute('data-chart');
-                    var idx = parseInt(dot.getAttribute('data-idx'));
-                    var arr = chartId === 'c1' ? chartData.chart1 : chartData.chart2;
-                    if (!arr || !arr[idx]) return;
-                    tooltip.textContent = arr[idx].label + ': ' + arr[idx].count;
-                    tooltip.style.display = 'block';
-                    tooltip.style.left = (e.clientX + 12) + 'px';
-                    tooltip.style.top = (e.clientY - 28) + 'px';
-                });
-
-                document.getElementById('orbi-chart-range').addEventListener('change', function() { loadCharts(this.value); });
-                loadCharts('6h');
+                loadBackupStatus();
+                setInterval(loadBackupStatus, 30000);
+                setInterval(updateCountdown, 1000);
             })();
             </script>
         }

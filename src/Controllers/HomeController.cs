@@ -346,6 +346,60 @@ public class HomeController : Controller
     };
 
     [Authorize(Roles = "Administrador")]
+    [HttpGet]
+    public async Task<IActionResult> TableCounts()
+    {
+        var counts = new List<object>();
+        long total = 0;
+
+        var tasks = new (string Name, Func<Task<int>> Query)[]
+        {
+            ("delivery_order_item", () => _identityContext.DeliveryOrderItems.CountAsync()),
+            ("delivery_order", () => _identityContext.DeliveryOrders.CountAsync()),
+            ("delivery_product", () => _identityContext.DeliveryProducts.CountAsync()),
+            ("user_profile", () => _identityContext.UserProfiles.CountAsync()),
+            ("payment", () => _identityContext.DeliveryPayments.CountAsync()),
+            ("inventory_movement", () => _identityContext.InventoryMovements.CountAsync()),
+            ("audit_log", () => _identityContext.AuditLogs.CountAsync()),
+            ("delivery_incident", () => _identityContext.DeliveryIncidents.CountAsync()),
+            ("delivery_store", () => _identityContext.DeliveryStores.CountAsync()),
+            ("delivery_cart_item", () => _identityContext.DeliveryCartItems.CountAsync()),
+            ("email_queue", () => _identityContext.EmailQueue.CountAsync()),
+            ("stock_reservation", () => _identityContext.StockReservations.CountAsync()),
+            ("order_status_history", () => _identityContext.OrderStatusHistories.CountAsync()),
+            ("ecuador_city", () => _identityContext.EcuadorCities.CountAsync()),
+            ("ecuador_province", () => _identityContext.EcuadorProvinces.CountAsync()),
+        };
+
+        foreach (var (name, query) in tasks)
+        {
+            try
+            {
+                var count = await query();
+                if (count > 0)
+                {
+                    counts.Add(new { table = name, count });
+                    total += count;
+                }
+            }
+            catch { }
+        }
+
+        return Json(new { items = counts, total });
+    }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpGet]
+    public IActionResult BackupStatus()
+    {
+        var now = DateTime.UtcNow;
+        var next = Services.BackupService.NextBackupUtc;
+        var remaining = (next - now).TotalSeconds;
+        if (remaining < 0) remaining = 0;
+        return Json(new { nextBackupUtc = next.ToString("o"), secondsRemaining = Math.Round(remaining, 1) });
+    }
+
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> PanelAdministrador()
     {
         var metrics = new List<(string Label, string Detail, int Value)>

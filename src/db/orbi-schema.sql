@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS delivery_store (
     name varchar(100) NOT NULL,
     category varchar(60) NOT NULL,
     address varchar(180) NOT NULL,
+    province_code varchar(2) REFERENCES ecuador_province(province_code) ON DELETE SET NULL,
+    city_code varchar(4) REFERENCES ecuador_city(city_code) ON DELETE SET NULL,
     is_active boolean NOT NULL DEFAULT true,
     created_at timestamp with time zone NOT NULL DEFAULT now()
 );
@@ -98,6 +100,51 @@ CREATE INDEX IF NOT EXISTS ix_delivery_cart_user ON delivery_cart_item(user_emai
 
 CREATE INDEX IF NOT EXISTS ix_delivery_order_customer ON delivery_order(customer_email);
 CREATE INDEX IF NOT EXISTS ix_delivery_order_driver ON delivery_order(delivery_person_email);
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'created_at') THEN
+        ALTER TABLE delivery_store ADD COLUMN created_at timestamp with time zone NOT NULL DEFAULT now();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'province_code') THEN
+        ALTER TABLE delivery_store ADD COLUMN province_code varchar(2) REFERENCES ecuador_province(province_code) ON DELETE SET NULL;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'city_code') THEN
+        ALTER TABLE delivery_store ADD COLUMN city_code varchar(4) REFERENCES ecuador_city(city_code) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_product' AND column_name = 'created_by_user_id') THEN
+        ALTER TABLE delivery_product ADD COLUMN created_by_user_id text REFERENCES "AspNetUsers"("Id") ON DELETE SET NULL;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_product' AND column_name = 'unit_cost') THEN
+        ALTER TABLE delivery_product ADD COLUMN unit_cost numeric(10,2) NOT NULL DEFAULT 0 CHECK (unit_cost >= 0);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_product' AND column_name = 'stock') THEN
+        ALTER TABLE delivery_product ADD COLUMN stock integer NOT NULL DEFAULT 0 CHECK (stock >= 0 AND stock <= 999);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_product' AND column_name = 'created_at') THEN
+        ALTER TABLE delivery_product ADD COLUMN created_at timestamp with time zone NOT NULL DEFAULT now();
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_product' AND column_name = 'updated_at') THEN
+        ALTER TABLE delivery_product ADD COLUMN updated_at timestamp with time zone NOT NULL DEFAULT now();
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profile' AND column_name = 'preferred_payment_method') THEN
+        ALTER TABLE user_profile ADD COLUMN preferred_payment_method varchar(20) NOT NULL DEFAULT 'PayPal'
+            CHECK (preferred_payment_method IN ('PayPal', 'PayPhone'));
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ai_consumption_log' AND column_name = 'prompt_text') THEN
+        ALTER TABLE ai_consumption_log ADD COLUMN prompt_text varchar(500) NOT NULL DEFAULT '';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ai_consumption_log' AND column_name = 'ip_address') THEN
+        ALTER TABLE ai_consumption_log ADD COLUMN ip_address varchar(45);
+    END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS ix_delivery_product_creator ON delivery_product(created_by_user_id);
 CREATE INDEX IF NOT EXISTS ix_payment_order ON payment(delivery_order_id);
 CREATE INDEX IF NOT EXISTS ix_payment_created_at ON payment(created_at);

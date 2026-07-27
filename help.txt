@@ -1,65 +1,31 @@
-docker exec $(docker ps --filter "name=orbi_postgres" --format "{{.ID}}") psql -U cruduser -d orbi_app -c "SELECT '  ' || t.tablename || ': ' || to_char(c.reltuples, 'FM999,999,999') || ' registros' AS linea FROM pg_tables t JOIN pg_class c ON c.relname = t.tablename WHERE t.schemaname='public' AND c.reltuples > 0 ORDER BY c.reltuples DESC;" -c "SELECT '  TOTAL: ' || to_char(SUM(c.reltuples), 'FM999,999,999') || ' registros' FROM pg_class c JOIN pg_tables t ON c.relname = t.tablename WHERE t.schemaname='public';"
+=== COMANDOS UTILES - ORBI APP (DOCKER STACK) ===
 
-PAYPAL CUENTA PRUEBA
-Email
-sb-ge3h252241612@business.example.com
+1. DESPLEGAR/ACTUALIZAR EL STACK:
+   docker stack deploy -c docker-stack.yml orbi-stack
 
-Password
-!@I$G7mM
+2. DETENER EL STACK:
+   docker stack rm orbi-stack
 
-LINK PAYPAL CUENTA:
-https://developer.paypal.com/dashboard/accounts/edit/5331459183775273804?accountName=sb-ge3h252241612@business.example.com
+3. VER SERVICIOS:
+   docker service ls
 
+4. VER LOGS:
+   docker service logs -f orbi-stack_orbiapp
+   docker service logs -f orbi-stack_postgres
 
-PAYPHONE SANDBOX (Entorno de pruebas)
-En sandbox TODAS las transacciones se aprueban automaticamente.
-No se conecta a ningun banco, no se cobra nada real.
+5. RECONSTRUIR IMAGEN Y REDESPLIEGUE:
+   docker build -t orbiapp:latest .
+   docker stack deploy -c docker-stack.yml orbi-stack
 
-Tarjetas de prueba (cualquier formato valido funciona en sandbox):
+6. CONTAR REGISTROS (con postgres expuesto en 5434):
+   docker exec $(docker ps --filter "name=orbi-stack_postgres" --format "{{.ID}}") psql -U cruduser -d orbi_app -c "SELECT '  ' || t.tablename || ': ' || to_char(c.reltuples, 'FM999,999,999') || ' registros' AS linea FROM pg_tables t JOIN pg_class c ON c.relname = t.tablename WHERE t.schemaname='public' AND c.reltuples > 0 ORDER BY c.reltuples DESC;" -c "SELECT '  TOTAL: ' || to_char(SUM(c.reltuples), 'FM999,999,999') || ' registros' FROM pg_class c JOIN pg_tables t ON c.relname = t.tablename WHERE t.schemaname='public';"
 
-  Visa (debito):
-    Numero:     4000 0566 5566 5556
-    CVV:        123
-    Vencimiento: 12/28
-    Titular:    Juan Perez
+7. GENERAR DATOS (necesitas publicar puerto 5434 temporalmente en docker-stack.yml):
+   docker stack deploy -c docker-stack.yml orbi-stack
+   dotnet run --project src/OrbiApp.DataGenerator -- --connection "Host=localhost;Port=5434;Database=orbi_app;Username=cruduser;Password=postgres" --records 1000000 --reset
 
-  Mastercard (credito):
-    Numero:     5200 0024 7490 0009
-    CVV:        123
-    Vencimiento: 12/28
-    Titular:    Maria Garcia
+8. RESTAURAR BACKUP:
+   docker exec $(docker ps --filter "name=orbi-stack_postgres" --format "{{.ID}}") pg_restore -U cruduser -d orbi_app -c --if-exists /tmp/restore.dump
 
-  Visa (credito):
-    Numero:     4035 1111 1111 1112
-    CVV:        123
-    Vencimiento: 12/28
-    Titular:    Carlos Lopez
-
-  Mastercard (debito):
-    Numero:     5416 7816 1616 1616
-    CVV:        123
-    Vencimiento: 12/28
-    Titular:    Ana Torres
-
-  Diners Club:
-    Numero:     3611 0361 1036 11
-    CVV:        123
-    Vencimiento: 12/28
-    Titular:    Pedro Sanchez
-
-NOTAS PAYPHONE:
-- En sandbox cualquier numero con formato valido (16 digitos) se aprueba
-- No importa el CVV ni la fecha, siempre aprueba
-- Portal de developer: https://appdeveloper.payphonetodoesposible.com/
-- La app debe ser tipo "WEB" para obtener Token y StoreId
-- Dominio configurado debe coincidir con donde se ejecuta la app
-
-IMPORTANTE - Cambiar entre Produccion y Pruebas:
-  El Token y StoreId son IGUALES para ambos ambientes.
-  El entorno se controla desde el portal de developer:
-  1. Ingresa a https://appdeveloper.payphonetodoesposible.com/
-  2. Selecciona tu aplicacion
-  3. Cambia el selector de ambientes de Produccion a PRUEBAS
-  4. En PRUEBAS: todas las transacciones se aprueban automaticamente
-  5. En PRODUCCION: las transacciones van al banco real
-  NO cambiar el Token ni StoreId, solo el ambiente en el portal.
+URL: http://localhost:5164
+BACKUP: backup/orbi_app_20260726_223058.dump (36.3 MB, 1M registros)

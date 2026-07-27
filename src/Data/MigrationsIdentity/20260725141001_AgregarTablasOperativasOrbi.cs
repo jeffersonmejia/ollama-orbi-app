@@ -21,11 +21,13 @@ namespace SakilaApp.Data.MigrationsIdentity
                     user_id = table.Column<string>(type: "text", nullable: true),
                     model_name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
                     operation = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
+                    prompt_text = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false, defaultValue: ""),
                     prompt_tokens = table.Column<int>(type: "integer", nullable: false),
                     completion_tokens = table.Column<int>(type: "integer", nullable: false),
                     total_tokens = table.Column<int>(type: "integer", nullable: false),
                     estimated_cost = table.Column<decimal>(type: "numeric(14,6)", nullable: false),
                     duration_milliseconds = table.Column<int>(type: "integer", nullable: false),
+                    ip_address = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
                     metadata = table.Column<string>(type: "jsonb", nullable: false, defaultValueSql: "'{}'::jsonb"),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
                 },
