@@ -399,6 +399,129 @@ public class HomeController : Controller
         return Json(new { nextBackupUtc = next.ToString("o"), secondsRemaining = Math.Round(remaining, 1) });
     }
 
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> RoleCharts()
+    {
+        var email = User.Identity?.Name ?? "";
+
+        if (User.IsInRole("Vendedor"))
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var myStoreIds = await _identityContext.DeliveryProducts
+                .AsNoTracking()
+                .Where(p => p.CreatedByUserId == userId)
+                .Select(p => p.DeliveryStoreId)
+                .Distinct()
+                .ToListAsync();
+
+            var ordersByStatus = await _identityContext.DeliveryOrders
+                .AsNoTracking()
+                .Where(o => myStoreIds.Contains(o.DeliveryStoreId))
+                .GroupBy(o => o.Status)
+                .Select(g => new { label = g.Key, count = g.Count() })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var revenueByStatus = await _identityContext.DeliveryOrders
+                .AsNoTracking()
+                .Where(o => myStoreIds.Contains(o.DeliveryStoreId))
+                .GroupBy(o => o.Status)
+                .Select(g => new { label = g.Key, count = (int)g.Sum(o => o.Total) })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var totalOrders = ordersByStatus.Sum(o => o.count);
+            var totalRevenue = revenueByStatus.Sum(o => o.count);
+
+            return Json(new
+            {
+                chart1Title = "Pedidos por estado",
+                chart1 = ordersByStatus,
+                chart1Total = totalOrders,
+                chart2Title = "Ingresos por estado",
+                chart2 = revenueByStatus,
+                chart2Total = totalRevenue
+            });
+        }
+
+        if (User.IsInRole("Repartidor"))
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var assigned = await _identityContext.DeliveryOrders
+                .AsNoTracking()
+                .Where(o => o.DeliveryPersonEmail == email)
+                .GroupBy(o => o.Status)
+                .Select(g => new { label = g.Key, count = g.Count() })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var incidents = await _identityContext.DeliveryIncidents
+                .AsNoTracking()
+                .Where(i => i.ReportedByUserId == userId)
+                .GroupBy(i => i.Severity)
+                .Select(g => new { label = g.Key, count = g.Count() })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var totalAssigned = assigned.Sum(o => o.count);
+            var totalIncidents = incidents.Sum(i => i.count);
+
+            return Json(new
+            {
+                chart1Title = "Mis entregas",
+                chart1 = assigned,
+                chart1Total = totalAssigned,
+                chart2Title = "Incidencias reportadas",
+                chart2 = incidents,
+                chart2Total = totalIncidents
+            });
+        }
+
+        if (User.IsInRole("Usuario"))
+        {
+            var myOrders = await _identityContext.DeliveryOrders
+                .AsNoTracking()
+                .Where(o => o.CustomerEmail == email)
+                .GroupBy(o => o.Status)
+                .Select(g => new { label = g.Key, count = g.Count() })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var myPayments = await _identityContext.DeliveryPayments
+                .AsNoTracking()
+                .Where(p => p.Order.CustomerEmail == email)
+                .GroupBy(p => p.Provider)
+                .Select(g => new { label = g.Key, count = g.Count() })
+                .OrderByDescending(g => g.count)
+                .ToListAsync();
+
+            var totalOrders = myOrders.Sum(o => o.count);
+            var totalPayments = myPayments.Sum(p => p.count);
+
+            return Json(new
+            {
+                chart1Title = "Mis pedidos",
+                chart1 = myOrders,
+                chart1Total = totalOrders,
+                chart2Title = "Métodos de pago",
+                chart2 = myPayments,
+                chart2Total = totalPayments
+            });
+        }
+
+        return Json(new
+        {
+            chart1Title = "Sin datos",
+            chart1 = Array.Empty<object>(),
+            chart1Total = 0,
+            chart2Title = "Sin datos",
+            chart2 = Array.Empty<object>(),
+            chart2Total = 0
+        });
+    }
+
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> PanelAdministrador()
     {
