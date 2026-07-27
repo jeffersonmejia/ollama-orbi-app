@@ -77,6 +77,8 @@ services:
       EmailSettings__SenderName: "Orbi App"
       DataProtection__KeysPath: "/app/DataProtectionKeys"
       BACKUP_DIR: "/backups"
+      BACKUP_INTERVAL_MINUTES: "5"
+      BACKUP_RETENTION_COUNT: "12"
     secrets:
       - postgres_password
       - paypal_client_id
@@ -91,7 +93,9 @@ services:
       - email_password
     volumes:
       - orbi_keys:/app/DataProtectionKeys
-      - orbi_backups:/backups
+      - type: bind
+        source: ./backups
+        target: /backups
     networks:
       - sakila_overlay
     deploy:
@@ -121,7 +125,6 @@ networks:
 volumes:
   postgres_data_v18:
   orbi_keys:
-  orbi_backups:
 
 secrets:
   postgres_password:

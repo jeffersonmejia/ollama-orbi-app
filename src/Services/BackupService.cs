@@ -7,10 +7,27 @@ public sealed class BackupService : BackgroundService
 {
     private readonly IServiceProvider _services;
     private readonly ILogger<BackupService> _logger;
-    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan Interval = ReadInterval();
+    private static readonly int RetentionCount = ReadRetention();
 
     public static DateTime LastBackupUtc { get; private set; } = DateTime.UtcNow;
     public static DateTime NextBackupUtc => LastBackupUtc + Interval;
+
+    private static TimeSpan ReadInterval()
+    {
+        var raw = Environment.GetEnvironmentVariable("BACKUP_INTERVAL_MINUTES");
+        if (int.TryParse(raw, out var minutes) && minutes > 0)
+            return TimeSpan.FromMinutes(minutes);
+        return TimeSpan.FromMinutes(5);
+    }
+
+    private static int ReadRetention()
+    {
+        var raw = Environment.GetEnvironmentVariable("BACKUP_RETENTION_COUNT");
+        if (int.TryParse(raw, out var count) && count > 0)
+            return count;
+        return 12;
+    }
 
     public BackupService(IServiceProvider services, ILogger<BackupService> logger)
     {
@@ -82,7 +99,7 @@ public sealed class BackupService : BackgroundService
     {
         var files = Directory.GetFiles(dir, "orbi_backup_*.sql")
             .OrderByDescending(f => f)
-            .Skip(12)
+            .Skip(RetentionCount)
             .ToList();
 
         foreach (var f in files)
