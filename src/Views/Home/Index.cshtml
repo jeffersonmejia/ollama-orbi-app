@@ -15,7 +15,7 @@
 
     if (User.IsInRole("Administrador"))
     {
-        roleMessages = new[] { "Controla la operación de Orbi", "Revisa pedidos e incidencias", "Consulta inventario y auditoría", "Gestiona tiendas y entregas" };
+        roleMessages = Array.Empty<string>();
         chatContext = "administrador";
         chatWelcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
         chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
@@ -388,6 +388,8 @@
         <h1 style="font-size:var(--md-sys-typescale-headline-large-size);font-weight:var(--md-sys-typescale-headline-large-weight);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">
             Bienvenido, @(ViewData["FirstName"] as string ?? "usuario")
         </h1>
+        @if (roleMessages.Length > 0)
+        {
         <p style="font-size:var(--md-sys-typescale-display-small-size);color:var(--md-sys-color-on-surface-variant);margin:2.5rem 0 3rem;font-weight:300;letter-spacing:-0.02em;" id="randomMessage">@roleMessages[0]</p>
         <script>
             (function() {
@@ -411,6 +413,7 @@
                 }
             })();
         </script>
+        }
 
         @if (User.IsInRole("Administrador"))
         {
@@ -464,7 +467,7 @@
                         const res = await fetch('/Home/TableCounts', { credentials: 'same-origin' });
                         if (!res.ok) throw new Error(res.status);
                         const data = await res.json();
-                        const items = data.items || [];
+                        const items = (data.items || []).slice().sort(function(a, b) { return b.count - a.count; });
                         const total = data.total || 0;
 
                         if (!items.length) {
