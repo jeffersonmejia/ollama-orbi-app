@@ -418,7 +418,7 @@
         @if (User.IsInRole("Administrador"))
         {
             <style>
-                .orbi-pie-section { max-width: 900px; margin: 0 auto; text-align: left; }
+                .orbi-pie-section { max-width: 900px; margin: 0 auto; text-align: left; padding-bottom: 2rem; }
                 .orbi-pie-wrapper { display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; padding: 24px 0; }
                 .orbi-pie-svg { flex: 0 0 auto; }
                 .orbi-pie-legend { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
@@ -428,20 +428,16 @@
                 .orbi-pie-legend-count { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
                 .orbi-pie-total { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--md-sys-color-outline-variant); font-size: 15px; font-weight: 600; color: var(--md-sys-color-on-surface); display: flex; justify-content: space-between; }
                 .orbi-pie-title { font-size: var(--md-sys-typescale-title-medium-size); font-weight: var(--md-sys-typescale-title-medium-weight); color: var(--md-sys-color-on-surface); margin-bottom: 4px; text-align: center; }
-                .orbi-backup-bar { max-width: 900px; margin: 0 auto 8px; padding: 10px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low, #f5f5f5); border: 1px solid var(--md-sys-color-outline-variant); display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
+                .orbi-backup-bar { max-width: 900px; margin: 0 auto; padding: 10px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low, #f5f5f5); border: 1px solid var(--md-sys-color-outline-variant); display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
                 .orbi-backup-bar .material-symbols-outlined { font-size: 18px; color: var(--md-sys-color-primary); }
                 .orbi-backup-track { flex: 1; height: 6px; border-radius: 3px; background: var(--md-sys-color-outline-variant, #e0e0e0); overflow: hidden; }
                 .orbi-backup-fill { height: 100%; border-radius: 3px; background: var(--md-sys-color-primary, #075c9b); transition: width 1s linear; }
                 .orbi-backup-time { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+                .orbi-backup-bar.running { background: var(--md-sys-color-primary-container, #d3e3fd); border-color: var(--md-sys-color-primary, #075c9b); }
+                .orbi-backup-bar.running .material-symbols-outlined { animation: orbi-backup-spin 1s linear infinite; }
+                @@keyframes orbi-backup-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 @@media(max-width: 640px) { .orbi-pie-wrapper { flex-direction: column; gap: 24px; } }
             </style>
-
-            <div class="orbi-backup-bar" id="orbi-backup-bar">
-                <span class="material-symbols-outlined">history</span>
-                <span>Próximo backup automático en</span>
-                <div class="orbi-backup-track"><div class="orbi-backup-fill" id="orbi-backup-fill" style="width:100%"></div></div>
-                <span class="orbi-backup-time" id="orbi-backup-time">--:--</span>
-            </div>
 
             <div class="orbi-pie-section">
                 <p class="orbi-pie-title">Registros por tabla</p>
@@ -449,6 +445,13 @@
                     <svg class="orbi-pie-svg" id="orbi-pie-chart" viewBox="0 0 260 260" width="260" height="260"></svg>
                     <div class="orbi-pie-legend" id="orbi-pie-legend"></div>
                 </div>
+            </div>
+
+            <div class="orbi-backup-bar" id="orbi-backup-bar">
+                <span class="material-symbols-outlined" id="orbi-backup-icon">history</span>
+                <span id="orbi-backup-label">Próximo backup automático en</span>
+                <div class="orbi-backup-track" id="orbi-backup-track"><div class="orbi-backup-fill" id="orbi-backup-fill" style="width:100%"></div></div>
+                <span class="orbi-backup-time" id="orbi-backup-time">--:--</span>
             </div>
 
             <script>
@@ -460,7 +463,7 @@
                     '#B3FFD9','#FFE0CC','#CCFFEE','#F0CCFF','#CCE5FF'
                 ];
 
-                function fmt(n) { return n.toLocaleString('es-EC'); }
+                function fmt(n) { return n.toLocaleString('es-EC', { maximumFractionDigits: 0 }); }
 
                 async function loadPie() {
                     try {
@@ -518,23 +521,50 @@
 
                 var backupInterval = 300;
                 var remaining = backupInterval;
+                var backingUp = false;
+                var lastKnownBackupUtc = null;
 
                 async function loadBackupStatus() {
                     try {
                         const res = await fetch('/Home/BackupStatus', { credentials: 'same-origin' });
                         if (!res.ok) return;
                         const data = await res.json();
+                        if (data.nextBackupUtc !== lastKnownBackupUtc) {
+                            lastKnownBackupUtc = data.nextBackupUtc;
+                            backingUp = false;
+                        }
                         remaining = data.secondsRemaining || 0;
                     } catch {}
                 }
 
                 function updateCountdown() {
-                    if (remaining > 0) remaining--;
+                    var bar = document.getElementById('orbi-backup-bar');
+                    var icon = document.getElementById('orbi-backup-icon');
+                    var label = document.getElementById('orbi-backup-label');
+                    var track = document.getElementById('orbi-backup-track');
+                    var time = document.getElementById('orbi-backup-time');
+
+                    if (remaining > 0 && !backingUp) remaining--;
+
+                    if (remaining <= 0 && !backingUp) {
+                        backingUp = true;
+                        bar.classList.add('running');
+                        icon.textContent = 'sync';
+                        label.textContent = 'Realizando backup';
+                        track.style.display = 'none';
+                        time.textContent = '';
+                    }
+
+                    if (backingUp) return;
+
+                    bar.classList.remove('running');
+                    icon.textContent = 'history';
+                    label.textContent = 'Próximo backup automático en';
+                    track.style.display = '';
                     var pct = (remaining / backupInterval) * 100;
                     var min = Math.floor(remaining / 60);
                     var sec = Math.floor(remaining % 60);
                     var fill = document.getElementById('orbi-backup-fill');
-                    var time = document.getElementById('orbi-backup-time');
                     if (fill) fill.style.width = pct + '%';
                     if (time) time.textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
                 }
