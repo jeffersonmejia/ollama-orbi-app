@@ -338,8 +338,6 @@ public class DeliveryController : Controller
             }
             catch (Exception ex)
             {
-                _context.DeliveryCartItems.RemoveRange(items);
-                await _context.SaveChangesAsync();
                 TempData["Error"] = $"Error al conectar con PayPal: {ex.Message}";
                 return RedirectToAction(nameof(Cart));
             }
@@ -363,8 +361,6 @@ public class DeliveryController : Controller
             }
             catch (Exception ex)
             {
-                _context.DeliveryCartItems.RemoveRange(items);
-                await _context.SaveChangesAsync();
                 TempData["Error"] = $"Error al conectar con PayPhone: {ex.Message}";
                 return RedirectToAction(nameof(Cart));
             }

@@ -1,1 +1,11 @@
 docker exec $(docker ps --filter "name=orbi_postgres" --format "{{.ID}}") psql -U cruduser -d orbi_app -c "SELECT '  ' || t.tablename || ': ' || to_char(c.reltuples, 'FM999,999,999') || ' registros' AS linea FROM pg_tables t JOIN pg_class c ON c.relname = t.tablename WHERE t.schemaname='public' AND c.reltuples > 0 ORDER BY c.reltuples DESC;" -c "SELECT '  TOTAL: ' || to_char(SUM(c.reltuples), 'FM999,999,999') || ' registros' FROM pg_class c JOIN pg_tables t ON c.relname = t.tablename WHERE t.schemaname='public';"
+
+PAYPAL CUENTA PRUEBA
+Email 
+sb-ge3h252241612@business.example.com
+
+Password 
+!@I$G7mM
+
+LINK PAYPAL CUENTA: 
+https://developer.paypal.com/dashboard/accounts/edit/5331459183775273804?accountName=sb-ge3h252241612@business.example.com
