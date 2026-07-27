@@ -9,7 +9,11 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     secrets:
       - postgres_password
-    
+    ports:
+      - target: 5432
+        published: 5433
+        protocol: tcp
+        mode: ingress
     volumes:
       - type: volume
         source: postgres_data_v18
