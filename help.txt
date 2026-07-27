@@ -1,13 +1,13 @@
 docker exec $(docker ps --filter "name=orbi_postgres" --format "{{.ID}}") psql -U cruduser -d orbi_app -c "SELECT '  ' || t.tablename || ': ' || to_char(c.reltuples, 'FM999,999,999') || ' registros' AS linea FROM pg_tables t JOIN pg_class c ON c.relname = t.tablename WHERE t.schemaname='public' AND c.reltuples > 0 ORDER BY c.reltuples DESC;" -c "SELECT '  TOTAL: ' || to_char(SUM(c.reltuples), 'FM999,999,999') || ' registros' FROM pg_class c JOIN pg_tables t ON c.relname = t.tablename WHERE t.schemaname='public';"
 
 PAYPAL CUENTA PRUEBA
-Email 
+Email
 sb-ge3h252241612@business.example.com
 
-Password 
+Password
 !@I$G7mM
 
-LINK PAYPAL CUENTA: 
+LINK PAYPAL CUENTA:
 https://developer.paypal.com/dashboard/accounts/edit/5331459183775273804?accountName=sb-ge3h252241612@business.example.com
 
 
@@ -48,8 +48,18 @@ Tarjetas de prueba (cualquier formato valido funciona en sandbox):
     Titular:    Pedro Sanchez
 
 NOTAS PAYPHONE:
-- En sandbox cualquier numero con formato valido (16 digitos, pass Luhn) se aprueba
+- En sandbox cualquier numero con formato valido (16 digitos) se aprueba
 - No importa el CVV ni la fecha, siempre aprueba
-- Para registrar app en PayPhone Developer: https://developers.payphone.app
+- Portal de developer: https://appdeveloper.payphonetodoesposible.com/
 - La app debe ser tipo "WEB" para obtener Token y StoreId
 - Dominio configurado debe coincidir con donde se ejecuta la app
+
+IMPORTANTE - Cambiar entre Produccion y Pruebas:
+  El Token y StoreId son IGUALES para ambos ambientes.
+  El entorno se controla desde el portal de developer:
+  1. Ingresa a https://appdeveloper.payphonetodoesposible.com/
+  2. Selecciona tu aplicacion
+  3. Cambia el selector de ambientes de Produccion a PRUEBAS
+  4. En PRUEBAS: todas las transacciones se aprueban automaticamente
+  5. En PRODUCCION: las transacciones van al banco real
+  NO cambiar el Token ni StoreId, solo el ambiente en el portal.
