@@ -19,7 +19,7 @@ erDiagram
     }
 
     user_profile {
-        text identity_user_id PK FK
+        text identity_user_id PK, FK
         varchar(80) first_name
         varchar(80) last_name
         varchar(10) cedula UK
