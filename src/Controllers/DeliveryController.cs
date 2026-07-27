@@ -513,18 +513,32 @@ public class DeliveryController : Controller
         var userId = CurrentUserId;
         var store = await _context.DeliveryStores.AsNoTracking()
             .FirstOrDefaultAsync(s => s.OwnerUserId == userId);
+
+        var profile = await _context.UserProfiles.AsNoTracking()
+            .Include(p => p.Province).Include(p => p.City)
+            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
+        ViewData["Profile"] = profile;
+
         return View(store);
     }
 
     [HttpPost]
     [Authorize(Roles = "Vendedor")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SellerStore(string name, string category, string address, string? provinceCode, string? cityCode)
+    public async Task<IActionResult> SellerStore(string name, string category)
     {
         var userId = CurrentUserId;
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category))
         {
-            TempData["Error"] = "Completa nombre, categoría y dirección.";
+            TempData["Error"] = "Completa nombre y categoría.";
+            return RedirectToAction(nameof(SellerStore));
+        }
+
+        var profile = await _context.UserProfiles.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
+        if (profile == null)
+        {
+            TempData["Error"] = "No se encontró tu perfil de usuario.";
             return RedirectToAction(nameof(SellerStore));
         }
 
@@ -535,9 +549,9 @@ public class DeliveryController : Controller
             {
                 Name = name.Trim(),
                 Category = category.Trim(),
-                Address = address.Trim(),
-                ProvinceCode = string.IsNullOrWhiteSpace(provinceCode) ? null : provinceCode,
-                CityCode = string.IsNullOrWhiteSpace(cityCode) ? null : cityCode,
+                Address = profile.AddressLine1 + (string.IsNullOrWhiteSpace(profile.AddressLine2) ? "" : " " + profile.AddressLine2),
+                ProvinceCode = profile.ProvinceCode,
+                CityCode = profile.CityCode,
                 OwnerUserId = userId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -548,9 +562,6 @@ public class DeliveryController : Controller
         {
             store.Name = name.Trim();
             store.Category = category.Trim();
-            store.Address = address.Trim();
-            store.ProvinceCode = string.IsNullOrWhiteSpace(provinceCode) ? null : provinceCode;
-            store.CityCode = string.IsNullOrWhiteSpace(cityCode) ? null : cityCode;
         }
 
         await _context.SaveChangesAsync();

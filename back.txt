@@ -1,0 +1,30 @@
+=============================================
+  COMANDOS DOCKER - CONSULTA DE BACKUPS
+=============================================
+
+-- Ver contenedores activos --
+docker ps -a
+
+-- Buscar archivo backup.txt dentro del contenedor activo --
+docker exec orbi-stack_orbiapp.1.h1wqkqtqp1q4zdanjho6e33in find / -name "backup.txt" 2>/dev/null
+
+-- Leer backup.txt (ajustar ruta si es necesario) --
+docker exec orbi-stack_orbiapp.1.h1wqkqtqp1q4zdanjho6e33in cat backup.txt
+
+-- Ver respaldos en PostgreSQL --
+docker exec orbi-stack_postgres.1.9p9dbkqsnnf4io2gt45qlzerq ls -la /backups/
+
+-- Ver contenido de backup.txt en PostgreSQL --
+docker exec orbi-stack_postgres.1.9p9dbkqsnnf4io2gt45qlzerq cat /backups/backup.txt
+
+-- Listar archivos .dump en la carpeta local backup/ --
+dir backup\
+
+-- Copiar backup del contenedor al host --
+docker cp orbi-stack_postgres.1.9p9dbkqsnnf4io2gt45qlzerq:/backups/. ./backups/
+
+-- Ver logs del contenedor orbiapp --
+docker logs orbi-stack_orbiapp.1.h1wqkqtqp1q4zdanjho6e33in
+
+-- Ver logs del contenedor postgres --
+docker logs orbi-stack_postgres.1.9p9dbkqsnnf4io2gt45qlzerq

@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Mi tienda";
     var isNew = Model == null;
+    var profile = ViewData["Profile"] as SakilaApp.Models.Identity.UserProfile;
 }
 
 <div class="orbi-delivery-page">
@@ -29,11 +30,24 @@
                 </div>
                 <div class="m3-text-field">
                     <label class="m3-text-field-label">Categoría</label>
-                    <input name="category" class="m3-text-field-input" required maxlength="60" value="@(Model?.Category ?? "")" placeholder="Ej. Farmacia, Ropa, Tecnología" />
+                    <select name="category" class="m3-text-field-input" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Farmacia" selected="@(Model?.Category == "Farmacia")">Farmacia</option>
+                        <option value="Restaurante" selected="@(Model?.Category == "Restaurante")">Restaurante</option>
+                        <option value="Supermercado" selected="@(Model?.Category == "Supermercado")">Supermercado</option>
+                    </select>
                 </div>
                 <div class="m3-text-field" style="grid-column:1/-1;">
-                    <label class="m3-text-field-label">Dirección</label>
-                    <input name="address" class="m3-text-field-input" required maxlength="180" value="@(Model?.Address ?? "")" placeholder="Ej. Av. Principal y 5 de Octubre" />
+                    <label class="m3-text-field-label">Dirección <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
+                    <input class="m3-text-field-input" disabled value="@(profile?.AddressLine1 ?? "") @(profile?.AddressLine2 ?? "")" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Provincia <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
+                    <input class="m3-text-field-input" disabled value="@(profile?.Province?.Name ?? "")" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Ciudad <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
+                    <input class="m3-text-field-input" disabled value="@(profile?.City?.Name ?? "")" />
                 </div>
             </div>
             <div class="orbi-form-actions" style="margin-top:12px;">
