@@ -1,0 +1,45 @@
+@model SakilaApp.Models.Delivery.DeliveryStore?
+@{
+    ViewData["Title"] = "Mi tienda";
+    var isNew = Model == null;
+}
+
+<div class="orbi-delivery-page">
+    <header class="orbi-delivery-header">
+        <h1>Mi tienda</h1>
+        <p>@(isNew ? "Registra tu tienda para poder agregar productos." : "Edita los datos de tu tienda.")</p>
+    </header>
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="orbi-alert orbi-alert-error"><span class="material-symbols-outlined">error</span>@error</div>
+    }
+    @if (TempData["Success"] is string success)
+    {
+        <div class="orbi-alert orbi-alert-success"><span class="material-symbols-outlined">check_circle</span>@success</div>
+    }
+
+    <section class="orbi-google-card" style="padding:16px;">
+        <form method="post" asp-action="SellerStore" class="orbi-account-rows" style="padding:0;">
+            @Html.AntiForgeryToken()
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Nombre de la tienda</label>
+                    <input name="name" class="m3-text-field-input" required maxlength="100" value="@(Model?.Name ?? "")" placeholder="Ej. Mi Tienda" />
+                </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label">Categoría</label>
+                    <input name="category" class="m3-text-field-input" required maxlength="60" value="@(Model?.Category ?? "")" placeholder="Ej. Farmacia, Ropa, Tecnología" />
+                </div>
+                <div class="m3-text-field" style="grid-column:1/-1;">
+                    <label class="m3-text-field-label">Dirección</label>
+                    <input name="address" class="m3-text-field-input" required maxlength="180" value="@(Model?.Address ?? "")" placeholder="Ej. Av. Principal y 5 de Octubre" />
+                </div>
+            </div>
+            <div class="orbi-form-actions" style="margin-top:12px;">
+                <a asp-action="SellerInventory" class="m3-text-button">Cancelar</a>
+                <button type="submit" class="m3-filled-button">@(isNew ? "Registrar tienda" : "Guardar cambios")</button>
+            </div>
+        </form>
+    </section>
+</div>

@@ -131,6 +131,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
             entity.Property(x => x.CityCode).HasColumnName("city_code").HasMaxLength(4);
             entity.Property(x => x.IsActive).HasColumnName("is_active");
+            entity.Property(x => x.OwnerUserId).HasColumnName("owner_user_id").HasMaxLength(450);
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.HasOne(x => x.Province).WithMany().HasForeignKey(x => x.ProvinceCode).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(x => x.City).WithMany().HasForeignKey(x => x.CityCode).OnDelete(DeleteBehavior.SetNull);

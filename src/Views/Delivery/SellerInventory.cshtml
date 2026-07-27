@@ -1,12 +1,14 @@
 @model PaginatedList<SakilaApp.Models.Delivery.DeliveryProduct>
 @{
     ViewData["Title"] = "Mi inventario";
+    var myStore = ViewBag.MyStore as SakilaApp.Models.Delivery.DeliveryStore;
 }
 
 <div class="orbi-delivery-page">
     <header class="orbi-delivery-header">
         <h1>Mi inventario</h1>
-        <p>Productos que has registrado en tu catálogo.</p>
+        <p>Productos de <strong>@(myStore?.Name ?? "mi tienda")</strong>.</p>
+        <a asp-action="SellerStore" class="m3-text-button" style="font-size:13px;">Editar mi tienda</a>
     </header>
 
     @if (TempData["Error"] is string error)
@@ -41,16 +43,6 @@
                 <div class="m3-text-field">
                     <label class="m3-text-field-label">Stock</label>
                     <input name="stock" type="number" min="0" max="999" class="m3-text-field-input" required placeholder="0" />
-                </div>
-                <div class="m3-text-field">
-                    <label class="m3-text-field-label">Tienda</label>
-                    <select name="storeId" class="m3-text-field-input" required>
-                        <option value="">Selecciona una tienda</option>
-                        @foreach (var store in (ViewData["Stores"] as IEnumerable<SakilaApp.Models.Delivery.DeliveryStore>) ?? Enumerable.Empty<SakilaApp.Models.Delivery.DeliveryStore>())
-                        {
-                            <option value="@store.DeliveryStoreId">@store.Name</option>
-                        }
-                    </select>
                 </div>
             </div>
             <div class="orbi-form-actions" style="margin-top:8px;">

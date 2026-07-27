@@ -508,13 +508,73 @@ public class DeliveryController : Controller
     }
 
     [Authorize(Roles = "Vendedor")]
+    public async Task<IActionResult> SellerStore()
+    {
+        var userId = CurrentUserId;
+        var store = await _context.DeliveryStores.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.OwnerUserId == userId);
+        return View(store);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Vendedor")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SellerStore(string name, string category, string address, string? provinceCode, string? cityCode)
+    {
+        var userId = CurrentUserId;
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
+        {
+            TempData["Error"] = "Completa nombre, categoría y dirección.";
+            return RedirectToAction(nameof(SellerStore));
+        }
+
+        var store = await _context.DeliveryStores.FirstOrDefaultAsync(s => s.OwnerUserId == userId);
+        if (store == null)
+        {
+            store = new DeliveryStore
+            {
+                Name = name.Trim(),
+                Category = category.Trim(),
+                Address = address.Trim(),
+                ProvinceCode = string.IsNullOrWhiteSpace(provinceCode) ? null : provinceCode,
+                CityCode = string.IsNullOrWhiteSpace(cityCode) ? null : cityCode,
+                OwnerUserId = userId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.DeliveryStores.Add(store);
+        }
+        else
+        {
+            store.Name = name.Trim();
+            store.Category = category.Trim();
+            store.Address = address.Trim();
+            store.ProvinceCode = string.IsNullOrWhiteSpace(provinceCode) ? null : provinceCode;
+            store.CityCode = string.IsNullOrWhiteSpace(cityCode) ? null : cityCode;
+        }
+
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Tu tienda fue guardada correctamente.";
+        return RedirectToAction(nameof(SellerInventory));
+    }
+
+    [Authorize(Roles = "Vendedor")]
     public async Task<IActionResult> SellerInventory(string? buscar, int page = 1)
     {
         var userId = CurrentUserId;
+        var myStore = await _context.DeliveryStores.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.OwnerUserId == userId);
+
+        if (myStore == null)
+        {
+            TempData["Error"] = "Primero debes registrar tu tienda.";
+            return RedirectToAction(nameof(SellerStore));
+        }
+
         var query = _context.DeliveryProducts
             .AsNoTracking()
             .Include(p => p.Store)
-            .Where(p => p.CreatedByUserId == userId)
+            .Where(p => p.DeliveryStoreId == myStore.DeliveryStoreId)
             .OrderByDescending(p => p.CreatedAt)
             .AsQueryable();
 
@@ -522,20 +582,20 @@ public class DeliveryController : Controller
         {
             var term = buscar.Trim();
             var pattern = $"%{term}%";
-            query = query.Where(p => EF.Functions.ILike(p.Name, pattern) || EF.Functions.ILike(p.Store.Name, pattern));
+            query = query.Where(p => EF.Functions.ILike(p.Name, pattern));
         }
 
         var products = await PaginatedList<DeliveryProduct>.CreateAsync(query, Math.Max(1, page), 10);
         ViewBag.Buscar = buscar;
+        ViewBag.MyStore = myStore;
         ViewData["PaginatedList"] = products;
-        ViewData["Stores"] = await _context.DeliveryStores.AsNoTracking().Where(s => s.IsActive).OrderBy(s => s.Name).ToListAsync();
         return View(products);
     }
 
     [HttpPost]
     [Authorize(Roles = "Vendedor")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock, int storeId)
+    public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock)
     {
         var userId = CurrentUserId;
         if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999)
@@ -544,16 +604,16 @@ public class DeliveryController : Controller
             return RedirectToAction(nameof(SellerInventory));
         }
 
-        var store = await _context.DeliveryStores.FindAsync(storeId);
+        var store = await _context.DeliveryStores.FirstOrDefaultAsync(s => s.OwnerUserId == userId);
         if (store == null)
         {
-            TempData["Error"] = "La tienda seleccionada no existe.";
-            return RedirectToAction(nameof(SellerInventory));
+            TempData["Error"] = "Primero debes registrar tu tienda.";
+            return RedirectToAction(nameof(SellerStore));
         }
 
         _context.DeliveryProducts.Add(new DeliveryProduct
         {
-            DeliveryStoreId = storeId,
+            DeliveryStoreId = store.DeliveryStoreId,
             CreatedByUserId = userId,
             Name = name.Trim(),
             Price = price,

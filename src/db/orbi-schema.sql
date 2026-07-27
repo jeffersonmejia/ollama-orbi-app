@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS delivery_store (
     province_code varchar(2) REFERENCES ecuador_province(province_code) ON DELETE SET NULL,
     city_code varchar(4) REFERENCES ecuador_city(city_code) ON DELETE SET NULL,
     is_active boolean NOT NULL DEFAULT true,
+    owner_user_id text REFERENCES "AspNetUsers"("Id") ON DELETE SET NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
@@ -109,6 +110,10 @@ DO $$ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'city_code') THEN
         ALTER TABLE delivery_store ADD COLUMN city_code varchar(4) REFERENCES ecuador_city(city_code) ON DELETE SET NULL;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'owner_user_id') THEN
+        ALTER TABLE delivery_store ADD COLUMN owner_user_id text REFERENCES "AspNetUsers"("Id") ON DELETE SET NULL;
+        CREATE INDEX IF NOT EXISTS ix_delivery_store_owner ON delivery_store(owner_user_id);
     END IF;
 END $$;
 
