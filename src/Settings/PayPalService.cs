@@ -33,7 +33,7 @@ public class PayPalService
         _settings = options.Value;
     }
 
-    public async Task<PayPalOrderResult> CreateOrderAsync(decimal total, string reference)
+    public async Task<PayPalOrderResult> CreateOrderAsync(decimal total, string reference, string? returnUrl = null, string? cancelUrl = null)
     {
         var accessToken = await GetAccessTokenAsync();
 
@@ -58,8 +58,8 @@ public class PayPalService
                 brand_name = "SakilaApp ESPE",
                 landing_page = "LOGIN",
                 user_action = "PAY_NOW",
-                return_url = _settings.ReturnUrl,
-                cancel_url = _settings.CancelUrl
+                return_url = returnUrl ?? _settings.ReturnUrl,
+                cancel_url = cancelUrl ?? _settings.CancelUrl
             }
         };
 

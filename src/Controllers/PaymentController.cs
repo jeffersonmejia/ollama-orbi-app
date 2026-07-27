@@ -83,10 +83,9 @@ public class PaymentController : Controller
 
         string reference = $"Sakila Order #{order.PurchaseOrderId}";
 
-        var result = await _payPalService.CreateOrderAsync(
-    order.Total,
-    reference);//,
-    //order.PurchaseOrderId);
+        var returnUrl = $"{Request.Scheme}://{Request.Host}/Payment/Success";
+        var cancelUrl = $"{Request.Scheme}://{Request.Host}/Payment/Cancel";
+        var result = await _payPalService.CreateOrderAsync(order.Total, reference, returnUrl, cancelUrl);
 
         var payment = new PaymentTransaction
         {
@@ -231,9 +230,9 @@ public class PaymentController : Controller
 
         string reference = $"Sakila Order #{order.PurchaseOrderId}";
 
-        var result = await _payPalService.CreateOrderAsync(
-            order.Total,
-            reference);
+        var returnUrl = $"{Request.Scheme}://{Request.Host}/Payment/Success";
+        var cancelUrl = $"{Request.Scheme}://{Request.Host}/Payment/Cancel";
+        var result = await _payPalService.CreateOrderAsync(order.Total, reference, returnUrl, cancelUrl);
 
         var payment = new PaymentTransaction
         {

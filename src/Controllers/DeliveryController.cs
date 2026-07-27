@@ -324,7 +324,9 @@ public class DeliveryController : Controller
             string reference = $"Orbi Order #{string.Join(",", createdOrderIds)}";
             try
             {
-                var result = await _payPalService.CreateOrderAsync(grandTotal, reference);
+                var returnUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentSuccess";
+                var cancelUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentCancel";
+                var result = await _payPalService.CreateOrderAsync(grandTotal, reference, returnUrl, cancelUrl);
 
                 if (firstPayment != null)
                 {

@@ -47,14 +47,14 @@ services:
       - -c
       - >-
         export ConnectionStrings__DefaultConnection="Host=$${POSTGRES_HOST:-postgres};Port=$${POSTGRES_PORT:-5432};Database=orbi_app;Username=cruduser;Password=$$(cat /run/secrets/postgres_password)";
-        export PayPal__ClientId="$$(cat /run/secrets/paypal_client_id)";
-        export PayPal__ClientSecret="$$(cat /run/secrets/paypal_client_secret)";
-        export PayPhone__Token="$$(cat /run/secrets/payphone_token)";
-        export PayPhone__StoreId="$$(cat /run/secrets/payphone_store_id)";
-        export Authentication__Google__ClientId="$$(cat /run/secrets/google_client_id)";
-        export Authentication__Google__ClientSecret="$$(cat /run/secrets/google_client_secret)";
-        export EmailSettings__SenderEmail="$$(cat /run/secrets/email_sender_email)";
-        export EmailSettings__Password="$$(cat /run/secrets/email_password)";
+        export PayPal__ClientId="$$(cat /run/secrets/paypal_client_id | xargs)";
+        export PayPal__ClientSecret="$$(cat /run/secrets/paypal_client_secret | xargs)";
+        export PayPhone__Token="$$(cat /run/secrets/payphone_token | xargs)";
+        export PayPhone__StoreId="$$(cat /run/secrets/payphone_store_id | xargs)";
+        export Authentication__Google__ClientId="$$(cat /run/secrets/google_client_id | xargs)";
+        export Authentication__Google__ClientSecret="$$(cat /run/secrets/google_client_secret | xargs)";
+        export EmailSettings__SenderEmail="$$(cat /run/secrets/email_sender_email | xargs)";
+        export EmailSettings__Password="$$(cat /run/secrets/email_password | xargs)";
         exec dotnet SakilaApp.dll
     ports:
       - target: 8080
