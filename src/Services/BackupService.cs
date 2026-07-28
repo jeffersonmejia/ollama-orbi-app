@@ -9,6 +9,7 @@ public sealed class BackupService : BackgroundService
     private readonly ILogger<BackupService> _logger;
     private static readonly TimeSpan Interval = ReadInterval();
     private static readonly int RetentionCount = ReadRetention();
+    private static readonly SemaphoreSlim OperationLock = new(1, 1);
 
     public static DateTime LastBackupUtc { get; private set; } = DateTime.UtcNow;
     public static DateTime NextBackupUtc => LastBackupUtc + Interval;
@@ -58,42 +59,161 @@ public sealed class BackupService : BackgroundService
 
     private async Task RunBackupAsync()
     {
+        await OperationLock.WaitAsync();
+        try
+        {
+            await RunBackupCoreAsync();
+        }
+        finally
+        {
+            OperationLock.Release();
+        }
+    }
+
+    private async Task RunBackupCoreAsync()
+    {
         var conn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
         if (string.IsNullOrEmpty(conn)) return;
 
         var builder = new NpgsqlConnectionStringBuilder(conn);
-        var backupDir = Environment.GetEnvironmentVariable("BACKUP_DIR") ?? "/backups";
+        var backupDir = GetBackupDirectory();
         Directory.CreateDirectory(backupDir);
 
         var file = Path.Combine(backupDir, $"orbi_backup_{DateTime.UtcNow:yyyyMMdd_HHmmss}.sql");
-
-        var args = $"-h {builder.Host} -p {builder.Port} -U {builder.Username} -d {builder.Database} -f \"{file}\" --no-owner --no-privileges";
-
-        var psi = new ProcessStartInfo("pg_dump", args)
+        var result = await RunPostgresToolAsync("pg_dump", builder, new[]
         {
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            Environment = { ["PGPASSWORD"] = builder.Password }
-        };
+            "-f", file, "--no-owner", "--no-privileges"
+        }, CancellationToken.None);
 
-        using var process = Process.Start(psi);
-        if (process == null) return;
+        if (!result.Success)
+        {
+            _logger.LogWarning("pg_dump exited {Code}: {Error}", result.ExitCode, result.Error);
+            return;
+        }
 
-        var errorTask = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        var error = await errorTask;
-
-        if (process.ExitCode != 0)
-            _logger.LogWarning("pg_dump exited {Code}: {Error}", process.ExitCode, error);
-        else
-            _logger.LogInformation("Backup created: {File}", file);
-
+        _logger.LogInformation("Backup created: {File}", file);
         LastBackupUtc = DateTime.UtcNow;
 
         CleanupOldBackups(backupDir);
     }
+
+    public static FileInfo? GetLatestBackup()
+    {
+        try
+        {
+            var dir = GetBackupDirectory();
+            if (!Directory.Exists(dir)) return null;
+            return new DirectoryInfo(dir)
+                .GetFiles("orbi_backup_*.sql")
+                .OrderByDescending(file => file.LastWriteTimeUtc)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static async Task<BackupRestoreResult> RestoreLatestAsync(CancellationToken cancellationToken)
+    {
+        await OperationLock.WaitAsync(cancellationToken);
+        try
+        {
+            var latest = GetLatestBackup()
+                ?? throw new InvalidOperationException("No existe un backup disponible para recuperar.");
+            var connection = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connection))
+                throw new InvalidOperationException("No se encontró la conexión a PostgreSQL.");
+
+            var builder = new NpgsqlConnectionStringBuilder(connection);
+            var safetyFile = Path.Combine(
+                GetBackupDirectory(),
+                $"orbi_pre_restore_{DateTime.UtcNow:yyyyMMdd_HHmmss}.sql");
+
+            var safety = await RunPostgresToolAsync("pg_dump", builder, new[]
+            {
+                "-f", safetyFile, "--no-owner", "--no-privileges"
+            }, cancellationToken);
+            if (!safety.Success)
+                throw new InvalidOperationException($"No se pudo crear el respaldo de seguridad: {safety.Error}");
+
+            var reset = await ResetPublicSchemaAsync(builder, cancellationToken);
+            if (!reset.Success)
+                throw new InvalidOperationException($"No se pudo preparar la base de datos: {reset.Error}");
+
+            var restore = await RunPostgresToolAsync("psql", builder, new[]
+            {
+                "-X", "-v", "ON_ERROR_STOP=1", "-f", latest.FullName
+            }, cancellationToken);
+
+            if (!restore.Success)
+            {
+                await ResetPublicSchemaAsync(builder, CancellationToken.None);
+                var rollback = await RunPostgresToolAsync("psql", builder, new[]
+                {
+                    "-X", "-v", "ON_ERROR_STOP=1", "-f", safetyFile
+                }, CancellationToken.None);
+                var rollbackMessage = rollback.Success
+                    ? " Se recuperó automáticamente el estado anterior."
+                    : " También falló la recuperación del estado anterior.";
+                throw new InvalidOperationException($"Falló la recuperación del backup.{rollbackMessage}");
+            }
+
+            LastBackupUtc = DateTime.UtcNow;
+            return new BackupRestoreResult(latest.Name, latest.LastWriteTimeUtc, Path.GetFileName(safetyFile));
+        }
+        finally
+        {
+            OperationLock.Release();
+        }
+    }
+
+    private static async Task<PostgresToolResult> ResetPublicSchemaAsync(
+        NpgsqlConnectionStringBuilder builder,
+        CancellationToken cancellationToken) =>
+        await RunPostgresToolAsync("psql", builder, new[]
+        {
+            "-X", "-v", "ON_ERROR_STOP=1", "-c",
+            "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO PUBLIC;"
+        }, cancellationToken);
+
+    private static async Task<PostgresToolResult> RunPostgresToolAsync(
+        string executable,
+        NpgsqlConnectionStringBuilder builder,
+        IEnumerable<string> extraArguments,
+        CancellationToken cancellationToken)
+    {
+        var startInfo = new ProcessStartInfo(executable)
+        {
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        startInfo.Environment["PGPASSWORD"] = builder.Password ?? string.Empty;
+        foreach (var argument in new[]
+        {
+            "-h", builder.Host ?? string.Empty,
+            "-p", builder.Port.ToString(),
+            "-U", builder.Username ?? string.Empty,
+            "-d", builder.Database ?? string.Empty
+        }.Concat(extraArguments))
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException($"No se pudo iniciar {executable}.");
+        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await process.WaitForExitAsync(cancellationToken);
+        await outputTask;
+        var error = await errorTask;
+        return new PostgresToolResult(process.ExitCode == 0, process.ExitCode, error.Trim());
+    }
+
+    private static string GetBackupDirectory() =>
+        Path.GetFullPath(Environment.GetEnvironmentVariable("BACKUP_DIR") ?? "/backups");
 
     private void CleanupOldBackups(string dir)
     {
@@ -107,4 +227,8 @@ public sealed class BackupService : BackgroundService
             try { File.Delete(f); } catch { }
         }
     }
+
+    private sealed record PostgresToolResult(bool Success, int ExitCode, string Error);
 }
+
+public sealed record BackupRestoreResult(string FileName, DateTime BackupUtc, string SafetyBackupFileName);

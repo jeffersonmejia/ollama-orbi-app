@@ -359,33 +359,33 @@ public class HomeController : Controller
         var counts = new List<object>();
         long total = 0;
 
-        var tasks = new (string Name, Func<Task<int>> Query)[]
+        var tasks = new (string Label, Func<Task<int>> Query)[]
         {
-            ("delivery_order_item", () => _identityContext.DeliveryOrderItems.CountAsync()),
-            ("delivery_order", () => _identityContext.DeliveryOrders.CountAsync()),
-            ("delivery_product", () => _identityContext.DeliveryProducts.CountAsync()),
-            ("user_profile", () => _identityContext.UserProfiles.CountAsync()),
-            ("payment", () => _identityContext.DeliveryPayments.CountAsync()),
-            ("inventory_movement", () => _identityContext.InventoryMovements.CountAsync()),
-            ("audit_log", () => _identityContext.AuditLogs.CountAsync()),
-            ("delivery_incident", () => _identityContext.DeliveryIncidents.CountAsync()),
-            ("delivery_store", () => _identityContext.DeliveryStores.CountAsync()),
-            ("delivery_cart_item", () => _identityContext.DeliveryCartItems.CountAsync()),
-            ("email_queue", () => _identityContext.EmailQueue.CountAsync()),
-            ("stock_reservation", () => _identityContext.StockReservations.CountAsync()),
-            ("order_status_history", () => _identityContext.OrderStatusHistories.CountAsync()),
-            ("ecuador_city", () => _identityContext.EcuadorCities.CountAsync()),
-            ("ecuador_province", () => _identityContext.EcuadorProvinces.CountAsync()),
+            ("Detalles de pedidos", () => _identityContext.DeliveryOrderItems.CountAsync()),
+            ("Pedidos", () => _identityContext.DeliveryOrders.CountAsync()),
+            ("Productos", () => _identityContext.DeliveryProducts.CountAsync()),
+            ("Perfiles de usuario", () => _identityContext.UserProfiles.CountAsync()),
+            ("Pagos", () => _identityContext.DeliveryPayments.CountAsync()),
+            ("Movimientos de inventario", () => _identityContext.InventoryMovements.CountAsync()),
+            ("Auditorías", () => _identityContext.AuditLogs.CountAsync()),
+            ("Incidencias de entrega", () => _identityContext.DeliveryIncidents.CountAsync()),
+            ("Tiendas", () => _identityContext.DeliveryStores.CountAsync()),
+            ("Productos en carritos", () => _identityContext.DeliveryCartItems.CountAsync()),
+            ("Correos en cola", () => _identityContext.EmailQueue.CountAsync()),
+            ("Reservas de stock", () => _identityContext.StockReservations.CountAsync()),
+            ("Historial de estados", () => _identityContext.OrderStatusHistories.CountAsync()),
+            ("Ciudades de Ecuador", () => _identityContext.EcuadorCities.CountAsync()),
+            ("Provincias de Ecuador", () => _identityContext.EcuadorProvinces.CountAsync()),
         };
 
-        foreach (var (name, query) in tasks)
+        foreach (var (label, query) in tasks)
         {
             try
             {
                 var count = await query();
                 if (count > 0)
                 {
-                    counts.Add(new { table = name, count });
+                    counts.Add(new { table = label, count });
                     total += count;
                 }
             }
@@ -403,7 +403,40 @@ public class HomeController : Controller
         var next = Services.BackupService.NextBackupUtc;
         var remaining = (next - now).TotalSeconds;
         if (remaining < 0) remaining = 0;
-        return Json(new { nextBackupUtc = next.ToString("o"), secondsRemaining = Math.Round(remaining, 1) });
+        var latest = Services.BackupService.GetLatestBackup();
+        return Json(new
+        {
+            nextBackupUtc = next.ToString("o"),
+            secondsRemaining = Math.Round(remaining, 1),
+            hasBackup = latest is not null,
+            latestBackupUtc = latest?.LastWriteTimeUtc.ToString("o"),
+            latestBackupName = latest?.Name
+        });
+    }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreLatestBackup(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await Services.BackupService.RestoreLatestAsync(cancellationToken);
+            return Json(new
+            {
+                success = true,
+                message = $"Backup {result.FileName} recuperado correctamente.",
+                backupUtc = result.BackupUtc.ToString("o")
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            return BadRequest(new { success = false, message = "La recuperación fue cancelada." });
+        }
+        catch (Exception exception)
+        {
+            return BadRequest(new { success = false, message = exception.Message });
+        }
     }
 
     [Authorize]

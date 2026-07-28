@@ -122,7 +122,137 @@ public static class IdentitySeeder
         await SeedProductsAsync(dbContext, userManager);
         await SeedOrdersAsync(dbContext, userManager);
         await SeedIncidentsAsync(dbContext, userManager);
+        await SeedDemoRelationshipsAsync(dbContext, userManager);
         await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedDemoRelationshipsAsync(
+        ApplicationDbContext db,
+        UserManager<IdentityUser> userManager)
+    {
+        var vendedor = await userManager.FindByEmailAsync("maria.lopez@orbi.com");
+        var repartidor = await userManager.FindByEmailAsync("carlos.perez@orbi.com");
+        if (vendedor is null || repartidor is null) return;
+
+        var store = await db.DeliveryStores
+            .FirstOrDefaultAsync(item => item.OwnerUserId == vendedor.Id);
+        store ??= await db.DeliveryStores
+            .FirstOrDefaultAsync(item => item.Name.ToLower() == "farmacia cruz azul");
+
+        if (store is null)
+        {
+            store = new DeliveryStore();
+            db.DeliveryStores.Add(store);
+        }
+
+        store.Name = "Farmacia Cruz Azul";
+        store.Category = "Farmacia";
+        store.Address = "Av. Amazonas y Naciones Unidas, Quito";
+        store.ProvinceCode = "17";
+        store.CityCode = "1701";
+        store.OwnerUserId = vendedor.Id;
+        store.IsActive = true;
+        await db.SaveChangesAsync();
+
+        var productSeeds = new[]
+        {
+            new DemoProduct("Paracetamol Genfar 500 mg caja x10", 4.10m, 3.10m, 32),
+            new DemoProduct("Ibuprofeno Genfar 400 mg caja x10", 7.00m, 5.20m, 24),
+            new DemoProduct("Alcohol antiséptico Coral 250 ml", 2.07m, 1.45m, 40),
+            new DemoProduct("Suero oral Medigener coco 500 ml", 2.99m, 2.10m, 28),
+            new DemoProduct("Hidraplus zinc fresa 400 ml", 4.46m, 3.25m, 22),
+            new DemoProduct("Vitamina C gomitas 36 g", 2.81m, 1.95m, 20),
+            new DemoProduct("Chupete vitamina C y zinc caja x10", 2.99m, 2.05m, 18),
+            new DemoProduct("Aceite de castor Weir 30 ml", 1.25m, 0.85m, 16)
+        };
+
+        var products = new Dictionary<string, DeliveryProduct>(StringComparer.OrdinalIgnoreCase);
+        foreach (var seed in productSeeds)
+        {
+            var product = await db.DeliveryProducts.FirstOrDefaultAsync(item =>
+                item.DeliveryStoreId == store.DeliveryStoreId && item.Name == seed.Name);
+
+            if (product is null)
+            {
+                product = new DeliveryProduct
+                {
+                    DeliveryStoreId = store.DeliveryStoreId,
+                    Name = seed.Name
+                };
+                db.DeliveryProducts.Add(product);
+            }
+
+            product.CreatedByUserId = vendedor.Id;
+            product.Price = seed.Price;
+            product.UnitCost = seed.UnitCost;
+            product.Stock = seed.Stock;
+            product.IsAvailable = true;
+            product.UpdatedAt = DateTime.UtcNow;
+            products[seed.Name] = product;
+        }
+        await db.SaveChangesAsync();
+
+        var orderSeeds = new[]
+        {
+            new DemoOrder("DEMO-EC-ANA-FARMA-001", "Entregado", repartidor.Email,
+                "PayPhone", 5,
+                new[] { ("Alcohol antiséptico Coral 250 ml", 1), ("Suero oral Medigener coco 500 ml", 2) }),
+            new DemoOrder("DEMO-EC-ANA-FARMA-002", "En camino", repartidor.Email,
+                "PayPal", 2,
+                new[] { ("Paracetamol Genfar 500 mg caja x10", 1), ("Hidraplus zinc fresa 400 ml", 1) }),
+            new DemoOrder("DEMO-EC-ANA-FARMA-003", "En preparación", repartidor.Email,
+                "PayPhone", 1,
+                new[] { ("Vitamina C gomitas 36 g", 1), ("Chupete vitamina C y zinc caja x10", 1) }),
+            new DemoOrder("DEMO-EC-ANA-FARMA-004", "Pendiente", null,
+                "PayPal", 0,
+                new[] { ("Ibuprofeno Genfar 400 mg caja x10", 1), ("Aceite de castor Weir 30 ml", 1) })
+        };
+
+        foreach (var seed in orderSeeds)
+        {
+            if (await db.DeliveryPayments.AnyAsync(item => item.ExternalId == seed.ExternalId))
+                continue;
+
+            var order = new DeliveryOrder
+            {
+                DeliveryStoreId = store.DeliveryStoreId,
+                CustomerEmail = "ana.torres@orbi.com",
+                DeliveryPersonEmail = seed.DeliveryPersonEmail,
+                DeliveryAddress = "Casa: Av. de las Américas y Calle del Batán, Cuenca",
+                Status = seed.Status,
+                CreatedAt = DateTime.UtcNow.AddDays(-seed.DaysAgo)
+            };
+
+            foreach (var (productName, quantity) in seed.Items)
+            {
+                var product = products[productName];
+                var subtotal = product.Price * quantity;
+                order.Total += subtotal;
+                order.Items.Add(new DeliveryOrderItem
+                {
+                    DeliveryProductId = product.DeliveryProductId,
+                    ProductName = product.Name,
+                    Quantity = quantity,
+                    UnitPrice = product.Price,
+                    Subtotal = subtotal
+                });
+            }
+
+            order.Payments.Add(new DeliveryPayment
+            {
+                ExternalId = seed.ExternalId,
+                Provider = seed.Provider,
+                Status = seed.Status is "Entregado" or "En camino" ? "Aprobado" : "Pendiente",
+                Amount = order.Total,
+                CreatedAt = order.CreatedAt,
+                ConfirmedAt = seed.Status is "Entregado" or "En camino"
+                    ? order.CreatedAt.AddMinutes(2)
+                    : null
+            });
+            db.DeliveryOrders.Add(order);
+        }
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedStoresAsync(ApplicationDbContext db)
@@ -395,4 +525,14 @@ public static class IdentitySeeder
         string ProvinceCode,
         string CityCode,
         string? Reference);
+
+    private sealed record DemoProduct(string Name, decimal Price, decimal UnitCost, int Stock);
+
+    private sealed record DemoOrder(
+        string ExternalId,
+        string Status,
+        string? DeliveryPersonEmail,
+        string Provider,
+        int DaysAgo,
+        (string ProductName, int Quantity)[] Items);
 }

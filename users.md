@@ -23,14 +23,14 @@ Todos los usuarios están pre-confirmados (`EmailConfirmed = true`) y se reseede
 ### Vendedor — María López
 - **Cedula:** 1712345671
 - **Dirección:** Av. Amazonas, Calle Naciones Unidas — Quito (Pichincha)
-- **Tiendas asignadas:** Mercado Popular, Tienda Gourmet, Café Artesanal
-- **Productos:** 12 productos creados (alimentos, gourmet, café)
+- **Tienda asignada:** Farmacia Cruz Azul (Farmacia)
+- **Productos:** 8 productos de farmacia con precios referenciales de comercios ecuatorianos
 - **Perfil:** Gestiona catálogo de productos y revisa pedidos de sus tiendas.
 
 ### Repartidor — Carlos Pérez
 - **Cedula:** 0923456784
 - **Dirección:** Av. Nicolás Lapentti, Calle Loja — Durán (Guayas)
-- **Pedidos asignados:** 5 pedidos con diferentes estados
+- **Pedidos asignados:** 3 entregas de demostración (en preparación, en camino y entregada)
 - **Incidencias:** 2 incidencias reportadas (retraso en ruta, dirección incorrecta)
 - **Perfil:** Visualiza y actualiza el estado de entregas asignadas.
 
@@ -38,18 +38,18 @@ Todos los usuarios están pre-confirmados (`EmailConfirmed = true`) y se reseede
 - **Cedula:** 0123456782
 - **Dirección:** Av. de las Américas, Calle del Batán — Cuenca (Azuay)
 - **Referencia:** Casa esquinera
-- **Pedidos:** 3 pedidos realizados (entregado, en camino, pendiente)
+- **Pedidos:** 4 pedidos de farmacia (entregado, en camino, en preparación y pendiente)
 - **Perfil:** Explora tiendas, realiza pedidos y revisa su estado.
 
 ## Datos sembrados automáticamente
 
 El `IdentitySeeder` también crea:
 
-- **3 tiendas:** Mercado Popular (Alimentos), Tienda Gourmet (Gourmet), Café Artesanal (Cafetería)
-- **12 productos:** 4 por tienda con precios y stock realistas
-- **6 pedidos:** Con diferentes estados (Pendiente, En preparación, En camino, Entregado, Cancelado)
-- **8 ítems de pedido:** Detalle de productos por pedido
-- **6 pagos:** PayPhone y PayPal, en estados Pendiente y Aprobado
+- **1 tienda asociada al vendedor:** Farmacia Cruz Azul (Farmacia)
+- **8 productos de farmacia:** Cada producto pertenece a esa tienda y aparece bajo su categoría
+- **4 pedidos asociados a Ana Torres:** Con estados Pendiente, En preparación, En camino y Entregado
+- **8 ítems de pedido:** Dos productos existentes de la farmacia por pedido
+- **4 pagos:** PayPhone y PayPal, en estados Pendiente y Aprobado
 - **4 movimientos de inventario:** Entradas y salidas registradas
 - **2 incidencias:** Reportadas por el repartidor
 
