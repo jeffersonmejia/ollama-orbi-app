@@ -82,7 +82,7 @@ services:
       DataProtection__KeysPath: "/app/DataProtectionKeys"
       BACKUP_DIR: "/backups"
       BACKUP_INTERVAL_MINUTES: "5"
-      BACKUP_RETENTION_COUNT: "12"
+      BACKUP_RETENTION_COUNT: "5"
     secrets:
       - postgres_password
       - paypal_client_id

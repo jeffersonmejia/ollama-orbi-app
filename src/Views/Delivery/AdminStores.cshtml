@@ -1,7 +1,14 @@
 @using SakilaApp.Models.Delivery
 @using SakilaApp.Models.Identity
 @model SakilaApp.Models.PaginatedList<DeliveryStore>
-@{ ViewData["Title"] = "Tiendas"; ViewData["PaginatedList"] = Model; }
+@{
+    ViewData["Title"] = "Tiendas";
+    ViewData["PaginatedList"] = Model;
+    var storeOwners = ViewBag.StoreOwners as IReadOnlyDictionary<int, string>
+        ?? new Dictionary<int, string>();
+    var ownerOptions = ViewBag.OwnerOptions as IReadOnlyList<StoreOwnerOption>
+        ?? Array.Empty<StoreOwnerOption>();
+}
 
 <div class="orbi-account-shell orbi-delivery-admin-shell">
     <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
@@ -21,16 +28,32 @@
                     @if (TempData["Error"] is string error) { <div class="orbi-alert orbi-alert-error">@error</div> }
 
                     <div class="orbi-admin-stack">
-                        <section id="edit-store-section" class="m3-card orbi-admin-edit-card">
-                            <h3 id="store-form-title">Nueva tienda</h3>
-                            <form asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
+                        <section id="edit-store-section" class="m3-card orbi-admin-edit-card" hidden>
+                            <h3>Editar tienda</h3>
+                            <form id="edit-store-form" asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
                                 <input id="edit-store-id" type="hidden" name="storeId" />
+                                <input id="edit-store-owner-id" type="hidden" name="ownerUserId" />
                                 <div class="orbi-admin-form-grid">
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-name">Nombre</label><input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Nombre de la tienda" /></div>
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-category">Categoría</label><input class="m3-text-field-input" id="edit-store-category" name="category" required placeholder="Ej: Restaurante" /></div>
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-address">Dirección</label><input class="m3-text-field-input" id="edit-store-address" name="address" required placeholder="Dirección completa" /></div>
+                                    <div class="m3-text-field">
+                                        <label class="m3-text-field-label" for="edit-store-owner-name">Nombre del propietario</label>
+                                        <input class="m3-text-field-input" id="edit-store-owner-name" list="store-owner-options" autocomplete="off" placeholder="Buscar vendedor" />
+                                        <datalist id="store-owner-options">
+                                            @foreach (var owner in ownerOptions)
+                                            {
+                                                <option value="@owner.FullName" data-user-id="@owner.UserId" data-email="@owner.Email" data-member-since="@owner.MemberSince.ToLocalTime().ToString("dd/MM/yyyy")" data-store-id="@owner.StoreId">@owner.Email</option>
+                                            }
+                                        </datalist>
+                                    </div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-email">Correo</label><input class="m3-text-field-input" id="edit-store-owner-email" type="email" readonly placeholder="Selecciona un propietario" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-member-since">Miembro desde</label><input class="m3-text-field-input" id="edit-store-owner-member-since" readonly placeholder="Selecciona un propietario" /></div>
                                 </div>
-                                <div class="orbi-form-actions"><button class="m3-filled-button" id="store-form-btn" type="submit">Crear tienda</button></div>
+                                <div class="orbi-form-actions">
+                                    <button class="m3-text-button" id="store-edit-cancel" type="button">Cancelar</button>
+                                    <button class="m3-filled-button" type="submit">Guardar cambios</button>
+                                </div>
                             </form>
                         </section>
 
@@ -67,16 +90,18 @@
                             </form>
                             <div class="orbi-orders-table-wrap">
                                 <table class="m3-data-table orbi-orders-table">
-                                    <thead><tr><th>Tienda</th><th>Categoría</th><th>Ciudad</th><th>Provincia</th><th>Estado</th><th>Acciones</th></tr></thead>
+                                    <thead><tr><th>Tienda</th><th>Propietario</th><th>Categoría</th><th>Ciudad</th><th>Provincia</th><th>Estado</th><th>Acciones</th></tr></thead>
                                     <tbody>
                                     @foreach (var store in Model)
                                     {
                                         <tr>
-                                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td><td>@store.Category</td>
+                                            <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td>
+                                            <td>@storeOwners.GetValueOrDefault(store.DeliveryStoreId, "Sin asignar")</td>
+                                            <td>@store.Category</td>
                                             <td>@(store.City?.Name ?? "-")</td><td>@(store.Province?.Name ?? "-")</td>
                                             <td><span class="orbi-order-status @(store.IsActive ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(store.IsActive ? "Activa" : "Inactiva")</span></td>
                                             <td><div class="orbi-admin-row-actions">
-                                                <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address"><span class="material-symbols-outlined">edit</span>Editar</button>
+                                                <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address" data-owner-id="@store.OwnerUserId"><span class="material-symbols-outlined">edit</span>Editar</button>
                                                 <form asp-action="ToggleStore" method="post" class="orbi-store-toggle-form"><input type="hidden" name="storeId" value="@store.DeliveryStoreId" /><label class="orbi-switch" title="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")"><input type="checkbox" checked="@store.IsActive" role="switch" aria-label="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")" onchange="this.form.requestSubmit()" /><span></span></label></form>
                                             </div></td>
                                         </tr>
@@ -95,21 +120,55 @@
 
 <script>
 (function(){
-    const title = document.getElementById('store-form-title');
-    const btn = document.getElementById('store-form-btn');
+    const section = document.getElementById('edit-store-section');
+    const form = document.getElementById('edit-store-form');
+    const ownerName = document.getElementById('edit-store-owner-name');
+    const ownerId = document.getElementById('edit-store-owner-id');
+    const ownerEmail = document.getElementById('edit-store-owner-email');
+    const ownerMemberSince = document.getElementById('edit-store-owner-member-since');
+    const ownerOptions = Array.from(document.querySelectorAll('#store-owner-options option'));
+
+    function setOwner(option) {
+        ownerId.value = option?.dataset.userId || '';
+        ownerName.value = option?.value || '';
+        ownerEmail.value = option?.dataset.email || '';
+        ownerMemberSince.value = option?.dataset.memberSince || '';
+        ownerName.setCustomValidity('');
+    }
+
+    function findOwnerById(userId) {
+        return ownerOptions.find(option => option.dataset.userId === userId);
+    }
+
+    ownerName.addEventListener('input', () => {
+        const option = ownerOptions.find(candidate => candidate.value === ownerName.value.trim());
+        if (!ownerName.value.trim()) {
+            setOwner(null);
+            return;
+        }
+        if (!option) {
+            ownerId.value = '';
+            ownerEmail.value = '';
+            ownerMemberSince.value = '';
+            ownerName.setCustomValidity('Selecciona un vendedor de la lista.');
+            return;
+        }
+        setOwner(option);
+    });
+
     document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
         document.getElementById('edit-store-id').value = button.dataset.id;
         document.getElementById('edit-store-name').value = button.dataset.name;
         document.getElementById('edit-store-category').value = button.dataset.category;
         document.getElementById('edit-store-address').value = button.dataset.address;
-        title.textContent = 'Editar tienda';
-        btn.textContent = 'Actualizar tienda';
-        document.getElementById('edit-store-section').scrollIntoView({ behavior:'smooth', block:'start' });
+        setOwner(findOwnerById(button.dataset.ownerId));
+        section.hidden = false;
+        section.scrollIntoView({ behavior:'smooth', block:'start' });
         document.getElementById('edit-store-name').focus();
     }));
-    document.getElementById('edit-store-section').addEventListener('reset', () => {
-        title.textContent = 'Nueva tienda';
-        btn.textContent = 'Crear tienda';
+    document.getElementById('store-edit-cancel').addEventListener('click', () => {
+        form.reset();
+        section.hidden = true;
     });
 })();
 </script>

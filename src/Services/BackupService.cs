@@ -98,29 +98,37 @@ public sealed class BackupService : BackgroundService
     }
 
     public static FileInfo? GetLatestBackup()
+        => GetBackups().FirstOrDefault();
+
+    public static IReadOnlyList<FileInfo> GetBackups()
     {
         try
         {
             var dir = GetBackupDirectory();
-            if (!Directory.Exists(dir)) return null;
+            if (!Directory.Exists(dir)) return Array.Empty<FileInfo>();
             return new DirectoryInfo(dir)
                 .GetFiles("orbi_backup_*.sql")
                 .OrderByDescending(file => file.LastWriteTimeUtc)
-                .FirstOrDefault();
+                .ToList();
         }
         catch
         {
-            return null;
+            return Array.Empty<FileInfo>();
         }
     }
 
-    public static async Task<BackupRestoreResult> RestoreLatestAsync(CancellationToken cancellationToken)
+    public static async Task<BackupRestoreResult> RestoreAsync(
+        string backupName,
+        CancellationToken cancellationToken)
     {
         await OperationLock.WaitAsync(cancellationToken);
         try
         {
-            var latest = GetLatestBackup()
-                ?? throw new InvalidOperationException("No existe un backup disponible para recuperar.");
+            if (string.IsNullOrWhiteSpace(backupName) || Path.GetFileName(backupName) != backupName)
+                throw new InvalidOperationException("El backup seleccionado no es válido.");
+            var selected = GetBackups().FirstOrDefault(file =>
+                string.Equals(file.Name, backupName, StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException("El backup seleccionado ya no está disponible.");
             var connection = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
             if (string.IsNullOrWhiteSpace(connection))
                 throw new InvalidOperationException("No se encontró la conexión a PostgreSQL.");
@@ -143,7 +151,7 @@ public sealed class BackupService : BackgroundService
 
             var restore = await RunPostgresToolAsync("psql", builder, new[]
             {
-                "-X", "-v", "ON_ERROR_STOP=1", "-f", latest.FullName
+                "-X", "-v", "ON_ERROR_STOP=1", "-f", selected.FullName
             }, cancellationToken);
 
             if (!restore.Success)
@@ -160,7 +168,7 @@ public sealed class BackupService : BackgroundService
             }
 
             LastBackupUtc = DateTime.UtcNow;
-            return new BackupRestoreResult(latest.Name, latest.LastWriteTimeUtc, Path.GetFileName(safetyFile));
+            return new BackupRestoreResult(selected.Name, selected.LastWriteTimeUtc, Path.GetFileName(safetyFile));
         }
         finally
         {

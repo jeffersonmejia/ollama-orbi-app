@@ -397,31 +397,114 @@ public class HomeController : Controller
 
     [Authorize(Roles = "Administrador")]
     [HttpGet]
+    public async Task<IActionResult> MonthlySalesAnalytics()
+    {
+        // Ecuador continental uses UTC-5 throughout the year.
+        var ecuadorNow = DateTime.UtcNow.AddHours(-5);
+        var monthStartUtc = new DateTime(
+            ecuadorNow.Year, ecuadorNow.Month, 1, 5, 0, 0, DateTimeKind.Utc);
+        var nextMonthUtc = monthStartUtc.AddMonths(1);
+
+        var monthlySales = _identityContext.DeliveryOrders.AsNoTracking()
+            .Where(order =>
+                order.CreatedAt >= monthStartUtc &&
+                order.CreatedAt < nextMonthUtc &&
+                order.Status != "Pendiente" &&
+                order.Status != "Cancelado");
+
+        var provinceSales = await monthlySales
+            .Where(order => order.Store.Province != null)
+            .GroupBy(order => order.Store.Province!.Name)
+            .Select(group => new { Label = group.Key, Value = group.Sum(order => order.Total) })
+            .ToListAsync();
+        var provinceTotals = provinceSales.ToDictionary(item => item.Label, item => item.Value);
+        var provinceNames = await _identityContext.EcuadorProvinces.AsNoTracking()
+            .Select(province => province.Name)
+            .ToListAsync();
+        var provinces = provinceNames
+            .Select(label => new { Label = label, Value = provinceTotals.GetValueOrDefault(label, 0m) })
+            .OrderByDescending(item => item.Value)
+            .ThenBy(item => item.Label)
+            .Take(5)
+            .ToList();
+
+        var categorySales = await _identityContext.DeliveryOrderItems.AsNoTracking()
+            .Where(item =>
+                item.Order.CreatedAt >= monthStartUtc &&
+                item.Order.CreatedAt < nextMonthUtc &&
+                item.Order.Status != "Pendiente" &&
+                item.Order.Status != "Cancelado")
+            .GroupBy(item => item.Order.Store.Category)
+            .Select(group => new { Label = group.Key, Value = group.Sum(item => item.Quantity) })
+            .ToListAsync();
+        var categoryTotals = categorySales.ToDictionary(item => item.Label, item => item.Value);
+        var categoryNames = await _identityContext.DeliveryStores.AsNoTracking()
+            .Select(store => store.Category)
+            .Distinct()
+            .ToListAsync();
+        var categories = categoryNames
+            .Select(label => new { Label = label, Value = categoryTotals.GetValueOrDefault(label, 0) })
+            .OrderByDescending(item => item.Value)
+            .ThenBy(item => item.Label)
+            .Take(5)
+            .ToList();
+
+        var storeSales = await monthlySales
+            .GroupBy(order => order.Store.Name)
+            .Select(group => new { Label = group.Key, Value = group.Sum(order => order.Total) })
+            .ToListAsync();
+        var storeTotals = storeSales.ToDictionary(item => item.Label, item => item.Value);
+        var storeNames = await _identityContext.DeliveryStores.AsNoTracking()
+            .Select(store => store.Name)
+            .Distinct()
+            .ToListAsync();
+        var stores = storeNames
+            .Select(label => new { Label = label, Value = storeTotals.GetValueOrDefault(label, 0m) })
+            .OrderByDescending(item => item.Value)
+            .ThenBy(item => item.Label)
+            .Take(5)
+            .ToList();
+
+        return Json(new
+        {
+            periodStart = monthStartUtc,
+            provinces,
+            categories,
+            stores
+        });
+    }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpGet]
     public IActionResult BackupStatus()
     {
         var now = DateTime.UtcNow;
         var next = Services.BackupService.NextBackupUtc;
         var remaining = (next - now).TotalSeconds;
         if (remaining < 0) remaining = 0;
-        var latest = Services.BackupService.GetLatestBackup();
+        var backups = Services.BackupService.GetBackups();
         return Json(new
         {
             nextBackupUtc = next.ToString("o"),
             secondsRemaining = Math.Round(remaining, 1),
-            hasBackup = latest is not null,
-            latestBackupUtc = latest?.LastWriteTimeUtc.ToString("o"),
-            latestBackupName = latest?.Name
+            backups = backups.Select((file, index) => new
+            {
+                number = index + 1,
+                fileName = file.Name,
+                sizeBytes = file.Length,
+                backupUtc = file.LastWriteTimeUtc.ToString("o")
+            })
         });
     }
 
     [Authorize(Roles = "Administrador")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RestoreLatestBackup(CancellationToken cancellationToken)
+    public async Task<IActionResult> RestoreBackup(string backupName, CancellationToken cancellationToken)
     {
         try
         {
-            var result = await Services.BackupService.RestoreLatestAsync(cancellationToken);
+            var result = await Services.BackupService.RestoreAsync(backupName, cancellationToken);
             return Json(new
             {
                 success = true,

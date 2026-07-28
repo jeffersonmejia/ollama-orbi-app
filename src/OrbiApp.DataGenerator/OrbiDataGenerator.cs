@@ -80,10 +80,10 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         ], 4.00m, 9.00m),
         ["Farmacia_Vitaminas"] = (
         [
-            "Complex B (30 caps)", "Vitamina C 1000mg (20 tabs)", "Vitamina D3 1000UI (30 caps)",
-            "Hierro + Ácido Fólico (30 tabs)", "Magnesio 400mg (30 caps)", "Zinc 50mg (30 tabs)",
+            "Complex B", "Vitamina C 1000mg (20 tabs)", "Vitamina D3 1000UI",
+            "Hierro + Ácido Fólico (30 tabs)", "Magnesio 400mg", "Zinc 50mg (30 tabs)",
             "Vitamina B12 1000mcg (30 tabs)", "Multivitamínico (30 tabs)", "Melatonina 3mg (30 tabs)",
-            "Aceite de onagra 1000mg (30 caps)", "Probióticos (30 caps)", "Glucosamina 500mg (30 caps)",
+            "Aceite de onagra 1000mg", "Probióticos", "Glucosamina 500mg",
             "Colágeno hidrolizado 500g"
         ], 2.50m, 12.00m),
         ["Farmacia_Topico"] = (

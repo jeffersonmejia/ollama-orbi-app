@@ -776,6 +776,52 @@ public class DeliveryController : Controller
 
         var stores = await PaginatedList<DeliveryStore>.CreateAsync(
             query.OrderBy(s => s.Name), Math.Max(1, page), 5);
+        var ownerIds = stores
+            .Where(store => !string.IsNullOrWhiteSpace(store.OwnerUserId))
+            .Select(store => store.OwnerUserId!)
+            .Distinct()
+            .ToList();
+        var ownerProfiles = await _context.UserProfiles.AsNoTracking()
+            .Where(profile => ownerIds.Contains(profile.IdentityUserId))
+            .ToDictionaryAsync(
+                profile => profile.IdentityUserId,
+                profile => $"{profile.FirstName} {profile.LastName}".Trim());
+        var ownerEmails = await _context.Users.AsNoTracking()
+            .Where(user => ownerIds.Contains(user.Id))
+            .ToDictionaryAsync(user => user.Id, user => user.Email ?? "Usuario sin correo");
+        ViewBag.StoreOwners = stores.ToDictionary(
+            store => store.DeliveryStoreId,
+            store => store.OwnerUserId is { Length: > 0 } ownerId
+                ? ownerProfiles.GetValueOrDefault(ownerId, ownerEmails.GetValueOrDefault(ownerId, "Sin asignar"))
+                : "Sin asignar");
+
+        var vendorRoleId = await _context.Roles.AsNoTracking()
+            .Where(role => role.NormalizedName == "VENDEDOR")
+            .Select(role => role.Id)
+            .FirstOrDefaultAsync();
+        var vendorIds = string.IsNullOrWhiteSpace(vendorRoleId)
+            ? new List<string>()
+            : await _context.UserRoles.AsNoTracking()
+                .Where(userRole => userRole.RoleId == vendorRoleId)
+                .Select(userRole => userRole.UserId)
+                .ToListAsync();
+        ViewBag.OwnerOptions = await (
+            from user in _context.Users.AsNoTracking()
+            join profile in _context.UserProfiles.AsNoTracking()
+                on user.Id equals profile.IdentityUserId
+            join ownedStore in _context.DeliveryStores.AsNoTracking()
+                on user.Id equals ownedStore.OwnerUserId into ownedStoreGroup
+            from ownedStore in ownedStoreGroup.OrderBy(store => store.DeliveryStoreId).Take(1).DefaultIfEmpty()
+            where vendorIds.Contains(user.Id)
+            orderby profile.FirstName, profile.LastName
+            select new StoreOwnerOption
+            {
+                UserId = user.Id,
+                FullName = (profile.FirstName + " " + profile.LastName).Trim(),
+                Email = user.Email ?? "Usuario sin correo",
+                MemberSince = profile.CreatedAt,
+                StoreId = ownedStore == null ? null : ownedStore.DeliveryStoreId
+            }).ToListAsync();
         ViewData["PaginatedList"] = stores;
         return View(stores);
     }
@@ -862,7 +908,12 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Administrador")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStore(int storeId, string name, string category, string address)
+    public async Task<IActionResult> UpdateStore(
+        int storeId,
+        string name,
+        string category,
+        string address,
+        string? ownerUserId)
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
         {
@@ -873,9 +924,32 @@ public class DeliveryController : Controller
         var store = await _context.DeliveryStores.FindAsync(storeId);
         if (store == null) return NotFound();
 
+        if (!string.IsNullOrWhiteSpace(ownerUserId))
+        {
+            var isVendor = await (
+                from userRole in _context.UserRoles
+                join role in _context.Roles on userRole.RoleId equals role.Id
+                where userRole.UserId == ownerUserId && role.NormalizedName == "VENDEDOR"
+                select userRole.UserId).AnyAsync();
+            if (!isVendor)
+            {
+                TempData["Error"] = "Selecciona un propietario válido con rol de vendedor.";
+                return RedirectToAction(nameof(AdminStores));
+            }
+
+            var ownsAnotherStore = await _context.DeliveryStores.AsNoTracking()
+                .AnyAsync(candidate => candidate.OwnerUserId == ownerUserId && candidate.DeliveryStoreId != storeId);
+            if (ownsAnotherStore)
+            {
+                TempData["Error"] = "El propietario seleccionado ya tiene otra tienda asignada.";
+                return RedirectToAction(nameof(AdminStores));
+            }
+        }
+
         store.Name = name.Trim();
         store.Category = category.Trim();
         store.Address = address.Trim();
+        store.OwnerUserId = string.IsNullOrWhiteSpace(ownerUserId) ? null : ownerUserId;
         await _context.SaveChangesAsync();
         TempData["Success"] = $"La tienda {store.Name} fue actualizada.";
         return RedirectToAction(nameof(AdminStores));
