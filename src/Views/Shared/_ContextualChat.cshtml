@@ -66,6 +66,7 @@
     .orbi-chat-message { width: fit-content; max-width: 86%; padding: 9px 12px; margin-bottom: 10px; border-radius: var(--md-sys-shape-corner-medium); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .orbi-chat-message-user { margin-left: auto; border-bottom-right-radius: 4px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
     .orbi-chat-message-assistant { margin-right: auto; border-bottom-left-radius: 4px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+    .orbi-chat-message-streaming::after { content:'▋'; margin-left:2px; color:var(--md-sys-color-primary); animation:orbi-chat-cursor .75s steps(1) infinite; }
     .orbi-chat-voice.listening { color:var(--md-sys-color-error);animation:orbi-voice-pulse 1s infinite ease-in-out; }
     .orbi-chat-voice-mode.active { color:var(--md-sys-color-on-primary-container);background:var(--md-sys-color-primary-container); }
     .orbi-chat-voice-mode.listening { animation:orbi-voice-pulse 1s infinite ease-in-out; }
@@ -78,6 +79,7 @@
     .orbi-chat-composer:focus-within { border-color: var(--md-sys-color-primary); box-shadow: 0 0 0 1px var(--md-sys-color-primary); }
     .orbi-chat-input { flex: 1; min-width: 0; max-height: 112px; padding: 8px 2px; border: 0; outline: 0; resize: none; overflow-y: auto; background: transparent; color: var(--md-sys-color-on-surface); font: inherit; line-height: 1.4; }
     @@keyframes orbi-chat-dot { 0%,60%,100% { transform:translateY(0);opacity:.35 } 30% { transform:translateY(-3px);opacity:1 } }
+    @@keyframes orbi-chat-cursor { 0%,45% { opacity:1; } 46%,100% { opacity:0; } }
     @@keyframes orbi-voice-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.12); } }
     @@media (max-width: 900px) {
         .orbi-chat-panel { inset:0 0 72px 0; width:min(340px,100vw); z-index:60; box-shadow:4px 0 18px rgba(0,0,0,.18); }
@@ -104,7 +106,7 @@
         </div>
         <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-area="" asp-controller="Home" asp-action="ProductChat">
             <input type="hidden" name="context" value="@contextKey" />
-            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="250" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
+            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="500" required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
             <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Dictar mensaje" title="Dictar mensaje"><span class="material-symbols-outlined">mic</span></button>
             <button id="orbi-chat-voice-mode" class="m3-icon-btn orbi-chat-voice-mode" type="button" aria-pressed="false" aria-label="Iniciar modo voz" title="Modo voz"><span class="material-symbols-outlined">headset_mic</span></button>
             <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;"><span class="material-symbols-outlined">arrow_upward</span></button>
@@ -237,7 +239,55 @@
         }
         try {
             const response = await fetch(form.action, { method: 'POST', body: data, signal: controller.signal });
-            const result = await response.json(); typing.remove(); const answer = result.message || 'No pude responder.'; addMessage(answer); speakInVoiceMode(answer);
+            if (!response.body) throw new Error('El navegador no admite respuestas progresivas.');
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let answer = '';
+            let serverError = '';
+            let assistantMessage = null;
+
+            const showAnswer = value => {
+                typing.remove();
+                if (!assistantMessage) {
+                    assistantMessage = addMessage('');
+                    assistantMessage.classList.add('orbi-chat-message-streaming');
+                }
+                assistantMessage.textContent = value;
+                messages.scrollTop = messages.scrollHeight;
+            };
+            const processLine = line => {
+                if (!line.trim()) return;
+                const eventData = JSON.parse(line);
+                if (eventData.type === 'status') {
+                    typing.textContent = eventData.content || 'Procesando...';
+                    typing.classList.remove('orbi-chat-typing');
+                } else if (eventData.type === 'delta') {
+                    answer += eventData.content || '';
+                    showAnswer(answer);
+                } else if (eventData.type === 'final') {
+                    answer = eventData.content || answer;
+                    showAnswer(answer);
+                } else if (eventData.type === 'error') {
+                    serverError = eventData.content || 'No pude responder.';
+                    showAnswer(serverError);
+                }
+            };
+
+            while (true) {
+                const { value, done } = await reader.read();
+                buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                lines.forEach(processLine);
+                if (done) break;
+            }
+            if (buffer.trim()) processLine(buffer);
+            typing.remove();
+            assistantMessage?.classList.remove('orbi-chat-message-streaming');
+            if (!assistantMessage) assistantMessage = addMessage(serverError || answer || 'No pude responder.');
+            speakInVoiceMode(serverError || answer || 'No pude responder.');
         } catch (error) {
             typing.remove(); const errorText = error.name === 'AbortError' ? 'Respuesta detenida.' : 'No pude conectar con el asistente.'; addMessage(errorText); speakInVoiceMode(errorText);
         } finally {

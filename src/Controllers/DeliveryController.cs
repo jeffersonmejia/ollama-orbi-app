@@ -7,6 +7,7 @@ using SakilaApp.Models.Delivery;
 using SakilaApp.Models.Identity;
 using SakilaApp.Models.Operations;
 using SakilaApp.Models;
+using SakilaApp.Services;
 using SakilaApp.Services.Payments;
 using SakilaApp.Settings;
 using Microsoft.Extensions.Options;
@@ -22,18 +23,18 @@ public class DeliveryController : Controller
     private readonly ApplicationDbContext _context;
     private readonly PayPalService _payPalService;
     private readonly PayPhoneApiLinkService _payPhoneService;
-    private readonly SakilaApp.Services.OllamaProductService _ollamaService;
+    private readonly ExternalMarketPriceService _marketPriceService;
 
     public DeliveryController(
         ApplicationDbContext context,
         PayPalService payPalService,
         PayPhoneApiLinkService payPhoneService,
-        SakilaApp.Services.OllamaProductService ollamaService)
+        ExternalMarketPriceService marketPriceService)
     {
         _context = context;
         _payPalService = payPalService;
         _payPhoneService = payPhoneService;
-        _ollamaService = ollamaService;
+        _marketPriceService = marketPriceService;
     }
 
     public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1)
@@ -693,30 +694,34 @@ public class DeliveryController : Controller
         var provinceName = profile?.Province?.Name ?? "Guayaquil";
         var cityName = profile?.City?.Name ?? "Guayaquil";
 
-        var context = $"""
-            Eres un consultor de precios minoristas en Ecuador.
-            Analiza el producto indicado y sugiere un precio de venta sugerido en dólares USD
-            para la ciudad de {cityName}, provincia de {provinceName}, Ecuador.
-            El contexto es una tienda local pequeña (farmacia, restaurante o supermercado).
-            Responde SOLO con un número decimal (sin símbolo $, sin texto adicional).
-            Si no puedes estimar, responde 0.
-            """;
-
         try
         {
-            var result = await _ollamaService.SuggestAsync(
-                $"Producto: {productName.Trim()}. Ciudad: {cityName}, Provincia: {provinceName}, Ecuador.",
-                "",
-                context,
-                CancellationToken.None);
+            var analysis = await _marketPriceService.AnalyzeAsync(productName.Trim(), HttpContext.RequestAborted);
+            if (analysis is null)
+                return Json(new
+                {
+                    ok = false,
+                    message = "No se encontraron precios públicos comparables en las fuentes externas consultadas."
+                });
 
-            var raw = result.Response.Replace("$", "").Replace(",", ".").Trim();
-            if (decimal.TryParse(raw, System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out var price) && price > 0)
+            return Json(new
             {
-                return Json(new { ok = true, price, province = provinceName, city = cityName });
-            }
-            return Json(new { ok = false, message = "La IA no pudo estimar un precio para este producto." });
+                ok = true,
+                price = analysis.SuggestedPrice,
+                minimumPrice = analysis.MinimumPrice,
+                maximumPrice = analysis.MaximumPrice,
+                province = provinceName,
+                city = cityName,
+                reason = $"Se tomó la mediana de {analysis.Sources.Count} precios públicos comparables para reducir el efecto de ofertas o valores atípicos.",
+                disclaimer = "Las marcas, presentaciones y existencias pueden variar. Confirma el precio y el stock para Quito antes de publicar.",
+                sources = analysis.Sources.Select(source => new
+                {
+                    store = source.Store,
+                    product = source.Product,
+                    price = source.Price,
+                    url = source.Url
+                })
+            });
         }
         catch (Exception ex)
         {

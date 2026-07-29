@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -281,63 +284,266 @@ public class HomeController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ProductChat(string message, string? context, CancellationToken cancellationToken)
+    public async Task ProductChat(string message, string? context, CancellationToken cancellationToken)
     {
         message = message?.Trim() ?? string.Empty;
-        if (message.Length is < 2 or > 250)
-            return BadRequest(new { message = "Escribe una consulta de entre 2 y 250 caracteres." });
-
-        var normalizedMessage = message.ToLowerInvariant();
-        var contextKey = context?.ToLowerInvariant() ?? "public_home";
-
-        var products = await _identityContext.DeliveryProducts
-            .AsNoTracking()
-            .Include(product => product.Store)
-            .Where(product => product.IsAvailable && product.Store.IsActive)
-            .OrderBy(product => product.Store.Name)
-            .ThenBy(product => product.Name)
-            .Select(product => new
-            {
-                Store = product.Store.Name,
-                Category = product.Store.Category,
-                Address = product.Store.Address,
-                Product = product.Name,
-                product.Price
-            })
-            .ToListAsync(cancellationToken);
-
-        var catalog = products.Count == 0
-            ? "No hay productos disponibles."
-            : string.Join("\n", products.Select(item =>
-                $"- Producto: {item.Product}; Tienda: {item.Store}; Categoría: {item.Category}; Dirección: {item.Address}; Precio: ${item.Price:0.00}; Disponible: sí"));
-
-        if (catalog.Length > 3000)
-            catalog = catalog[..3000] + "\n... (catálogo truncado, hay más productos disponibles)";
-
-        var storeCount = await _identityContext.DeliveryStores.CountAsync(cancellationToken);
-        var productCount = await _identityContext.DeliveryProducts.CountAsync(cancellationToken);
-        var orderCount = await _identityContext.DeliveryOrders.CountAsync(cancellationToken);
-        var paymentCount = await _identityContext.DeliveryPayments.CountAsync(cancellationToken);
-        var userCount = await _identityContext.UserProfiles.CountAsync(cancellationToken);
-        var dbStats = $"Estadísticas: {storeCount} tiendas, {productCount} productos, {orderCount} pedidos, {paymentCount} pagos, {userCount} usuarios.";
-
-        var assistantContext = GetAssistantContext(context) + "\nDATOS_REALES_DE_LA_APP: " + dbStats;
+        Response.ContentType = "application/x-ndjson; charset=utf-8";
+        Response.Headers.CacheControl = "no-cache, no-transform";
+        Response.Headers["X-Accel-Buffering"] = "no";
+        if (message.Length is < 2 or > 500)
+        {
+            Response.StatusCode = StatusCodes.Status400BadRequest;
+            await WriteChatEventAsync("error", "Escribe una consulta de entre 2 y 500 caracteres.", cancellationToken);
+            return;
+        }
 
         try
         {
-            var suggestion = await _ollama.SuggestAsync(message, catalog, assistantContext, cancellationToken);
-            return Json(new { message = suggestion.Response });
+            await Response.StartAsync(cancellationToken);
+            await WriteChatEventAsync("status", "Consultando datos...", cancellationToken);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var roleNames = User.Claims
+                .Where(claim => claim.Type == ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            var primaryRole = roleNames.FirstOrDefault(role => role == "Administrador")
+                ?? roleNames.FirstOrDefault(role => role == "Vendedor")
+                ?? roleNames.FirstOrDefault(role => role == "Repartidor")
+                ?? roleNames.FirstOrDefault(role => role == "Usuario")
+                ?? "Público";
+
+            var account = userId is null
+                ? null
+                : await _identityContext.Users.AsNoTracking()
+                    .Where(user => user.Id == userId)
+                    .Select(user => new { user.UserName, user.Email })
+                    .FirstOrDefaultAsync(cancellationToken);
+            var profile = userId is null
+                ? null
+                : await _identityContext.UserProfiles.AsNoTracking()
+                    .Where(item => item.IdentityUserId == userId)
+                    .Select(item => new { item.FirstName, item.LastName })
+                    .FirstOrDefaultAsync(cancellationToken);
+            var fullName = profile is null
+                ? account?.UserName ?? "Visitante"
+                : $"{profile.FirstName} {profile.LastName}".Trim();
+            var email = account?.Email ?? User.Identity?.Name ?? string.Empty;
+            var safePageContext = User.Identity?.IsAuthenticated == true
+                ? primaryRole.ToLowerInvariant()
+                : context is "login" or "register" or "logout" ? context : "public_home";
+            var databaseContext = await BuildDatabaseContextAsync(
+                message, primaryRole, userId, email, cancellationToken);
+            var authoritativeAnswer = await BuildAuthoritativeAnswerAsync(
+                message, primaryRole, userId, fullName, cancellationToken);
+            var assistantContext = $"""
+                IDENTIDAD_AUTENTICADA:
+                Nombre: {fullName}
+                Nombre de usuario: {account?.UserName ?? "visitante"}
+                Correo: {(string.IsNullOrWhiteSpace(email) ? "no autenticado" : email)}
+                Rol: {primaryRole}
+                Roles: {(roleNames.Count == 0 ? "ninguno" : string.Join(", ", roleNames))}
+                Permiso de consulta: {(primaryRole == "Administrador" ? "lectura global" : "lectura del catálogo y de sus propios registros")}
+
+                CONTEXTO_DE_PAGINA:
+                {GetAssistantContext(safePageContext)}
+
+                DATOS_CONSULTADOS_EN_POSTGRESQL:
+                {databaseContext}
+
+                RESPUESTA_AUTORITATIVA_SI_APLICA:
+                {authoritativeAnswer ?? "No aplica. Redacta la respuesta usando los datos consultados."}
+                """;
+
+            await WriteChatEventAsync("status", "Generando respuesta...", cancellationToken);
+            var draft = new StringBuilder();
+            await foreach (var chunk in _ollama.StreamChatAsync(
+                message, assistantContext, cancellationToken))
+            {
+                draft.Append(chunk);
+                await WriteChatEventAsync("delta", chunk, cancellationToken);
+            }
+
+            var reviewed = await _ollama.ReviewChatAsync(
+                message, assistantContext, draft.ToString(), cancellationToken);
+            await WriteChatEventAsync("final", authoritativeAnswer ?? reviewed, cancellationToken);
+            await WriteChatEventAsync("done", string.Empty, cancellationToken);
         }
-        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable,
-                new { message = "El asistente no está disponible. Verifica que Ollama esté encendido." });
         }
-        catch (Exception exception)
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new { message = $"Error al consultar al asistente: {exception.Message}" });
+            Response.StatusCode = Response.HasStarted
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status503ServiceUnavailable;
+            await WriteChatEventAsync(
+                "error",
+                exception is HttpRequestException or TaskCanceledException
+                    ? "El asistente no está disponible. Verifica que Ollama esté encendido."
+                    : "No pude completar la consulta en este momento.",
+                cancellationToken);
         }
+    }
+
+    private async Task<string> BuildDatabaseContextAsync(
+        string message,
+        string role,
+        string? userId,
+        string email,
+        CancellationToken cancellationToken)
+    {
+        var facts = new StringBuilder();
+        var activeStores = await _identityContext.DeliveryStores.AsNoTracking()
+            .CountAsync(store => store.IsActive, cancellationToken);
+        var availableProducts = await _identityContext.DeliveryProducts.AsNoTracking()
+            .CountAsync(product => product.IsAvailable && product.Store.IsActive, cancellationToken);
+        facts.AppendLine($"Catálogo: {activeStores:N0} tiendas activas, {availableProducts:N0} productos disponibles.");
+
+        if (role == "Administrador")
+        {
+            facts.AppendLine($"Cuentas totales: {await _identityContext.Users.CountAsync(cancellationToken):N0}.");
+            facts.AppendLine($"Pedidos totales: {await _identityContext.DeliveryOrders.CountAsync(cancellationToken):N0}.");
+            facts.AppendLine($"Pagos totales: {await _identityContext.DeliveryPayments.CountAsync(cancellationToken):N0}.");
+            facts.AppendLine($"Incidencias totales: {await _identityContext.DeliveryIncidents.CountAsync(cancellationToken):N0}.");
+            facts.AppendLine($"Auditorías totales: {await _identityContext.AuditLogs.CountAsync(cancellationToken):N0}.");
+
+            var recentOrders = await _identityContext.DeliveryOrders.AsNoTracking()
+                .Include(order => order.Store)
+                .OrderByDescending(order => order.CreatedAt)
+                .Take(5)
+                .Select(order => new
+                {
+                    order.DeliveryOrderId,
+                    Store = order.Store.Name,
+                    order.CustomerEmail,
+                    order.Status,
+                    order.Total
+                })
+                .ToListAsync(cancellationToken);
+            foreach (var order in recentOrders)
+                facts.AppendLine($"Pedido #{order.DeliveryOrderId}: {order.Store}, {order.CustomerEmail}, {order.Status}, ${order.Total:0.00}.");
+        }
+        else if (role == "Vendedor" && userId is not null)
+        {
+            var stores = await _identityContext.DeliveryStores.AsNoTracking()
+                .Where(store => store.OwnerUserId == userId)
+                .Select(store => new
+                {
+                    store.DeliveryStoreId,
+                    store.Name,
+                    store.Category,
+                    Products = store.Products.Count(product => product.IsAvailable),
+                    Orders = store.Orders.Count()
+                })
+                .ToListAsync(cancellationToken);
+            facts.AppendLine(stores.Count == 0 ? "El vendedor no tiene tienda asignada." : "Tiendas propias:");
+            foreach (var store in stores)
+                facts.AppendLine($"Tienda #{store.DeliveryStoreId}: {store.Name}, {store.Category}, {store.Products:N0} productos, {store.Orders:N0} pedidos.");
+        }
+        else if (role == "Repartidor")
+        {
+            var deliveries = await _identityContext.DeliveryOrders.AsNoTracking()
+                .Include(order => order.Store)
+                .Where(order => order.DeliveryPersonEmail == email)
+                .OrderByDescending(order => order.CreatedAt)
+                .Take(8)
+                .Select(order => new { order.DeliveryOrderId, Store = order.Store.Name, order.Status, order.DeliveryAddress })
+                .ToListAsync(cancellationToken);
+            facts.AppendLine(deliveries.Count == 0 ? "El repartidor no tiene entregas asignadas." : "Entregas asignadas:");
+            foreach (var delivery in deliveries)
+                facts.AppendLine($"Pedido #{delivery.DeliveryOrderId}: {delivery.Store}, {delivery.Status}, {delivery.DeliveryAddress}.");
+        }
+        else if (role == "Usuario")
+        {
+            var orders = await _identityContext.DeliveryOrders.AsNoTracking()
+                .Include(order => order.Store)
+                .Where(order => order.CustomerEmail == email)
+                .OrderByDescending(order => order.CreatedAt)
+                .Take(8)
+                .Select(order => new { order.DeliveryOrderId, Store = order.Store.Name, order.Status, order.Total })
+                .ToListAsync(cancellationToken);
+            facts.AppendLine(orders.Count == 0 ? "El usuario no tiene pedidos." : "Pedidos del usuario:");
+            foreach (var order in orders)
+                facts.AppendLine($"Pedido #{order.DeliveryOrderId}: {order.Store}, {order.Status}, ${order.Total:0.00}.");
+        }
+
+        if (Regex.IsMatch(message, "producto|precio|tienda|catálogo|catalogo|farmacia|supermercado|restaurante", RegexOptions.IgnoreCase))
+        {
+            var ignored = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "producto", "productos", "precio", "precios", "tienda", "tiendas", "catálogo", "catalogo",
+                "cuanto", "cuántos", "cuantos", "donde", "disponible", "disponibles", "tienen", "tiene"
+            };
+            var searchTerm = Regex.Matches(message, @"[\p{L}\p{N}]+")
+                .Select(match => match.Value)
+                .Where(term => term.Length >= 4 && !ignored.Contains(term))
+                .LastOrDefault();
+            var productsQuery = _identityContext.DeliveryProducts.AsNoTracking()
+                .Where(product => product.IsAvailable && product.Store.IsActive);
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var pattern = $"%{searchTerm}%";
+                productsQuery = productsQuery.Where(product =>
+                    EF.Functions.ILike(product.Name, pattern) ||
+                    EF.Functions.ILike(product.Store.Name, pattern) ||
+                    EF.Functions.ILike(product.Store.Category, pattern));
+            }
+            var products = await productsQuery
+                .OrderBy(product => product.Store.Name)
+                .ThenBy(product => product.Name)
+                .Take(12)
+                .Select(product => new { product.Name, Store = product.Store.Name, product.Store.Category, product.Price, product.Stock })
+                .ToListAsync(cancellationToken);
+            facts.AppendLine(products.Count == 0 ? "No hubo coincidencias en el catálogo." : "Coincidencias del catálogo:");
+            foreach (var product in products)
+                facts.AppendLine($"{product.Name}, {product.Store}, {product.Category}, ${product.Price:0.00}, stock {product.Stock:N0}.");
+        }
+
+        return facts.ToString().Trim();
+    }
+
+    private async Task<string?> BuildAuthoritativeAnswerAsync(
+        string message,
+        string role,
+        string? userId,
+        string fullName,
+        CancellationToken cancellationToken)
+    {
+        var normalized = message.ToLowerInvariant();
+        var parts = new List<string>();
+        if (Regex.IsMatch(normalized, @"\b(nombre|quién soy|quien soy)\b"))
+            parts.Add($"Tu nombre es {fullName}.");
+        if (Regex.IsMatch(normalized, @"\b(rol|permisos?)\b"))
+            parts.Add($"Tu rol es {role}.");
+
+        if (Regex.IsMatch(normalized, @"\b(cuántos|cuantos|cantidad|total)\b") &&
+            Regex.IsMatch(normalized, @"\bpedidos?\b"))
+        {
+            int count;
+            if (role == "Administrador")
+                count = await _identityContext.DeliveryOrders.CountAsync(cancellationToken);
+            else if (role == "Vendedor" && userId is not null)
+                count = await _identityContext.DeliveryOrders.CountAsync(
+                    order => order.Store.OwnerUserId == userId, cancellationToken);
+            else if (role == "Repartidor")
+                count = await _identityContext.DeliveryOrders.CountAsync(
+                    order => order.DeliveryPersonEmail == User.Identity!.Name, cancellationToken);
+            else
+                count = await _identityContext.DeliveryOrders.CountAsync(
+                    order => order.CustomerEmail == User.Identity!.Name, cancellationToken);
+            parts.Add(role == "Administrador"
+                ? $"Hay {count:N0} pedidos en total."
+                : $"Tienes {count:N0} pedidos asociados a tu cuenta.");
+        }
+
+        return parts.Count == 0 ? null : string.Join(" ", parts);
+    }
+
+    private async Task WriteChatEventAsync(string type, string content, CancellationToken cancellationToken)
+    {
+        await Response.WriteAsync(JsonSerializer.Serialize(new { type, content }) + "\n", cancellationToken);
+        await Response.Body.FlushAsync(cancellationToken);
     }
 
     private static string GetAssistantContext(string? context) => context?.ToLowerInvariant() switch

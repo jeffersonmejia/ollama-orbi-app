@@ -40,6 +40,11 @@ Thumbs.db
 # Sensitive
 admin.md
 
+# Local documentation (only the root README is versioned)
+*.txt
+*.md
+!/README.md
+
 # Local database artifacts and backups
 *.dump
 *.tar

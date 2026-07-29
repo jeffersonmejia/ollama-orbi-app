@@ -50,7 +50,24 @@
                     <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">auto_awesome</span>
                     <strong>Sugerencia de precio con IA</strong>
                 </div>
-                <p id="ai-suggestion-text" style="margin:0 0 10px;font-size:var(--md-sys-typescale-body-medium-size);"></p>
+                <p style="margin:0 0 12px;font-size:var(--md-sys-typescale-body-medium-size);">
+                    Para <strong id="ai-suggestion-product"></strong> en <strong id="ai-suggestion-location"></strong>,
+                    el precio sugerido es <strong id="ai-suggestion-price"></strong>.
+                </p>
+                <div style="display:grid;gap:10px;margin-bottom:12px;">
+                    <div style="display:flex;align-items:flex-start;gap:9px;">
+                        <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-primary);">analytics</span>
+                        <div><strong>¿En qué se basó?</strong><p id="ai-suggestion-reason" style="margin:3px 0 0;font-size:13px;"></p></div>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:9px;">
+                        <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-sys-color-primary);">storefront</span>
+                        <div style="min-width:0;flex:1;"><strong>Fuentes externas consultadas</strong><div id="ai-suggestion-sources" style="display:grid;gap:6px;margin-top:6px;"></div></div>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:9px;color:var(--md-sys-color-on-surface-variant);">
+                        <span class="material-symbols-outlined" style="font-size:19px;">info</span>
+                        <p id="ai-suggestion-disclaimer" style="margin:0;font-size:12px;"></p>
+                    </div>
+                </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <button type="button" class="m3-filled-button" onclick="acceptSuggestion()" style="height:36px;font-size:13px;">
                         <span class="material-symbols-outlined" style="font-size:16px;">check</span> Aceptar sugerencia
@@ -173,8 +190,35 @@
                 var data = await resp.json();
                 if (data.ok && data.price > 0) {
                     suggestedPrice = data.price;
-                    document.getElementById('ai-suggestion-text').innerHTML =
-                        'Para <strong>' + name + '</strong> en <strong>' + data.city + ', ' + data.province + '</strong>, el precio sugerido del mercado es <strong>$' + data.price.toFixed(2) + '</strong>.';
+                    document.getElementById('ai-suggestion-product').textContent = name;
+                    document.getElementById('ai-suggestion-location').textContent = data.city + ', ' + data.province;
+                    document.getElementById('ai-suggestion-price').textContent = '$' + Number(data.price).toFixed(2);
+                    document.getElementById('ai-suggestion-reason').textContent =
+                        data.reason + ' Rango observado: $' + Number(data.minimumPrice).toFixed(2) + ' a $' + Number(data.maximumPrice).toFixed(2) + '.';
+                    document.getElementById('ai-suggestion-disclaimer').textContent = data.disclaimer;
+
+                    var sources = document.getElementById('ai-suggestion-sources');
+                    sources.replaceChildren();
+                    (data.sources || []).forEach(function(source) {
+                        var link = document.createElement('a');
+                        link.href = source.url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.style.cssText = 'display:flex;align-items:center;gap:7px;color:inherit;text-decoration:none;padding:7px 9px;border:1px solid var(--md-sys-color-outline-variant);border-radius:10px;background:var(--md-sys-color-surface);';
+
+                        var icon = document.createElement('span');
+                        icon.className = 'material-symbols-outlined';
+                        icon.style.fontSize = '18px';
+                        icon.textContent = 'open_in_new';
+                        var detail = document.createElement('span');
+                        detail.style.cssText = 'min-width:0;flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                        detail.textContent = source.store + ' · ' + source.product;
+                        var price = document.createElement('strong');
+                        price.style.fontSize = '13px';
+                        price.textContent = '$' + Number(source.price).toFixed(2);
+                        link.append(icon, detail, price);
+                        sources.appendChild(link);
+                    });
                     document.getElementById('ai-suggestion-box').style.display = 'block';
                 } else {
                     alert(data.message || 'No se pudo obtener sugerencia.');

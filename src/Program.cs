@@ -36,6 +36,11 @@ builder.Services.AddHttpClient<OllamaProductService>(client =>
     client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
     client.Timeout = TimeSpan.FromSeconds(45);
 });
+builder.Services.AddHttpClient<ExternalMarketPriceService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("OrbiApp-MarketComparison/1.0");
+});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
