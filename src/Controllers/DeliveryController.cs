@@ -783,45 +783,33 @@ public class DeliveryController : Controller
             .ToList();
         var ownerProfiles = await _context.UserProfiles.AsNoTracking()
             .Where(profile => ownerIds.Contains(profile.IdentityUserId))
-            .ToDictionaryAsync(
-                profile => profile.IdentityUserId,
-                profile => $"{profile.FirstName} {profile.LastName}".Trim());
+            .ToDictionaryAsync(profile => profile.IdentityUserId);
         var ownerEmails = await _context.Users.AsNoTracking()
             .Where(user => ownerIds.Contains(user.Id))
             .ToDictionaryAsync(user => user.Id, user => user.Email ?? "Usuario sin correo");
+        var ownerDetails = stores
+            .Where(store => store.OwnerUserId is { Length: > 0 })
+            .Select(store =>
+            {
+                var profile = ownerProfiles.GetValueOrDefault(store.OwnerUserId!);
+                return new KeyValuePair<int, StoreOwnerOption>(
+                    store.DeliveryStoreId,
+                    new StoreOwnerOption
+                    {
+                        UserId = store.OwnerUserId!,
+                        FullName = profile is null
+                            ? ownerEmails.GetValueOrDefault(store.OwnerUserId!, "Propietario sin perfil")
+                            : $"{profile.FirstName} {profile.LastName}".Trim(),
+                        Email = ownerEmails.GetValueOrDefault(store.OwnerUserId!, "Usuario sin correo"),
+                        MemberSince = profile?.CreatedAt ?? default,
+                        StoreId = store.DeliveryStoreId
+                    });
+            })
+            .ToDictionary(item => item.Key, item => item.Value);
+        ViewBag.StoreOwnerDetails = ownerDetails;
         ViewBag.StoreOwners = stores.ToDictionary(
             store => store.DeliveryStoreId,
-            store => store.OwnerUserId is { Length: > 0 } ownerId
-                ? ownerProfiles.GetValueOrDefault(ownerId, ownerEmails.GetValueOrDefault(ownerId, "Sin asignar"))
-                : "Sin asignar");
-
-        var vendorRoleId = await _context.Roles.AsNoTracking()
-            .Where(role => role.NormalizedName == "VENDEDOR")
-            .Select(role => role.Id)
-            .FirstOrDefaultAsync();
-        var vendorIds = string.IsNullOrWhiteSpace(vendorRoleId)
-            ? new List<string>()
-            : await _context.UserRoles.AsNoTracking()
-                .Where(userRole => userRole.RoleId == vendorRoleId)
-                .Select(userRole => userRole.UserId)
-                .ToListAsync();
-        ViewBag.OwnerOptions = await (
-            from user in _context.Users.AsNoTracking()
-            join profile in _context.UserProfiles.AsNoTracking()
-                on user.Id equals profile.IdentityUserId
-            join ownedStore in _context.DeliveryStores.AsNoTracking()
-                on user.Id equals ownedStore.OwnerUserId into ownedStoreGroup
-            from ownedStore in ownedStoreGroup.OrderBy(store => store.DeliveryStoreId).Take(1).DefaultIfEmpty()
-            where vendorIds.Contains(user.Id)
-            orderby profile.FirstName, profile.LastName
-            select new StoreOwnerOption
-            {
-                UserId = user.Id,
-                FullName = (profile.FirstName + " " + profile.LastName).Trim(),
-                Email = user.Email ?? "Usuario sin correo",
-                MemberSince = profile.CreatedAt,
-                StoreId = ownedStore == null ? null : ownedStore.DeliveryStoreId
-            }).ToListAsync();
+            store => ownerDetails.GetValueOrDefault(store.DeliveryStoreId)?.FullName ?? "Sin asignar");
         ViewData["PaginatedList"] = stores;
         return View(stores);
     }
@@ -908,12 +896,7 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Administrador")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStore(
-        int storeId,
-        string name,
-        string category,
-        string address,
-        string? ownerUserId)
+    public async Task<IActionResult> UpdateStore(int storeId, string name, string category, string address)
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
         {
@@ -924,32 +907,9 @@ public class DeliveryController : Controller
         var store = await _context.DeliveryStores.FindAsync(storeId);
         if (store == null) return NotFound();
 
-        if (!string.IsNullOrWhiteSpace(ownerUserId))
-        {
-            var isVendor = await (
-                from userRole in _context.UserRoles
-                join role in _context.Roles on userRole.RoleId equals role.Id
-                where userRole.UserId == ownerUserId && role.NormalizedName == "VENDEDOR"
-                select userRole.UserId).AnyAsync();
-            if (!isVendor)
-            {
-                TempData["Error"] = "Selecciona un propietario válido con rol de vendedor.";
-                return RedirectToAction(nameof(AdminStores));
-            }
-
-            var ownsAnotherStore = await _context.DeliveryStores.AsNoTracking()
-                .AnyAsync(candidate => candidate.OwnerUserId == ownerUserId && candidate.DeliveryStoreId != storeId);
-            if (ownsAnotherStore)
-            {
-                TempData["Error"] = "El propietario seleccionado ya tiene otra tienda asignada.";
-                return RedirectToAction(nameof(AdminStores));
-            }
-        }
-
         store.Name = name.Trim();
         store.Category = category.Trim();
         store.Address = address.Trim();
-        store.OwnerUserId = string.IsNullOrWhiteSpace(ownerUserId) ? null : ownerUserId;
         await _context.SaveChangesAsync();
         TempData["Success"] = $"La tienda {store.Name} fue actualizada.";
         return RedirectToAction(nameof(AdminStores));
@@ -984,6 +944,22 @@ public class DeliveryController : Controller
         ViewBag.Buscar = buscar;
         var logs = await PaginatedList<AuditLog>.CreateAsync(
             query.OrderByDescending(a => a.CreatedAt), Math.Max(1, page), 12);
+        var userIds = logs
+            .Where(log => !string.IsNullOrWhiteSpace(log.UserId))
+            .Select(log => log.UserId!)
+            .Distinct()
+            .ToList();
+        var userRolePairs = await (
+            from userRole in _context.UserRoles.AsNoTracking()
+            join role in _context.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            where userIds.Contains(userRole.UserId)
+            select new { userRole.UserId, RoleName = role.Name! })
+            .ToListAsync();
+        ViewBag.UserRoles = userRolePairs
+            .GroupBy(item => item.UserId)
+            .ToDictionary(
+                group => group.Key,
+                group => string.Join(", ", group.Select(item => item.RoleName).OrderBy(name => name)));
         ViewData["PaginatedList"] = logs;
         return View(logs);
     }

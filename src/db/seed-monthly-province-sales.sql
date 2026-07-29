@@ -28,6 +28,8 @@ DECLARE
     customer_address text;
     external_payment_id text;
     month_key text := to_char(current_date, 'YYYYMM');
+    base_sales_per_province integer := 99;
+    target_customers_per_province integer := 150;
     order_created_at timestamptz;
     order_total numeric(10,2);
     order_status text;
@@ -142,8 +144,8 @@ BEGIN
             WHERE delivery_store_id = selected_store_id;
         END IF;
 
-        -- Completa diez clientes locales por provincia usando perfiles demo existentes.
-        SELECT greatest(0, 10 - count(*))::integer
+        -- Mantiene variedad de compradores: aproximadamente dos pedidos por cliente.
+        SELECT greatest(0, target_customers_per_province - count(*))::integer
         INTO profiles_needed
         FROM user_profile
         WHERE province_code = province_row.province_code;
@@ -177,7 +179,7 @@ BEGIN
             WHERE identity_user_id = profile_row.identity_user_id;
         END LOOP;
 
-        FOR sale_number IN 1..10 LOOP
+        FOR sale_number IN 1..base_sales_per_province LOOP
             external_payment_id := format(
                 'ORBI-EC-%s-%s-%s', month_key, province_row.province_code, lpad(sale_number::text, 2, '0'));
 
@@ -278,11 +280,14 @@ DECLARE
     customer_address text;
     order_total numeric(10,2);
     month_key text := to_char(current_date, 'YYYYMM');
+    target_sales_per_province integer := 300;
+    existing_sales integer;
     external_payment_id text;
 BEGIN
     FOR province_row IN
         SELECT province.province_code, province.name,
-               greatest(0, 10 - count(tagged_payment.payment_id))::integer AS missing
+               count(tagged_payment.payment_id)::integer AS existing,
+               greatest(0, target_sales_per_province - count(tagged_payment.payment_id))::integer AS missing
         FROM ecuador_province province
         LEFT JOIN delivery_store store ON store.province_code = province.province_code
         LEFT JOIN delivery_order tagged_order ON tagged_order.delivery_store_id = store.delivery_store_id
@@ -290,15 +295,16 @@ BEGIN
           ON tagged_payment.delivery_order_id = tagged_order.delivery_order_id
          AND tagged_payment.external_id LIKE 'ORBI-EC-' || month_key || '-%'
         GROUP BY province.province_code, province.name
-        HAVING count(tagged_payment.payment_id) < 10
+        HAVING count(tagged_payment.payment_id) < target_sales_per_province
         ORDER BY province.province_code
     LOOP
         missing_sales := province_row.missing;
+        existing_sales := province_row.existing;
 
         FOR correction_number IN 1..missing_sales LOOP
             external_payment_id := format(
-                'ORBI-EC-%s-%s-X%s', month_key, province_row.province_code,
-                lpad(correction_number::text, 2, '0'));
+                'ORBI-EC-%s-%s-R%s', month_key, province_row.province_code,
+                lpad((existing_sales + correction_number)::text, 4, '0'));
 
             IF EXISTS (SELECT 1 FROM payment WHERE external_id = external_payment_id) THEN
                 CONTINUE;
@@ -387,7 +393,7 @@ WHERE orders.delivery_order_id = replacement.delivery_order_id;
 
 COMMIT;
 
--- Verificación: deben existir al menos 10 ventas demo por cada una de las 24 provincias.
+-- Verificación: deben existir al menos 300 ventas demo por cada una de las 24 provincias.
 SELECT province.name AS province, count(*) AS demo_sales, sum(orders.total)::numeric(12,2) AS revenue
 FROM payment payments
 JOIN delivery_order orders ON orders.delivery_order_id = payments.delivery_order_id

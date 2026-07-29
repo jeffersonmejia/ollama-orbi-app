@@ -702,8 +702,8 @@
                         document.getElementById('orbi-monthly-period').textContent = new Intl.DateTimeFormat('es-EC', {
                             month: 'long', year: 'numeric', timeZone: 'America/Guayaquil'
                         }).format(new Date(data.periodStart));
-                        var money = function(value) { return value.toLocaleString('es-EC', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }); };
-                        var units = function(value) { return value.toLocaleString('es-EC') + ' uds.'; };
+                        var money = function(value) { return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }); };
+                        var units = function(value) { return value.toLocaleString('en-US') + ' uds.'; };
                         renderBarChart('orbi-province-sales', data.provinces || [], money);
                         renderBarChart('orbi-category-sales', data.categories || [], units);
                         renderBarChart('orbi-store-revenue', data.stores || [], money);

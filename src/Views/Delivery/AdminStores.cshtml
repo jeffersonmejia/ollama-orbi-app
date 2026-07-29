@@ -6,8 +6,8 @@
     ViewData["PaginatedList"] = Model;
     var storeOwners = ViewBag.StoreOwners as IReadOnlyDictionary<int, string>
         ?? new Dictionary<int, string>();
-    var ownerOptions = ViewBag.OwnerOptions as IReadOnlyList<StoreOwnerOption>
-        ?? Array.Empty<StoreOwnerOption>();
+    var storeOwnerDetails = ViewBag.StoreOwnerDetails as IReadOnlyDictionary<int, StoreOwnerOption>
+        ?? new Dictionary<int, StoreOwnerOption>();
 }
 
 <div class="orbi-account-shell orbi-delivery-admin-shell">
@@ -32,23 +32,16 @@
                             <h3>Editar tienda</h3>
                             <form id="edit-store-form" asp-action="UpdateStore" method="post" class="orbi-admin-edit-form">
                                 <input id="edit-store-id" type="hidden" name="storeId" />
-                                <input id="edit-store-owner-id" type="hidden" name="ownerUserId" />
                                 <div class="orbi-admin-form-grid">
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-name">Nombre</label><input class="m3-text-field-input" id="edit-store-name" name="name" required placeholder="Nombre de la tienda" /></div>
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-category">Categoría</label><input class="m3-text-field-input" id="edit-store-category" name="category" required placeholder="Ej: Restaurante" /></div>
                                     <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-address">Dirección</label><input class="m3-text-field-input" id="edit-store-address" name="address" required placeholder="Dirección completa" /></div>
                                     <div class="m3-text-field">
                                         <label class="m3-text-field-label" for="edit-store-owner-name">Nombre del propietario</label>
-                                        <input class="m3-text-field-input" id="edit-store-owner-name" list="store-owner-options" autocomplete="off" placeholder="Buscar vendedor" />
-                                        <datalist id="store-owner-options">
-                                            @foreach (var owner in ownerOptions)
-                                            {
-                                                <option value="@owner.FullName" data-user-id="@owner.UserId" data-email="@owner.Email" data-member-since="@owner.MemberSince.ToLocalTime().ToString("dd/MM/yyyy")" data-store-id="@owner.StoreId">@owner.Email</option>
-                                            }
-                                        </datalist>
+                                        <input class="m3-text-field-input" id="edit-store-owner-name" disabled value="Sin asignar" />
                                     </div>
-                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-email">Correo</label><input class="m3-text-field-input" id="edit-store-owner-email" type="email" readonly placeholder="Selecciona un propietario" /></div>
-                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-member-since">Miembro desde</label><input class="m3-text-field-input" id="edit-store-owner-member-since" readonly placeholder="Selecciona un propietario" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-email">Correo</label><input class="m3-text-field-input" id="edit-store-owner-email" disabled value="No disponible" /></div>
+                                    <div class="m3-text-field"><label class="m3-text-field-label" for="edit-store-owner-member-since">Miembro desde</label><input class="m3-text-field-input" id="edit-store-owner-member-since" disabled value="No disponible" /></div>
                                 </div>
                                 <div class="orbi-form-actions">
                                     <button class="m3-text-button" id="store-edit-cancel" type="button">Cancelar</button>
@@ -94,6 +87,7 @@
                                     <tbody>
                                     @foreach (var store in Model)
                                     {
+                                        var owner = storeOwnerDetails.GetValueOrDefault(store.DeliveryStoreId);
                                         <tr>
                                             <td><strong>@store.Name</strong><small>#@store.DeliveryStoreId</small></td>
                                             <td>@storeOwners.GetValueOrDefault(store.DeliveryStoreId, "Sin asignar")</td>
@@ -101,7 +95,7 @@
                                             <td>@(store.City?.Name ?? "-")</td><td>@(store.Province?.Name ?? "-")</td>
                                             <td><span class="orbi-order-status @(store.IsActive ? "is-delivered" : "is-cancelled")"><span class="orbi-status-dot"></span>@(store.IsActive ? "Activa" : "Inactiva")</span></td>
                                             <td><div class="orbi-admin-row-actions">
-                                                <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address" data-owner-id="@store.OwnerUserId"><span class="material-symbols-outlined">edit</span>Editar</button>
+                                                <button type="button" class="m3-text-button" data-edit-store data-id="@store.DeliveryStoreId" data-name="@store.Name" data-category="@store.Category" data-address="@store.Address" data-owner-name="@(owner?.FullName ?? "Sin asignar")" data-owner-email="@(owner?.Email ?? "No disponible")" data-owner-member-since="@(owner is null || owner.MemberSince == default ? "No disponible" : owner.MemberSince.ToLocalTime().ToString("dd/MM/yyyy"))"><span class="material-symbols-outlined">edit</span>Editar</button>
                                                 <form asp-action="ToggleStore" method="post" class="orbi-store-toggle-form"><input type="hidden" name="storeId" value="@store.DeliveryStoreId" /><label class="orbi-switch" title="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")"><input type="checkbox" checked="@store.IsActive" role="switch" aria-label="@(store.IsActive ? "Inhabilitar tienda" : "Habilitar tienda")" onchange="this.form.requestSubmit()" /><span></span></label></form>
                                             </div></td>
                                         </tr>
@@ -123,45 +117,17 @@
     const section = document.getElementById('edit-store-section');
     const form = document.getElementById('edit-store-form');
     const ownerName = document.getElementById('edit-store-owner-name');
-    const ownerId = document.getElementById('edit-store-owner-id');
     const ownerEmail = document.getElementById('edit-store-owner-email');
     const ownerMemberSince = document.getElementById('edit-store-owner-member-since');
-    const ownerOptions = Array.from(document.querySelectorAll('#store-owner-options option'));
-
-    function setOwner(option) {
-        ownerId.value = option?.dataset.userId || '';
-        ownerName.value = option?.value || '';
-        ownerEmail.value = option?.dataset.email || '';
-        ownerMemberSince.value = option?.dataset.memberSince || '';
-        ownerName.setCustomValidity('');
-    }
-
-    function findOwnerById(userId) {
-        return ownerOptions.find(option => option.dataset.userId === userId);
-    }
-
-    ownerName.addEventListener('input', () => {
-        const option = ownerOptions.find(candidate => candidate.value === ownerName.value.trim());
-        if (!ownerName.value.trim()) {
-            setOwner(null);
-            return;
-        }
-        if (!option) {
-            ownerId.value = '';
-            ownerEmail.value = '';
-            ownerMemberSince.value = '';
-            ownerName.setCustomValidity('Selecciona un vendedor de la lista.');
-            return;
-        }
-        setOwner(option);
-    });
 
     document.querySelectorAll('[data-edit-store]').forEach(button => button.addEventListener('click', () => {
         document.getElementById('edit-store-id').value = button.dataset.id;
         document.getElementById('edit-store-name').value = button.dataset.name;
         document.getElementById('edit-store-category').value = button.dataset.category;
         document.getElementById('edit-store-address').value = button.dataset.address;
-        setOwner(findOwnerById(button.dataset.ownerId));
+        ownerName.value = button.dataset.ownerName || 'Sin asignar';
+        ownerEmail.value = button.dataset.ownerEmail || 'No disponible';
+        ownerMemberSince.value = button.dataset.ownerMemberSince || 'No disponible';
         section.hidden = false;
         section.scrollIntoView({ behavior:'smooth', block:'start' });
         document.getElementById('edit-store-name').focus();

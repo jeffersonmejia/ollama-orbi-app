@@ -1,6 +1,11 @@
 @using SakilaApp.Models.Operations
 @model SakilaApp.Models.PaginatedList<AuditLog>
-@{ ViewData["Title"] = "Auditoría"; ViewData["PaginatedList"] = Model; }
+@{
+    ViewData["Title"] = "Auditoría";
+    ViewData["PaginatedList"] = Model;
+    var userRoles = ViewBag.UserRoles as IReadOnlyDictionary<string, string>
+        ?? new Dictionary<string, string>();
+}
 
 <div class="orbi-account-shell orbi-delivery-admin-shell">
     <header class="orbi-account-shell-header"><h1>Administración</h1><p>Gestiona tiendas y pedidos de Orbi.</p></header>
@@ -25,7 +30,7 @@
                     <div class="orbi-admin-table-card">
                         <div class="orbi-orders-table-wrap">
                             <table class="m3-data-table orbi-orders-table">
-                                <thead><tr><th>Fecha</th><th>Acción</th><th>Entidad</th><th>Entidad ID</th><th>Usuario</th><th>IP</th></tr></thead>
+                                <thead><tr><th>Fecha</th><th>Acción</th><th>Entidad</th><th>Entidad ID</th><th>Correo</th><th>Rol</th><th>IP</th></tr></thead>
                                 <tbody>
                                 @foreach (var log in Model)
                                 {
@@ -35,6 +40,20 @@
                                         <td>@log.EntityType</td>
                                         <td>@(log.EntityId ?? "—")</td>
                                         <td>@(log.User?.Email ?? "Sistema")</td>
+                                        <td>
+                                            @if (log.UserId is null)
+                                            {
+                                                <span>Sistema</span>
+                                            }
+                                            else if (userRoles.TryGetValue(log.UserId, out var roleNames))
+                                            {
+                                                <span>@roleNames</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Sin rol asignado</span>
+                                            }
+                                        </td>
                                         <td><small>@(log.IpAddress ?? "—")</small></td>
                                     </tr>
                                 }

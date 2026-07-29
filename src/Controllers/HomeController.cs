@@ -433,12 +433,19 @@ public class HomeController : Controller
                 item.Order.CreatedAt >= monthStartUtc &&
                 item.Order.CreatedAt < nextMonthUtc &&
                 item.Order.Status != "Pendiente" &&
-                item.Order.Status != "Cancelado")
+                item.Order.Status != "Cancelado" &&
+                (item.Order.Store.Category == "Restaurantes" ||
+                 item.Order.Store.Category == "Farmacia" ||
+                 item.Order.Store.Category == "Supermercado"))
             .GroupBy(item => item.Order.Store.Category)
             .Select(group => new { Label = group.Key, Value = group.Sum(item => item.Quantity) })
             .ToListAsync();
         var categoryTotals = categorySales.ToDictionary(item => item.Label, item => item.Value);
         var categoryNames = await _identityContext.DeliveryStores.AsNoTracking()
+            .Where(store =>
+                store.Category == "Restaurantes" ||
+                store.Category == "Farmacia" ||
+                store.Category == "Supermercado")
             .Select(store => store.Category)
             .Distinct()
             .ToListAsync();
