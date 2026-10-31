@@ -1,0 +1,1314 @@
+﻿@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    ViewData["Title"] = "Orbi";
+    var chatContext = "public_home";
+    var chatWelcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
+    string[] chatSuggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
+    string[] roleMessages =
+    {
+        "¿Qué quieres pedir hoy?",
+        "Tus tiendas favoritas están cerca",
+        "Explora productos disponibles",
+        "Recibe tu pedido en tu dirección favorita"
+    };
+
+    if (User.IsInRole("Administrador"))
+    {
+        roleMessages = Array.Empty<string>();
+        chatContext = "administrador";
+        chatWelcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
+        chatSuggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
+    }
+    else if (User.IsInRole("Vendedor"))
+    {
+        roleMessages = new[] { "Mantén el inventario al día", "Registra movimientos de productos", "Controla las reservas de stock", "Impulsa las ventas de tu tienda" };
+        chatContext = "vendedor";
+        chatWelcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
+        chatSuggestions = new[] { "¿Qué productos están disponibles?", "¿Qué tiendas están activas?" };
+    }
+    else if (User.IsInRole("Repartidor"))
+    {
+        roleMessages = new[] { "Tus entregas están listas", "Actualiza el estado de cada pedido", "Reporta incidencias en ruta", "Entrega cada pedido a tiempo" };
+        chatContext = "repartidor";
+        chatWelcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
+        chatSuggestions = new[] { "¿Dónde veo mis entregas?", "¿Cómo marco una entrega?" };
+    }
+    else if (User.IsInRole("Usuario"))
+    {
+        chatContext = "usuario";
+        chatWelcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
+        chatSuggestions = new[] { "¿Qué productos hay?", "¿Cómo hago un pedido?" };
+    }
+}
+
+<style>
+    .orbi-home-layout {
+        display: block;
+        padding-right: 0;
+    }
+
+    .orbi-home-section {
+        min-width: 0;
+        padding: 3rem 1rem 4rem;
+        text-align: center;
+    }
+
+    .orbi-home-welcome-admin {
+        margin-bottom: 2rem !important;
+    }
+
+    .m3-main.orbi-public-home-main {
+        max-width: none;
+        padding: 8px;
+    }
+
+    .orbi-home-section.orbi-home-public {
+        padding: 0;
+    }
+
+    .orbi-home-video-shell {
+        position: relative;
+        width: 100%;
+        margin: 0;
+        border-radius: var(--md-sys-shape-corner-large);
+        box-shadow: var(--md-sys-elevation-level2);
+        overflow: hidden;
+        background: #000;
+    }
+
+    .orbi-home-video {
+        display: block;
+        width: 100%;
+        height: calc(100vh - 88px);
+        min-height: 420px;
+        max-height: 760px;
+        object-fit: cover;
+        opacity: .72;
+    }
+
+    .orbi-home-video-actions {
+        position: absolute;
+        right: 64px;
+        bottom: 16px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        transform: none;
+    }
+
+    .orbi-home-video-action {
+        display: inline-flex;
+        min-height: 46px;
+        padding: 0 22px;
+        border: 2px solid #fff;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease;
+    }
+
+    .orbi-home-video-action:hover,
+    .orbi-home-video-action:focus,
+    .orbi-home-video-action:active {
+        transform: translateY(-2px);
+        text-decoration: none !important;
+    }
+
+    .orbi-home-video-action-primary {
+        color: #171717;
+        background: #fff;
+    }
+
+    .orbi-home-video-action-secondary {
+        color: #fff;
+        background: transparent;
+    }
+
+    .orbi-home-video-action-secondary:hover {
+        color: #171717;
+        background: #fff;
+    }
+
+    .orbi-home-video-mute {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        color: #fff;
+        background: rgba(0, 0, 0, .62);
+        backdrop-filter: blur(8px);
+    }
+
+    .orbi-home-video-mute:hover {
+        background: rgba(0, 0, 0, .78);
+    }
+
+    @@media (max-width: 560px) {
+        .m3-main.orbi-public-home-main {
+            padding: 4px;
+        }
+
+        .orbi-home-video {
+            height: calc(100vh - 132px);
+            min-height: 360px;
+        }
+
+        .orbi-home-video-actions {
+            right: 56px;
+            bottom: 12px;
+            gap: 6px;
+        }
+
+        .orbi-home-video-action {
+            min-height: 40px;
+            padding: 0 12px;
+            font-size: 12px;
+        }
+
+        .orbi-home-video-mute {
+            right: 10px;
+            bottom: 12px;
+        }
+    }
+
+    /* El asistente compartido vive en el layout; estos estilos pertenecen al panel legado. */
+    /*
+    .orbi-chat-typing span {
+        display: inline-block;
+        animation: orbi-chat-dot 1.2s infinite ease-in-out;
+    }
+
+    .orbi-chat-typing span:nth-child(2) { animation-delay: .15s; }
+    .orbi-chat-typing span:nth-child(3) { animation-delay: .3s; }
+
+    .orbi-chat-panel {
+        position: fixed;
+        inset: 0 0 0 auto;
+        z-index: 1100;
+        width: 380px;
+        height: 100vh;
+        padding: 20px;
+        border-left: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        box-sizing: border-box;
+        transition:
+            width 220ms var(--md-sys-motion-easing-standard),
+            height 220ms var(--md-sys-motion-easing-standard),
+            padding 220ms var(--md-sys-motion-easing-standard),
+            border-radius 220ms var(--md-sys-motion-easing-standard),
+            box-shadow 220ms var(--md-sys-motion-easing-standard);
+    }
+
+    .orbi-chat-panel.collapsed {
+        width: 56px;
+        height: 56px;
+        inset: 16px 16px auto auto;
+        padding: 7px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 18px;
+        background: var(--md-sys-color-surface-container-high);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+    }
+
+    .orbi-chat-panel.collapsed .orbi-chat-brand,
+    .orbi-chat-panel.collapsed #orbi-chat-new {
+        display: none;
+    }
+
+    .orbi-chat-panel.collapsed .orbi-chat-header {
+        justify-content: center;
+        gap: 0;
+        margin-bottom: 0 !important;
+    }
+
+    .orbi-chat-panel.collapsed #orbi-chat-toggle {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        color: var(--md-sys-color-on-primary-container);
+        background: var(--md-sys-color-primary-container);
+    }
+
+    .orbi-chat-body {
+        min-height: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .orbi-chat-message {
+        width: fit-content;
+        max-width: 86%;
+        padding: 9px 12px;
+        margin-bottom: 10px;
+        border-radius: var(--md-sys-shape-corner-medium);
+        line-height: 1.45;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .orbi-chat-message-user {
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .orbi-chat-message-assistant {
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .orbi-chat-suggestions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+        padding: 2px 1px 10px;
+    }
+
+    .orbi-chat-suggestion {
+        width: 100%;
+        min-width: 0;
+        padding: 7px 11px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.3;
+        cursor: pointer;
+        white-space: normal;
+    }
+
+    .orbi-chat-suggestion:hover {
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-primary-container);
+    }
+
+    .orbi-chat-cursor::after {
+        content: '▍';
+        display: inline-block;
+        margin-left: 2px;
+        animation: orbi-chat-cursor-blink .75s steps(1) infinite;
+        color: var(--md-sys-color-primary);
+    }
+
+    .orbi-chat-composer {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        padding: 6px 7px 6px 14px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 24px;
+        background: var(--md-sys-color-surface-container);
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .orbi-chat-composer:focus-within {
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+    }
+
+    .orbi-chat-input {
+        flex: 1;
+        min-width: 0;
+        max-height: 112px;
+        padding: 8px 2px;
+        border: 0;
+        outline: 0;
+        resize: none;
+        overflow-y: auto;
+        background: transparent;
+        color: var(--md-sys-color-on-surface);
+        font: inherit;
+        line-height: 1.4;
+    }
+
+    .orbi-chat-input::placeholder {
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .orbi-chat-voice.listening {
+        color: var(--md-sys-color-error);
+        animation: orbi-voice-pulse 1s infinite ease-in-out;
+    }
+
+    .orbi-chat-voice-mode.active {
+        color: var(--md-sys-color-on-primary-container);
+        background: var(--md-sys-color-primary-container);
+    }
+
+    .orbi-chat-voice-mode.listening {
+        animation: orbi-voice-pulse 1s infinite ease-in-out;
+    }
+
+    @@keyframes orbi-chat-dot {
+        0%, 60%, 100% { transform: translateY(0); opacity: .35; }
+        30% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    @@keyframes orbi-chat-cursor-blink {
+        0%, 45% { opacity: 1; }
+        46%, 100% { opacity: 0; }
+    }
+
+    @@keyframes orbi-voice-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.12); }
+    }
+
+    @@media (max-width: 900px) {
+        .orbi-home-layout { padding-right: 0; }
+        .orbi-chat-panel {
+            width: min(380px, calc(100vw - 80px));
+        }
+        .orbi-chat-panel.collapsed {
+            width: 56px;
+            height: 56px;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .orbi-chat-typing span, .orbi-chat-cursor::after, .orbi-chat-voice.listening { animation: none; }
+    }
+    */
+</style>
+
+<div id="orbi-home-layout" class="orbi-home-layout">
+<section class="orbi-home-section @(!SignInManager.IsSignedIn(User) ? "orbi-home-public" : string.Empty)">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h1 class="@(User.IsInRole("Administrador") ? "orbi-home-welcome-admin" : string.Empty)" style="font-size:var(--md-sys-typescale-headline-large-size);font-weight:var(--md-sys-typescale-headline-large-weight);color:var(--md-sys-color-on-surface);margin:0 0 0.5rem;">
+            Bienvenido, @(ViewData["FirstName"] as string ?? "usuario")
+        </h1>
+        @if (roleMessages.Length > 0)
+        {
+        <p style="font-size:var(--md-sys-typescale-display-small-size);color:var(--md-sys-color-on-surface-variant);margin:2.5rem 0 3rem;font-weight:300;letter-spacing:-0.02em;" id="randomMessage">@roleMessages[0]</p>
+        <script>
+            (function() {
+                var messages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(roleMessages));
+                var pool = [];
+                var el = document.getElementById('randomMessage');
+                if (el) {
+                    setInterval(function() {
+                        if (pool.length === 0) {
+                            pool = messages.slice();
+                        }
+                        var idx = Math.floor(Math.random() * pool.length);
+                        var next = pool.splice(idx, 1)[0];
+                        el.style.opacity = '0';
+                        el.style.transition = 'opacity 0.3s';
+                        setTimeout(function() {
+                            el.textContent = next;
+                            el.style.opacity = '1';
+                        }, 300);
+                    }, 3000);
+                }
+            })();
+        </script>
+        }
+
+        @if (User.IsInRole("Administrador"))
+        {
+            <style>
+                .orbi-db-layout { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr); gap: 24px; align-items: stretch; padding-bottom: 2rem; }
+                .orbi-db-card { border: 1px solid var(--md-sys-color-outline-variant); border-radius: 20px; background: var(--md-sys-color-surface-container-low, #f5f5f5); padding: 22px; }
+                .orbi-pie-section { min-width: 0; text-align: left; }
+                .orbi-pie-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+                .orbi-pie-grand-total { flex: 0 0 auto; padding: 7px 11px; border-radius: 12px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); font-weight: 700; font-variant-numeric: tabular-nums; }
+                .orbi-pie-wrapper { display: block; padding: 24px 0 0; }
+                .orbi-pie-svg { display: block; margin: 0 auto 22px; }
+                .orbi-pie-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; min-width: 0; }
+                .orbi-pie-legend-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: var(--md-sys-color-surface); font-size: 13px; color: var(--md-sys-color-on-surface); }
+                .orbi-pie-legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+                .orbi-pie-legend-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .orbi-pie-legend-count { padding: 2px 7px; border-radius: 999px; background: var(--md-sys-color-surface-container-high); font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+                .orbi-pie-title { font-size: var(--md-sys-typescale-title-medium-size); font-weight: var(--md-sys-typescale-title-medium-weight); color: var(--md-sys-color-on-surface); margin: 0; }
+                .orbi-pie-subtitle { margin: 4px 0 0; color: var(--md-sys-color-on-surface-variant); font-size: 13px; }
+                .orbi-backup-panel { display: flex; flex-direction: column; gap: 18px; }
+                .orbi-backup-heading { display: flex; align-items: center; gap: 10px; }
+                .orbi-backup-heading .material-symbols-outlined { color: var(--md-sys-color-primary); }
+                .orbi-backup-bar { padding: 12px 14px; border-radius: 12px; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
+                .orbi-backup-bar .material-symbols-outlined { font-size: 18px; color: var(--md-sys-color-primary); }
+                .orbi-backup-track { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--md-sys-color-outline-variant, #e0e0e0); overflow: hidden; }
+                .orbi-backup-fill { height: 100%; border-radius: 3px; background: var(--md-sys-color-primary, #075c9b); transition: width 1s linear; }
+                .orbi-backup-time { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+                .orbi-backup-bar.running { background: var(--md-sys-color-primary-container, #d3e3fd); border-color: var(--md-sys-color-primary, #075c9b); }
+                .orbi-backup-bar.running .material-symbols-outlined { animation: orbi-backup-spin 1s linear infinite; }
+                .orbi-backup-list-title { margin: 0 0 8px; color: var(--md-sys-color-on-surface); font-size: 13px; font-weight: 600; }
+                .orbi-backup-table-wrap { overflow-x: auto; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; background: var(--md-sys-color-surface); }
+                .orbi-backup-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                .orbi-backup-table th, .orbi-backup-table td { padding: 9px 8px; text-align: left; border-bottom: 1px solid var(--md-sys-color-outline-variant); white-space: nowrap; }
+                .orbi-backup-table th { color: var(--md-sys-color-on-surface-variant); font-weight: 600; }
+                .orbi-backup-table tbody tr:last-child td { border-bottom: 0; }
+                .orbi-backup-table .m3-text-button { min-width: 0; height: 32px; padding: 0 8px; font-size: 12px; }
+                .orbi-backup-empty { padding: 18px !important; text-align: center !important; color: var(--md-sys-color-on-surface-variant); }
+                .orbi-restore-status { min-height: 20px; margin: 0; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+                .orbi-restore-status.error { color: var(--md-sys-color-error); }
+                .orbi-confirm-dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 24px; color: var(--md-sys-color-on-surface); background: var(--md-sys-color-surface); box-shadow: 0 20px 60px rgba(0,0,0,.28); }
+                .orbi-confirm-dialog::backdrop { background: rgba(20, 25, 32, .52); backdrop-filter: blur(3px); }
+                .orbi-confirm-content { padding: 26px; text-align: left; }
+                .orbi-confirm-icon { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 14px; color: var(--md-sys-color-primary); background: var(--md-sys-color-primary-container); }
+                .orbi-confirm-icon .material-symbols-outlined { font-size: 27px; }
+                .orbi-confirm-title { margin: 0 0 8px; font-size: var(--md-sys-typescale-title-large-size); font-weight: 600; }
+                .orbi-confirm-copy { margin: 0; color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.55; }
+                .orbi-confirm-backup { display: flex; align-items: center; gap: 9px; margin: 18px 0 0; padding: 11px 12px; border-radius: 12px; background: var(--md-sys-color-surface-container); font-size: 13px; }
+                .orbi-confirm-backup .material-symbols-outlined { font-size: 19px; color: var(--md-sys-color-primary); }
+                .orbi-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+                .orbi-monthly-analytics { max-width: 1100px; margin: 0 auto; padding-bottom: 2rem; text-align: left; }
+                .orbi-monthly-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+                .orbi-monthly-period { margin: 0; padding: 6px 10px; border-radius: 999px; background: #dce8ff; color: #284b87; font-size: 12px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+                .orbi-monthly-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+                .orbi-monthly-card { min-width: 0; padding: 18px; }
+                .orbi-monthly-card-header { display: flex; align-items: flex-start; gap: 10px; min-height: 58px; margin-bottom: 16px; }
+                .orbi-monthly-card-icon { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 12px; color: #355388; background: #dce8ff; }
+                .orbi-monthly-card-icon .material-symbols-outlined { font-size: 21px; }
+                .orbi-monthly-card h3 { margin: 0; color: var(--md-sys-color-on-surface); font-size: 14px; line-height: 1.3; }
+                .orbi-monthly-card p { margin: 3px 0 0; color: var(--md-sys-color-on-surface-variant); font-size: 11px; }
+                .orbi-bar-chart { display: grid; gap: 12px; }
+                .orbi-bar-row { min-width: 0; }
+                .orbi-bar-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+                .orbi-bar-label { min-width: 0; overflow: hidden; color: var(--md-sys-color-on-surface); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+                .orbi-bar-value { flex: 0 0 auto; color: var(--md-sys-color-on-surface-variant); font-weight: 700; font-variant-numeric: tabular-nums; }
+                .orbi-bar-track { height: 12px; overflow: hidden; border-radius: 999px; background: var(--md-sys-color-surface-container-high); }
+                .orbi-bar-fill { height: 100%; border-radius: inherit; transform-origin: left; animation: orbi-bar-grow .55s ease-out both; }
+                .orbi-bar-empty { min-height: 174px; display: grid; place-items: center; color: var(--md-sys-color-on-surface-variant); font-size: 12px; text-align: center; }
+                @@keyframes orbi-backup-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @@keyframes orbi-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+                @@media(max-width: 900px) { .orbi-db-layout { grid-template-columns: 1fr; } .orbi-monthly-grid { grid-template-columns: 1fr; } .orbi-monthly-card-header { min-height: 0; } }
+                @@media(max-width: 640px) { .orbi-pie-legend { grid-template-columns: 1fr; } .orbi-db-card { padding: 18px; } }
+            </style>
+
+            <div class="orbi-db-layout">
+                <section class="orbi-pie-section orbi-db-card" aria-labelledby="orbi-db-summary-title">
+                    <div class="orbi-pie-header">
+                        <div>
+                            <p class="orbi-pie-title" id="orbi-db-summary-title">Resumen de registros</p>
+                            <p class="orbi-pie-subtitle">Distribución de los datos almacenados por tabla.</p>
+                        </div>
+                        <span class="orbi-pie-grand-total" id="orbi-pie-grand-total">--</span>
+                    </div>
+                    <div class="orbi-pie-wrapper">
+                        <svg class="orbi-pie-svg" id="orbi-pie-chart" viewBox="0 0 260 260" width="260" height="260"></svg>
+                        <div class="orbi-pie-legend" id="orbi-pie-legend"></div>
+                    </div>
+                </section>
+
+                <aside class="orbi-backup-panel orbi-db-card" aria-labelledby="orbi-backup-title">
+                    <div>
+                        <div class="orbi-backup-heading">
+                            <span class="material-symbols-outlined">database</span>
+                            <p class="orbi-pie-title" id="orbi-backup-title">Backups</p>
+                        </div>
+                        <p class="orbi-pie-subtitle">Copias automáticas y recuperación de la base de datos.</p>
+                    </div>
+
+                    <div class="orbi-backup-bar" id="orbi-backup-bar">
+                        <span class="material-symbols-outlined" id="orbi-backup-icon">history</span>
+                        <span id="orbi-backup-label">Próximo backup automático en</span>
+                        <span class="orbi-backup-time" id="orbi-backup-time">--:--</span>
+                        <div class="orbi-backup-track" id="orbi-backup-track"><div class="orbi-backup-fill" id="orbi-backup-fill" style="width:100%"></div></div>
+                    </div>
+
+                    <form id="orbi-restore-form" asp-controller="Home" asp-action="RestoreBackup" method="post">
+                        @Html.AntiForgeryToken()
+                    </form>
+                    <p class="orbi-backup-list-title">Backups recientes</p>
+                    <div class="orbi-backup-table-wrap">
+                        <table class="orbi-backup-table" aria-label="Backups disponibles">
+                            <thead><tr><th>Tamaño</th><th>Fecha backup</th><th>Acción</th></tr></thead>
+                            <tbody id="orbi-backup-list"><tr><td class="orbi-backup-empty" colspan="3">Cargando backups...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <p class="orbi-restore-status" id="orbi-restore-status" role="status" aria-live="polite"></p>
+                </aside>
+            </div>
+
+            <section class="orbi-monthly-analytics" aria-labelledby="orbi-monthly-title">
+                <div class="orbi-monthly-heading">
+                    <div>
+                        <p class="orbi-pie-title" id="orbi-monthly-title">Rendimiento de ventas</p>
+                        <p class="orbi-pie-subtitle">Top 5 del mes, sin pedidos pendientes ni cancelados.</p>
+                    </div>
+                    <p class="orbi-monthly-period" id="orbi-monthly-period">Mes actual</p>
+                </div>
+                <div class="orbi-monthly-grid">
+                    <article class="orbi-db-card orbi-monthly-card">
+                        <header class="orbi-monthly-card-header">
+                            <span class="orbi-monthly-card-icon"><span class="material-symbols-outlined">location_on</span></span>
+                            <div><h3>Provincias con más ventas</h3><p>Ingresos generados por provincia</p></div>
+                        </header>
+                        <div class="orbi-bar-chart" id="orbi-province-sales"><div class="orbi-bar-empty">Cargando datos...</div></div>
+                    </article>
+                    <article class="orbi-db-card orbi-monthly-card">
+                        <header class="orbi-monthly-card-header">
+                            <span class="orbi-monthly-card-icon"><span class="material-symbols-outlined">category</span></span>
+                            <div><h3>Categorías más vendidas</h3><p>Unidades vendidas por categoría</p></div>
+                        </header>
+                        <div class="orbi-bar-chart" id="orbi-category-sales"><div class="orbi-bar-empty">Cargando datos...</div></div>
+                    </article>
+                    <article class="orbi-db-card orbi-monthly-card">
+                        <header class="orbi-monthly-card-header">
+                            <span class="orbi-monthly-card-icon"><span class="material-symbols-outlined">payments</span></span>
+                            <div><h3>Ingreso por tienda</h3><p>Tiendas con mayor facturación</p></div>
+                        </header>
+                        <div class="orbi-bar-chart" id="orbi-store-revenue"><div class="orbi-bar-empty">Cargando datos...</div></div>
+                    </article>
+                </div>
+            </section>
+
+            <dialog class="orbi-confirm-dialog" id="orbi-restore-dialog" aria-labelledby="orbi-confirm-title">
+                <div class="orbi-confirm-content">
+                    <div class="orbi-confirm-icon" aria-hidden="true"><span class="material-symbols-outlined">restore_page</span></div>
+                    <h2 class="orbi-confirm-title" id="orbi-confirm-title">¿Recuperar este backup?</h2>
+                    <p class="orbi-confirm-copy">Los datos actuales serán reemplazados. Antes de continuar, Orbi creará automáticamente una copia de seguridad del estado actual.</p>
+                    <div class="orbi-confirm-backup">
+                        <span class="material-symbols-outlined">event</span>
+                        <span id="orbi-confirm-backup-date">Último backup disponible</span>
+                    </div>
+                    <div class="orbi-confirm-actions">
+                        <button class="m3-text-button" id="orbi-restore-cancel" type="button">Cancelar</button>
+                        <button class="m3-filled-button" id="orbi-restore-confirm" type="button">
+                            <span class="material-symbols-outlined">restore</span>
+                            Recuperar backup
+                        </button>
+                    </div>
+                </div>
+            </dialog>
+
+            <script>
+            (function() {
+                const pastel = [
+                    '#FF8FA3','#FFB56B','#F4D35E','#72D6A1','#6CBFF2',
+                    '#A98BFF','#F28CC6','#55D6BE','#F4A261','#7AA7FF',
+                    '#F58B7A','#81C784','#64B5F6','#BA8FE7','#FF9FC7',
+                    '#5CC8B2','#F6BD60','#84A9E8','#D98CCF','#77C7A5'
+                ];
+                const barPastel = ['#6FA8FF', '#FF8FA3', '#67CFA0', '#FFB45F', '#A98BFF'];
+
+                function fmt(n) { return n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+
+                async function loadPie() {
+                    try {
+                        const res = await fetch('/Home/TableCounts', { credentials: 'same-origin' });
+                        if (!res.ok) throw new Error(res.status);
+                        const data = await res.json();
+                        const items = (data.items || []).slice().sort(function(a, b) { return b.count - a.count; });
+                        const total = data.total || 0;
+                        document.getElementById('orbi-pie-grand-total').textContent = fmt(total) + ' total';
+
+                        if (!items.length) {
+                            document.getElementById('orbi-pie-chart').innerHTML = '<text x="130" y="135" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="13" font-family="Inter,sans-serif">Sin datos</text>';
+                            return;
+                        }
+
+                        const cx = 130, cy = 130, r = 100, ir = 55;
+                        let cum = 0;
+                        let paths = '';
+
+                        items.forEach(function(item, i) {
+                            const start = cum / total * 2 * Math.PI - Math.PI / 2;
+                            cum += item.count;
+                            const end = cum / total * 2 * Math.PI - Math.PI / 2;
+                            const large = (end - start) > Math.PI ? 1 : 0;
+
+                            const x1 = cx + r * Math.cos(start);
+                            const y1 = cy + r * Math.sin(start);
+                            const x2 = cx + r * Math.cos(end);
+                            const y2 = cy + r * Math.sin(end);
+                            const ix1 = cx + ir * Math.cos(start);
+                            const iy1 = cy + ir * Math.sin(start);
+                            const ix2 = cx + ir * Math.cos(end);
+                            const iy2 = cy + ir * Math.sin(end);
+
+                            const d = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${large} 0 ${ix1} ${iy1} Z`;
+                            paths += '<path d="' + d + '" fill="' + pastel[i % pastel.length] + '" stroke="var(--md-sys-color-surface)" stroke-width="2" opacity="0.92"><title>' + item.table + ': ' + fmt(item.count) + '</title></path>';
+                        });
+
+                        document.getElementById('orbi-pie-chart').innerHTML = paths;
+
+                        let legend = '';
+                        items.forEach(function(item, i) {
+                            legend += '<div class="orbi-pie-legend-item">' +
+                                '<span class="orbi-pie-legend-swatch" style="background:' + pastel[i % pastel.length] + '"></span>' +
+                                '<span class="orbi-pie-legend-name">' + item.table + '</span>' +
+                                '<span class="orbi-pie-legend-count">' + fmt(item.count) + '</span></div>';
+                        });
+                        document.getElementById('orbi-pie-legend').innerHTML = legend;
+                    } catch(e) {
+                        document.getElementById('orbi-pie-chart').innerHTML = '<text x="130" y="135" text-anchor="middle" fill="var(--md-sys-color-on-surface-variant)" font-size="13" font-family="Inter,sans-serif">Error al cargar</text>';
+                    }
+                }
+
+                loadPie();
+
+                function renderBarChart(elementId, items, valueFormatter) {
+                    var root = document.getElementById(elementId);
+                    root.replaceChildren();
+                    if (!items.length) {
+                        var empty = document.createElement('div');
+                        empty.className = 'orbi-bar-empty';
+                        empty.textContent = 'Sin ventas registradas este mes.';
+                        root.appendChild(empty);
+                        return;
+                    }
+
+                    var maximum = Math.max.apply(null, items.map(function(item) { return Number(item.value) || 0; }));
+                    items.slice(0, 5).forEach(function(item, index) {
+                        var row = document.createElement('div');
+                        row.className = 'orbi-bar-row';
+
+                        var meta = document.createElement('div');
+                        meta.className = 'orbi-bar-meta';
+                        var label = document.createElement('span');
+                        label.className = 'orbi-bar-label';
+                        label.textContent = item.label;
+                        label.title = item.label;
+                        var value = document.createElement('span');
+                        value.className = 'orbi-bar-value';
+                        value.textContent = valueFormatter(Number(item.value) || 0);
+                        meta.append(label, value);
+
+                        var track = document.createElement('div');
+                        track.className = 'orbi-bar-track';
+                        var fill = document.createElement('div');
+                        fill.className = 'orbi-bar-fill';
+                        fill.style.width = (maximum ? Math.max(4, Number(item.value) / maximum * 100) : 0) + '%';
+                        fill.style.minWidth = Number(item.value) > 0 ? '5px' : '0';
+                        fill.style.background = barPastel[index % barPastel.length];
+                        fill.style.animationDelay = (index * 65) + 'ms';
+                        track.appendChild(fill);
+                        row.append(meta, track);
+                        root.appendChild(row);
+                    });
+                }
+
+                async function loadMonthlySales() {
+                    try {
+                        var response = await fetch('/Home/MonthlySalesAnalytics', { credentials: 'same-origin' });
+                        if (!response.ok) throw new Error(response.status);
+                        var data = await response.json();
+                        document.getElementById('orbi-monthly-period').textContent = new Intl.DateTimeFormat('es-EC', {
+                            month: 'long', year: 'numeric', timeZone: 'America/Guayaquil'
+                        }).format(new Date(data.periodStart));
+                        var money = function(value) { return value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }); };
+                        var units = function(value) { return value.toLocaleString('en-US') + ' uds.'; };
+                        renderBarChart('orbi-province-sales', data.provinces || [], money);
+                        renderBarChart('orbi-category-sales', data.categories || [], units);
+                        renderBarChart('orbi-store-revenue', data.stores || [], money);
+                    } catch (error) {
+                        ['orbi-province-sales', 'orbi-category-sales', 'orbi-store-revenue'].forEach(function(id) {
+                            document.getElementById(id).innerHTML = '<div class="orbi-bar-empty">No se pudieron cargar los datos.</div>';
+                        });
+                    }
+                }
+
+                loadMonthlySales();
+
+                var backupInterval = 300;
+                var remaining = backupInterval;
+                var backingUp = false;
+                var lastKnownBackupUtc = null;
+                var selectedBackupName = null;
+
+                function formatBackupDate(value) {
+                    if (!value) return 'No hay backups disponibles';
+                    return new Intl.DateTimeFormat('es-EC', {
+                        dateStyle: 'medium', timeStyle: 'short'
+                    }).format(new Date(value));
+                }
+
+                function formatBackupSize(bytes) {
+                    if (bytes >= 1073741824) return (bytes / 1073741824).toLocaleString('es-EC', { maximumFractionDigits: 1 }) + ' GB';
+                    return (bytes / 1048576).toLocaleString('es-EC', { maximumFractionDigits: 1 }) + ' MB';
+                }
+
+                function renderBackupList(backups) {
+                    var body = document.getElementById('orbi-backup-list');
+                    body.replaceChildren();
+                    if (!backups.length) {
+                        var emptyRow = body.insertRow();
+                        var emptyCell = emptyRow.insertCell();
+                        emptyCell.colSpan = 3;
+                        emptyCell.className = 'orbi-backup-empty';
+                        emptyCell.textContent = 'No hay backups disponibles.';
+                        return;
+                    }
+
+                    backups.forEach(function(backup) {
+                        var row = body.insertRow();
+                        row.insertCell().textContent = formatBackupSize(backup.sizeBytes);
+                        row.insertCell().textContent = formatBackupDate(backup.backupUtc);
+                        var actionCell = row.insertCell();
+                        var action = document.createElement('button');
+                        action.type = 'button';
+                        action.className = 'm3-text-button';
+                        action.dataset.restoreBackup = backup.fileName;
+                        action.dataset.backupDate = formatBackupDate(backup.backupUtc);
+                        action.innerHTML = '<span class="material-symbols-outlined">restore</span>Recuperar';
+                        actionCell.appendChild(action);
+                    });
+                }
+
+                async function loadBackupStatus() {
+                    try {
+                        const res = await fetch('/Home/BackupStatus', { credentials: 'same-origin' });
+                        if (!res.ok) return;
+                        const data = await res.json();
+                        if (data.nextBackupUtc !== lastKnownBackupUtc) {
+                            lastKnownBackupUtc = data.nextBackupUtc;
+                            backingUp = false;
+                        }
+                        remaining = data.secondsRemaining || 0;
+                        renderBackupList(data.backups || []);
+                    } catch {}
+                }
+
+                function updateCountdown() {
+                    var bar = document.getElementById('orbi-backup-bar');
+                    var icon = document.getElementById('orbi-backup-icon');
+                    var label = document.getElementById('orbi-backup-label');
+                    var track = document.getElementById('orbi-backup-track');
+                    var time = document.getElementById('orbi-backup-time');
+
+                    if (remaining > 0 && !backingUp) remaining--;
+
+                    if (remaining <= 0 && !backingUp) {
+                        backingUp = true;
+                        bar.classList.add('running');
+                        icon.textContent = 'sync';
+                        label.textContent = 'Realizando backup';
+                        track.style.display = 'none';
+                        time.textContent = '';
+                    }
+
+                    if (backingUp) return;
+
+                    bar.classList.remove('running');
+                    icon.textContent = 'history';
+                    label.textContent = 'Próximo backup automático en';
+                    track.style.display = '';
+                    var pct = (remaining / backupInterval) * 100;
+                    var min = Math.floor(remaining / 60);
+                    var sec = Math.floor(remaining % 60);
+                    var fill = document.getElementById('orbi-backup-fill');
+                    if (fill) fill.style.width = pct + '%';
+                    if (time) time.textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
+                }
+
+                loadBackupStatus();
+                setInterval(loadBackupStatus, 30000);
+                setInterval(updateCountdown, 1000);
+
+                var restoreForm = document.getElementById('orbi-restore-form');
+                var restoreDialog = document.getElementById('orbi-restore-dialog');
+                var restoreCancel = document.getElementById('orbi-restore-cancel');
+                var restoreConfirm = document.getElementById('orbi-restore-confirm');
+
+                document.getElementById('orbi-backup-list')?.addEventListener('click', function(event) {
+                    var action = event.target.closest('[data-restore-backup]');
+                    if (!action) return;
+                    selectedBackupName = action.dataset.restoreBackup;
+                    var dialogDate = document.getElementById('orbi-confirm-backup-date');
+                    if (dialogDate) dialogDate.textContent = action.dataset.backupDate + ' · ' + selectedBackupName;
+                    restoreDialog?.showModal();
+                });
+                restoreCancel?.addEventListener('click', function() { restoreDialog?.close(); });
+                restoreDialog?.addEventListener('click', function(event) {
+                    if (event.target === restoreDialog) restoreDialog.close();
+                });
+
+                restoreConfirm?.addEventListener('click', async function() {
+                    if (!selectedBackupName) return;
+                    restoreDialog?.close();
+                    var status = document.getElementById('orbi-restore-status');
+                    document.querySelectorAll('[data-restore-backup]').forEach(function(button) { button.disabled = true; });
+                    restoreConfirm.disabled = true;
+                    status.classList.remove('error');
+                    status.textContent = 'Creando respaldo de seguridad antes de recuperar.';
+
+                    try {
+                        var formData = new FormData(restoreForm);
+                        formData.append('backupName', selectedBackupName);
+                        var response = await fetch(restoreForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        });
+                        var result = await response.json();
+                        if (!response.ok || !result.success) throw new Error(result.message || 'No se pudo recuperar el backup.');
+                        status.textContent = result.message;
+                        setTimeout(function() { window.location.reload(); }, 1200);
+                    } catch (error) {
+                        status.classList.add('error');
+                        status.textContent = error.message || 'No se pudo recuperar el backup.';
+                        document.querySelectorAll('[data-restore-backup]').forEach(function(button) { button.disabled = false; });
+                        restoreConfirm.disabled = false;
+                    }
+                });
+            })();
+            </script>
+        }
+
+        @if (!User.IsInRole("Administrador"))
+        {
+            <style>
+                .orbi-role-charts { max-width: 900px; margin: 0 auto; text-align: left; padding-bottom: 2rem; }
+                .orbi-role-charts-title { font-size: var(--md-sys-typescale-title-medium-size); font-weight: var(--md-sys-typescale-title-medium-weight); color: var(--md-sys-color-outline); margin-bottom: 16px; text-align: center; }
+                .orbi-role-chart-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+                .orbi-role-chart-card { background: var(--md-sys-color-surface-container-low, #f5f5f5); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center; }
+                .orbi-role-chart-svg { flex: 0 0 auto; }
+                .orbi-role-chart-legend { display: flex; flex-direction: column; gap: 5px; min-width: 140px; }
+                .orbi-role-chart-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--md-sys-color-on-surface); }
+                .orbi-role-chart-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+                .orbi-role-chart-legend-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .orbi-role-chart-legend-count { font-weight: 600; font-variant-numeric: tabular-nums; }
+                .orbi-role-chart-total { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--md-sys-color-outline-variant); font-size: 13px; font-weight: 600; color: var(--md-sys-color-on-surface); display: flex; justify-content: space-between; }
+                .orbi-role-chart-title { font-size: 13px; font-weight: 600; color: var(--md-sys-color-outline); text-align: center; width: 100%; }
+                .orbi-role-chart-loading { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 40px 0; width: 100%; }
+                .orbi-role-chart-loading span { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--md-sys-color-primary, #075c9b); animation: orbi-role-dot 1.2s infinite ease-in-out; }
+                .orbi-role-chart-loading span:nth-child(2) { animation-delay: .15s; }
+                .orbi-role-chart-loading span:nth-child(3) { animation-delay: .3s; }
+                .orbi-role-chart-empty { font-size: 13px; color: var(--md-sys-color-on-surface-variant); text-align: center; padding: 40px 0; width: 100%; }
+                @@keyframes orbi-role-dot { 0%,60%,100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-4px); opacity: 1; } }
+                @@media(max-width: 640px) { .orbi-role-chart-pair { grid-template-columns: 1fr; } }
+            </style>
+
+            <div class="orbi-role-charts">
+                <div class="orbi-role-charts-title">Resumen de actividad</div>
+                <div class="orbi-role-chart-pair">
+                    <div class="orbi-role-chart-card" id="orbi-role-chart1">
+                        <div class="orbi-role-chart-loading"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="orbi-role-chart-card" id="orbi-role-chart2">
+                        <div class="orbi-role-chart-loading"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            (function() {
+                var pastel = ['#FFB3BA','#FFDFBA','#FFFFBA','#BAFFC9','#BAE1FF','#D4BAFF','#FFBAE1','#BFFFD4','#FFE4BA','#BADCFF','#FFD4E8','#D4F0FF'];
+                function fmt(n) { return n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+
+                function renderSmallPie(container, title, items, total) {
+                    if (!items.length) {
+                        container.innerHTML = '<div class="orbi-role-chart-title">' + title + '</div><div class="orbi-role-chart-empty">Sin datos</div>';
+                        return;
+                    }
+                    var cx = 80, cy = 80, r = 65, ir = 35;
+                    var cum = 0, paths = '';
+                    items.forEach(function(item, i) {
+                        var start = cum / total * 2 * Math.PI - Math.PI / 2;
+                        cum += item.count;
+                        var end = cum / total * 2 * Math.PI - Math.PI / 2;
+                        var large = (end - start) > Math.PI ? 1 : 0;
+                        var x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start);
+                        var x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end);
+                        var ix1 = cx + ir * Math.cos(start), iy1 = cy + ir * Math.sin(start);
+                        var ix2 = cx + ir * Math.cos(end), iy2 = cy + ir * Math.sin(end);
+                        var d = 'M '+x1+' '+y1+' A '+r+' '+r+' 0 '+large+' 1 '+x2+' '+y2+' L '+ix2+' '+iy2+' A '+ir+' '+ir+' 0 '+large+' 0 '+ix1+' '+iy1+' Z';
+                        paths += '<path d="'+d+'" fill="'+pastel[i%pastel.length]+'" stroke="var(--md-sys-color-surface)" stroke-width="2" opacity="0.92"><title>'+item.label+': '+fmt(item.count)+'</title></path>';
+                    });
+                    var legend = '';
+                    items.forEach(function(item, i) {
+                        legend += '<div class="orbi-role-chart-legend-item"><span class="orbi-role-chart-legend-swatch" style="background:'+pastel[i%pastel.length]+'"></span><span class="orbi-role-chart-legend-label">'+item.label+'</span><span class="orbi-role-chart-legend-count">'+fmt(item.count)+'</span></div>';
+                    });
+                    legend += '<div class="orbi-role-chart-total"><span>TOTAL</span><span>'+fmt(total)+'</span></div>';
+                    container.innerHTML = '<div class="orbi-role-chart-title">'+title+'</div><svg class="orbi-role-chart-svg" viewBox="0 0 160 160" width="140" height="140">'+paths+'</svg><div class="orbi-role-chart-legend">'+legend+'</div>';
+                }
+
+                async function loadRoleCharts() {
+                    try {
+                        var res = await fetch('/Home/RoleCharts', { credentials: 'same-origin' });
+                        if (!res.ok) throw new Error(res.status);
+                        var data = await res.json();
+                        renderSmallPie(document.getElementById('orbi-role-chart1'), data.chart1Title || 'Sin datos', data.chart1 || [], data.chart1Total || 0);
+                        renderSmallPie(document.getElementById('orbi-role-chart2'), data.chart2Title || 'Sin datos', data.chart2 || [], data.chart2Total || 0);
+                    } catch(e) {
+                        document.getElementById('orbi-role-chart1').innerHTML = '<div class="orbi-role-chart-empty">Error al cargar</div>';
+                        document.getElementById('orbi-role-chart2').innerHTML = '<div class="orbi-role-chart-empty">Error al cargar</div>';
+                    }
+                }
+
+                loadRoleCharts();
+            })();
+            </script>
+        }
+    }
+    else
+    {
+        <div class="orbi-home-video-shell">
+            <video id="orbi-home-video" class="orbi-home-video" autoplay muted loop playsinline preload="metadata" aria-label="Presentación de Orbi App">
+                <source src="~/assets/video/home_publicidad.mp4" type="video/mp4" />
+                Tu navegador no puede reproducir este video.
+            </video>
+            <div class="orbi-home-video-actions" aria-label="Acceso a Orbi App">
+                <a class="orbi-home-video-action orbi-home-video-action-primary" asp-area="Identity" asp-page="/Account/Login">Iniciar sesión</a>
+                <a class="orbi-home-video-action orbi-home-video-action-secondary" asp-area="Identity" asp-page="/Account/Register">Registrarme</a>
+            </div>
+            <button id="orbi-home-video-mute" type="button" class="m3-icon-btn orbi-home-video-mute" aria-label="Activar sonido" title="Activar sonido">
+                <span class="material-symbols-outlined" aria-hidden="true">volume_off</span>
+            </button>
+        </div>
+        <script>
+            (function () {
+                const video = document.getElementById('orbi-home-video');
+                const muteButton = document.getElementById('orbi-home-video-mute');
+                const muteIcon = muteButton?.querySelector('.material-symbols-outlined');
+
+                if (!video || !muteButton || !muteIcon) return;
+
+                muteButton.addEventListener('click', function () {
+                    video.muted = !video.muted;
+                    const isMuted = video.muted;
+                    muteIcon.textContent = isMuted ? 'volume_off' : 'volume_up';
+                    muteButton.setAttribute('aria-label', isMuted ? 'Activar sonido' : 'Silenciar video');
+                    muteButton.setAttribute('title', isMuted ? 'Activar sonido' : 'Silenciar video');
+                });
+            })();
+        </script>
+    }
+</section>
+
+@if (ViewData["RenderLegacyHomeChat"] is true)
+{
+<aside id="orbi-chat-panel" class="orbi-chat-panel" data-welcome="@chatWelcome" aria-label="Asistente Orbi">
+    <div class="orbi-chat-header" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
+        <div class="orbi-chat-brand" style="flex:1;">
+            <strong>Asistente Orbi</strong>
+        </div>
+        <button id="orbi-chat-new" type="button" class="m3-icon-btn" aria-label="Nuevo chat" title="Nuevo chat">
+            <span class="material-symbols-outlined">add_comment</span>
+        </button>
+        <button id="orbi-chat-toggle" type="button" class="m3-icon-btn" aria-expanded="true" aria-controls="orbi-chat-body" aria-label="Contraer chat">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    </div>
+    <div id="orbi-chat-body" class="orbi-chat-body">
+        <div id="orbi-chat-messages" aria-live="polite" style="flex:1;min-height:240px;overflow-y:auto;padding:8px 4px;font-size:var(--md-sys-typescale-body-small-size);margin-bottom:12px;">
+            <div class="orbi-chat-message orbi-chat-message-assistant">@chatWelcome</div>
+        </div>
+        <div class="orbi-chat-suggestions" aria-label="Preguntas sugeridas">
+            @foreach (var suggestion in chatSuggestions)
+            {
+                <button type="button" class="orbi-chat-suggestion" data-question="@suggestion">@suggestion</button>
+            }
+        </div>
+        <form id="orbi-chat-form" class="orbi-chat-composer" method="post" asp-controller="Home" asp-action="ProductChat">
+            <input type="hidden" name="context" value="@chatContext" />
+            <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="300" required placeholder="Escribe o habla..." aria-label="Mensaje para el asistente"></textarea>
+            <button id="orbi-chat-voice" class="m3-icon-btn orbi-chat-voice" type="button" aria-label="Hablar por voz" title="Hablar por voz">
+                <span class="material-symbols-outlined">mic</span>
+            </button>
+            <button id="orbi-chat-voice-mode" class="m3-icon-btn orbi-chat-voice-mode" type="button" aria-pressed="false" aria-label="Iniciar modo voz" title="Modo voz">
+                <span class="material-symbols-outlined">headset_mic</span>
+            </button>
+            <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar" style="width:44px;padding:0;flex:0 0 44px;">
+                <span class="material-symbols-outlined">arrow_upward</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<script>
+    (function () {
+        const form = document.getElementById('orbi-chat-form');
+        const input = document.getElementById('orbi-chat-input');
+        const messages = document.getElementById('orbi-chat-messages');
+        const button = document.getElementById('orbi-chat-send');
+        const buttonIcon = button.querySelector('.material-symbols-outlined');
+        const voiceButton = document.getElementById('orbi-chat-voice');
+        const voiceIcon = voiceButton.querySelector('.material-symbols-outlined');
+        const voiceModeButton = document.getElementById('orbi-chat-voice-mode');
+        const voiceModeIcon = voiceModeButton.querySelector('.material-symbols-outlined');
+        const panel = document.getElementById('orbi-chat-panel');
+        const homeLayout = document.getElementById('orbi-home-layout');
+        const chatBody = document.getElementById('orbi-chat-body');
+        const toggle = document.getElementById('orbi-chat-toggle');
+        const newChat = document.getElementById('orbi-chat-new');
+        const toggleIcon = toggle.querySelector('.material-symbols-outlined');
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let activeController = null;
+        let stopTyping = false;
+        let chatGeneration = 0;
+        let recognition = null;
+        let isListening = false;
+        let voiceMode = false;
+        let isSpeaking = false;
+
+        function resizeInput() {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 112) + 'px';
+        }
+
+        input.addEventListener('input', resizeInput);
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (!activeController) form.requestSubmit();
+            }
+        });
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-EC';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+
+            recognition.addEventListener('start', function () {
+                isListening = true;
+                const activeVoiceControl = voiceMode ? voiceModeButton : voiceButton;
+                activeVoiceControl.classList.add('listening');
+                if (voiceMode) {
+                    voiceModeIcon.textContent = 'graphic_eq';
+                    voiceModeButton.setAttribute('aria-label', 'Modo voz escuchando; pulsar para detener');
+                } else {
+                    voiceIcon.textContent = 'graphic_eq';
+                    voiceButton.setAttribute('aria-label', 'Detener dictado');
+                }
+            });
+
+            recognition.addEventListener('result', function (event) {
+                input.value = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+                resizeInput();
+            });
+
+            recognition.addEventListener('end', function () {
+                isListening = false;
+                voiceButton.classList.remove('listening');
+                voiceModeButton.classList.remove('listening');
+                voiceIcon.textContent = 'mic';
+                voiceButton.setAttribute('aria-label', 'Dictar mensaje');
+                if (voiceMode) {
+                    voiceModeIcon.textContent = 'headset_mic';
+                    if (!activeController && !isSpeaking && input.value.trim().length >= 2) {
+                        form.requestSubmit();
+                    } else if (!activeController && !isSpeaking) {
+                        setTimeout(startListening, 350);
+                    }
+                } else {
+                    input.focus();
+                }
+            });
+
+            recognition.addEventListener('error', function (event) {
+                isListening = false;
+                voiceButton.classList.remove('listening');
+                voiceModeButton.classList.remove('listening');
+                voiceIcon.textContent = 'mic';
+                voiceModeIcon.textContent = 'headset_mic';
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    setVoiceMode(false);
+                }
+            });
+
+            voiceButton.addEventListener('click', function () {
+                if (voiceMode) setVoiceMode(false);
+                if (isListening) recognition.stop();
+                else startListening();
+            });
+
+            voiceModeButton.addEventListener('click', function () {
+                setVoiceMode(!voiceMode);
+            });
+        } else {
+            voiceButton.hidden = true;
+            voiceModeButton.hidden = true;
+        }
+
+        function startListening() {
+            if (!recognition || isListening || isSpeaking || activeController) return;
+            try { recognition.start(); } catch { }
+        }
+
+        function setVoiceMode(enabled) {
+            voiceMode = enabled;
+            voiceModeButton.classList.toggle('active', enabled);
+            voiceModeButton.setAttribute('aria-pressed', String(enabled));
+            voiceModeButton.setAttribute('aria-label', enabled ? 'Detener modo voz' : 'Iniciar modo voz');
+            voiceModeButton.title = enabled ? 'Detener modo voz' : 'Modo voz';
+            voiceModeIcon.textContent = 'headset_mic';
+            if (!enabled) {
+                window.speechSynthesis?.cancel();
+                isSpeaking = false;
+                if (isListening) recognition?.stop();
+                return;
+            }
+            input.value = '';
+            resizeInput();
+            startListening();
+        }
+
+        function speakInVoiceMode(text) {
+            if (!voiceMode || !('speechSynthesis' in window)) {
+                if (voiceMode) startListening();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            isSpeaking = true;
+            voiceModeIcon.textContent = 'spatial_audio';
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-EC';
+            utterance.rate = .95;
+            const resumeListening = function () {
+                isSpeaking = false;
+                voiceModeIcon.textContent = 'headset_mic';
+                if (voiceMode) setTimeout(startListening, 350);
+            };
+            utterance.onend = resumeListening;
+            utterance.onerror = resumeListening;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function setBusy(busy) {
+            button.type = busy ? 'button' : 'submit';
+            buttonIcon.textContent = busy ? 'stop' : 'arrow_upward';
+            button.setAttribute('aria-label', busy ? 'Detener respuesta' : 'Enviar mensaje');
+            button.title = busy ? 'Detener' : 'Enviar';
+            input.disabled = busy;
+            voiceButton.disabled = busy;
+        }
+
+        function addWelcomeMessage() {
+            const welcome = document.createElement('div');
+            welcome.className = 'orbi-chat-message orbi-chat-message-assistant';
+            welcome.textContent = panel.dataset.welcome;
+            messages.appendChild(welcome);
+        }
+
+        document.querySelectorAll('.orbi-chat-suggestion').forEach(function (suggestion) {
+            suggestion.addEventListener('click', function () {
+                input.value = suggestion.dataset.question;
+                resizeInput();
+                form.requestSubmit();
+            });
+        });
+
+        button.addEventListener('click', function () {
+            if (!activeController) return;
+            stopTyping = true;
+            activeController.abort();
+        });
+
+        newChat.addEventListener('click', function () {
+            chatGeneration++;
+            stopTyping = true;
+            activeController?.abort();
+            setVoiceMode(false);
+            activeController = null;
+            messages.replaceChildren();
+            addWelcomeMessage();
+            input.value = '';
+            resizeInput();
+            setBusy(false);
+            if (chatBody.hidden) toggle.click();
+            input.focus();
+        });
+
+        toggle.addEventListener('click', function () {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            toggle.setAttribute('aria-label', expanded ? 'Abrir asistente' : 'Contraer chat');
+            toggle.title = expanded ? 'Abrir asistente' : 'Contraer chat';
+            toggleIcon.textContent = expanded ? 'smart_toy' : 'chevron_right';
+            chatBody.hidden = expanded;
+            panel.classList.toggle('collapsed', expanded);
+            homeLayout.classList.toggle('chat-collapsed', expanded);
+            if (expanded && voiceMode) setVoiceMode(false);
+            if (!expanded) input.focus();
+        });
+
+        async function typeMessage(element, text, generation) {
+            if (reducedMotion) {
+                element.textContent = text;
+                return;
+            }
+
+            element.textContent = '';
+            element.classList.add('orbi-chat-cursor');
+            for (let index = 0; index < text.length; index++) {
+                if (stopTyping || generation !== chatGeneration) break;
+                element.textContent += text[index];
+                messages.scrollTop = messages.scrollHeight;
+                await new Promise(resolve => setTimeout(resolve, 14));
+            }
+            element.classList.remove('orbi-chat-cursor');
+        }
+
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const text = input.value.trim();
+            if (text.length < 2) return;
+            const formData = new FormData(form);
+            const generation = ++chatGeneration;
+            activeController = new AbortController();
+            stopTyping = false;
+
+            const userMessage = document.createElement('div');
+            userMessage.className = 'orbi-chat-message orbi-chat-message-user';
+            userMessage.textContent = text;
+            messages.appendChild(userMessage);
+            input.value = '';
+            resizeInput();
+            setBusy(true);
+
+            const typingMessage = document.createElement('div');
+            typingMessage.className = 'orbi-chat-message orbi-chat-message-assistant orbi-chat-typing';
+            typingMessage.setAttribute('aria-label', 'Generando respuesta');
+            typingMessage.innerHTML = '<span>•</span><span>•</span><span>•</span>';
+            messages.appendChild(typingMessage);
+            messages.scrollTop = messages.scrollHeight;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    signal: activeController.signal
+                });
+                const data = await response.json();
+                if (generation !== chatGeneration) return;
+                typingMessage.remove();
+                const assistantMessage = document.createElement('div');
+                assistantMessage.className = 'orbi-chat-message orbi-chat-message-assistant';
+                messages.appendChild(assistantMessage);
+                const answer = data.message || 'No pude responder.';
+                await typeMessage(assistantMessage, answer, generation);
+                speakInVoiceMode(answer);
+            } catch (error) {
+                if (generation !== chatGeneration) return;
+                typingMessage.remove();
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'orbi-chat-message orbi-chat-message-assistant';
+                errorMessage.textContent = error.name === 'AbortError'
+                    ? 'Respuesta detenida.'
+                    : 'No pude conectar con el asistente.';
+                messages.appendChild(errorMessage);
+                speakInVoiceMode(errorMessage.textContent);
+            } finally {
+                if (generation !== chatGeneration) return;
+                activeController = null;
+                setBusy(false);
+                messages.scrollTop = messages.scrollHeight;
+                if (!voiceMode) input.focus();
+            }
+        });
+    })();
+</script>
+}
+</div>
