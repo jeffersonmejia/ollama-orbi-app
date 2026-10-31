@@ -38,7 +38,7 @@ Desde la raíz del repositorio, inicia PostgreSQL con Docker Compose:
 docker compose up -d postgres
 ```
 
-Compose usa los secretos locales `.docker/secrets/postgres_password` (administración) y `.docker/secrets/orbi_app_password` (aplicación). Se mantienen fuera del control de versiones. La cuenta `orbi_app` es la que debe usar la aplicación; la cuenta configurada en `POSTGRES_USER` queda reservada para tareas administrativas. PostgreSQL solo aplica scripts de inicialización cuando el volumen está vacío. Si ya tienes datos, ejecuta una vez `docker compose exec -T postgres sh /docker-entrypoint-initdb.d/003_create_app_role.sh` con las credenciales administrativas vigentes. Cambiar el archivo secreto no rota automáticamente la contraseña guardada dentro de un volumen existente.
+Compose usa los secretos locales `.docker/secrets/postgres_password` (administración) y `.docker/secrets/orbi_app_password` (aplicación). Se mantienen fuera del control de versiones. La cuenta `orbi_app` es la que debe usar la aplicación; la cuenta configurada en `POSTGRES_USER` queda reservada para tareas administrativas. PostgreSQL solo ejecuta el script de aprovisionamiento de `orbi_app` cuando el volumen está vacío. Las migraciones y los scripts de esquema y datos se ejecutan desde la aplicación, después de que las tablas de Identity estén disponibles. Si ya tienes un volumen, ejecuta una vez `docker compose exec -T postgres sh /docker-entrypoint-initdb.d/003_create_app_role.sh` con las credenciales administrativas vigentes. Cambiar el archivo secreto no rota automáticamente la contraseña guardada dentro de un volumen existente.
 
 Para crear los secretos una sola vez si todavía no existen, genera valores aleatorios locales:
 

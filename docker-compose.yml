@@ -32,8 +32,6 @@ services:
       - orbi_app_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/Features/Shared/Infrastructure/Sql/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
-      - ./src/Features/Shared/Infrastructure/Sql/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
       - ./.docker/init/003_create_app_role.sh:/docker-entrypoint-initdb.d/003_create_app_role.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jef_db_first -d orbi_app"]

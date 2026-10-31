@@ -11,20 +11,26 @@ public static class DatabaseInitializer
         var identityDb = provider.GetRequiredService<ApplicationDbContext>();
         await identityDb.Database.MigrateAsync();
 
+        var sqlDirectory = Path.Combine(contentRootPath, "db");
+        if (!Directory.Exists(sqlDirectory))
+        {
+            sqlDirectory = Path.Combine(AppContext.BaseDirectory, "db");
+        }
+
         var connection = identityDb.Database.GetDbConnection();
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
 
         foreach (var fileName in new[] { "orbi-schema.sql", "orbi-locations.sql" })
         {
-            var sqlPath = Path.Combine(contentRootPath, "db", fileName);
+            var sqlPath = Path.Combine(sqlDirectory, fileName);
             if (!File.Exists(sqlPath)) continue;
             command.CommandText = await File.ReadAllTextAsync(sqlPath);
             await command.ExecuteNonQueryAsync();
         }
 
         await IdentitySeeder.SeedAsync(provider);
-        var dataPath = Path.Combine(contentRootPath, "db", "orbi-data.sql");
+        var dataPath = Path.Combine(sqlDirectory, "orbi-data.sql");
         if (File.Exists(dataPath))
         {
             command.CommandText = await File.ReadAllTextAsync(dataPath);
