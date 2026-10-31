@@ -61,13 +61,20 @@ public static class PresentationServiceCollectionExtensions
         IConfiguration configuration,
         IHostEnvironment environment)
     {
+        var clientId = configuration["Authentication:Google:ClientId"];
+        var clientSecret = configuration["Authentication:Google:ClientSecret"];
+        if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
+        {
+            return services;
+        }
+
         services.AddAuthentication()
             .AddGoogle(options =>
             {
                 options.SignInScheme = IdentityConstants.ExternalScheme;
                 options.CallbackPath = "/signin-google";
-                options.ClientId = configuration["Authentication:Google:ClientId"]!;
-                options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+                options.ClientId = clientId;
+                options.ClientSecret = clientSecret;
                 options.Events.OnRemoteFailure = context =>
                 {
                     context.HandleResponse();
