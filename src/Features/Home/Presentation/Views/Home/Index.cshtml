@@ -211,7 +211,7 @@
         inset: 16px 16px auto auto;
         padding: 7px;
         overflow: hidden;
-        border: 1px solid var(--md-sys-color-outline-variant);
+        border: 0;
         border-radius: 18px;
         background: var(--md-sys-color-surface-container-high);
         box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
@@ -289,11 +289,17 @@
         line-height: 1.3;
         cursor: pointer;
         white-space: normal;
+        transition: background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard), color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
     }
 
     .orbi-chat-suggestion:hover {
-        border-color: var(--md-sys-color-primary);
         background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .orbi-chat-suggestion:focus-visible {
+        outline: 2px solid var(--md-sys-color-primary);
+        outline-offset: 2px;
     }
 
     .orbi-chat-cursor::after {

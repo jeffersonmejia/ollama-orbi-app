@@ -17,7 +17,11 @@
   <ItemGroup>
     <Compile Include="../../Program.cs" Link="Program.cs" />
     <Compile Include="../../Features/**/Presentation/**/*.cs" />
-    <Content Include="../../Features/**/*.cshtml" Link="Features/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../../Features/**/*.cshtml"
+             Exclude="../../Features/Identity/Presentation/Areas/Identity/Pages/**/*.cshtml"
+             Link="Features/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../../Features/Identity/Presentation/Areas/Identity/Pages/**/*.cshtml"
+             Link="Areas/Identity/Pages/%(RecursiveDir)%(Filename)%(Extension)" />
     <ProjectReference Include="../Domain/Domain.csproj" />
     <ProjectReference Include="../Application/Application.csproj" />
     <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />

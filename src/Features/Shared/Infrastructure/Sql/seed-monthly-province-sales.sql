@@ -259,7 +259,7 @@ BEGIN
                 (delivery_order_id, external_id, provider, status, amount, created_at, confirmed_at)
             VALUES
                 (selected_order_id, external_payment_id,
-                 CASE WHEN sale_number % 2 = 0 THEN 'PayPhone' ELSE 'PayPal' END,
+                 'PayPal',
                  'Aprobado', order_total, order_created_at + interval '2 minutes', order_created_at + interval '2 minutes');
         END LOOP;
     END LOOP;
@@ -355,7 +355,7 @@ BEGIN
             INSERT INTO payment
                 (delivery_order_id, external_id, provider, status, amount, created_at, confirmed_at)
             VALUES
-                (selected_order_id, external_payment_id, 'PayPhone', 'Aprobado', order_total,
+                (selected_order_id, external_payment_id, 'PayPal', 'Aprobado', order_total,
                  date_trunc('month', now()) + interval '12 days 10 hours 2 minutes',
                  date_trunc('month', now()) + interval '12 days 10 hours 2 minutes');
         END LOOP;

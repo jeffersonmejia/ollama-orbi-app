@@ -14,6 +14,16 @@
 
     <partial name="_StatusMessage" for="StatusMessage" />
 
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Clave</h2><p>Cambia o configura la contraseña de tu cuenta.</p></div>
+            <span class="material-symbols-outlined">password</span>
+        </div>
+        <a asp-page="@(Model.HasPassword ? "./ChangePassword" : "./SetPassword")" class="m3-filled-button">
+            @(Model.HasPassword ? "Cambiar clave" : "Configurar clave")
+        </a>
+    </section>
+
     @* Doble factor *@
     <section class="orbi-google-card">
         <div class="orbi-google-card-heading">

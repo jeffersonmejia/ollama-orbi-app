@@ -1,0 +1,814 @@
+/* Capa visual común inspirada en los roles de color, formas y movimiento de Material 3. */
+:root {
+  --orbi-interaction: color-mix(in srgb, var(--md-sys-color-primary) 9%, transparent);
+  --orbi-card-border: color-mix(in srgb, var(--md-sys-color-outline-variant) 72%, transparent);
+  --orbi-card-shadow: 0 1px 2px rgba(25, 29, 22, .06), 0 4px 12px rgba(25, 29, 22, .04);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+}
+
+::selection {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--md-sys-color-primary) 62%, white);
+  outline-offset: 3px;
+}
+
+/* Superficies compartidas: elevación contenida y esquinas amplias para contenedores. */
+.m3-card,
+.m3-dialog,
+.m3-menu,
+.m3-snackbar,
+.orbi-db-card,
+.orbi-monthly-card,
+.orbi-role-chart-card,
+.orbi-operation-card,
+.orbi-delivery-card,
+.orbi-order-card,
+.orbi-payment-card,
+.orbi-address-card,
+.orbi-profile-card,
+.orbi-stat-card,
+.orbi-metric-card,
+.orbi-form-card,
+.orbi-panel,
+.orbi-chat-panel {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  border-color: var(--orbi-card-border);
+  box-shadow: var(--orbi-card-shadow);
+  transition: background-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.m3-card:hover,
+.orbi-db-card:hover,
+.orbi-monthly-card:hover,
+.orbi-role-chart-card:hover,
+.orbi-operation-card:hover,
+.orbi-delivery-card:hover,
+.orbi-order-card:hover,
+.orbi-payment-card:hover,
+.orbi-address-card:hover,
+.orbi-profile-card:hover,
+.orbi-stat-card:hover,
+.orbi-metric-card:hover,
+.orbi-form-card:hover,
+.orbi-panel:hover {
+  border-color: color-mix(in srgb, var(--md-sys-color-primary) 24%, var(--md-sys-color-outline-variant));
+  box-shadow: 0 4px 8px rgba(25, 29, 22, .08), 0 10px 24px rgba(25, 29, 22, .06);
+  transform: translateY(-2px);
+}
+
+.m3-nav-rail {
+  background: var(--md-sys-color-surface-container-low);
+  border: 0;
+  box-shadow: none;
+  padding: 16px 8px;
+  gap: 8px;
+}
+
+.m3-nav-item,
+.m3-bottom-nav-item,
+button,
+input,
+select,
+textarea {
+  transition-property: color, background-color, border-color, box-shadow, transform;
+  transition-duration: var(--md-sys-motion-duration-short3);
+  transition-timing-function: var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-item.active {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+}
+
+.m3-nav-item.active:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary-container) 88%, var(--md-sys-color-primary));
+}
+
+.orbi-assistant-screen {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  animation: orbi-content-enter var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.orbi-assistant-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 4px;
+}
+
+.orbi-assistant-intro > .material-symbols-outlined {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 18px;
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+  font-size: 28px;
+}
+
+.orbi-assistant-intro h2 {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-headline-small-size);
+  line-height: 1.2;
+}
+
+.orbi-assistant-intro p {
+  margin: 4px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.orbi-chat-panel.orbi-chat-page-panel {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 18px clamp(18px, 4vw, 64px) 28px;
+  border: 0;
+  border-radius: 0;
+  background: var(--md-sys-color-background);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.orbi-chat-page-panel .orbi-chat-header {
+  width: 100%;
+  min-height: 48px;
+  max-width: 1120px;
+  margin: 0 auto 12px !important;
+}
+
+.orbi-chat-page-panel .orbi-chat-header > strong {
+  font-size: 16px;
+}
+
+.orbi-chat-page-header-spacer {
+  flex: 1;
+}
+
+.orbi-chat-page-panel .orbi-chat-new-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 168px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.orbi-chat-page-panel .orbi-chat-new-button:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary-container) 86%, var(--md-sys-color-primary));
+  color: var(--md-sys-color-on-primary-container);
+  transform: translateY(-1px);
+}
+
+.orbi-chat-page-panel .orbi-chat-new-button .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.orbi-chat-page-panel .orbi-chat-header > a {
+  display: none;
+}
+
+.orbi-chat-page-panel #orbi-chat-toggle {
+  display: none;
+}
+
+/* Compatibilidad con la barra anterior mientras Razor termina de recargarse. */
+.orbi-chat-page-panel #orbi-chat-new.m3-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: auto;
+  min-width: 168px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.orbi-chat-page-panel #orbi-chat-new.m3-icon-btn::after {
+  content: "Nuevo chat";
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: 600;
+}
+
+.orbi-chat-page-panel .orbi-chat-composer {
+  width: 100%;
+  min-height: 68px;
+  max-width: none;
+  margin: 0 auto;
+  padding: 8px 10px 8px 22px;
+  border: 0;
+  border-radius: 36px;
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: none;
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.orbi-chat-page-panel .orbi-chat-composer:focus-within {
+  border: 0;
+  background: var(--md-sys-color-surface-container-low);
+  box-shadow: none;
+}
+
+.orbi-chat-page-panel .orbi-chat-body {
+  width: 100%;
+  max-width: 1120px;
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.orbi-chat-page-panel #orbi-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto 18px !important;
+  padding: 16px 8px !important;
+  font-size: var(--md-sys-typescale-body-large-size) !important;
+  scrollbar-width: thin;
+}
+
+.orbi-chat-empty-state {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  flex: 1;
+  min-height: 280px;
+  padding: 24px;
+  text-align: center;
+  animation: orbi-content-enter var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.orbi-chat-empty-state > .material-symbols-outlined {
+  color: var(--md-sys-color-primary);
+  font-size: 34px;
+}
+
+.orbi-chat-empty-state h1 {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.orbi-chat-empty-state p {
+  max-width: 560px;
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: 1.55;
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestions {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 0 12px;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestions::-webkit-scrollbar {
+  display: none;
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestion:nth-child(n + 4) {
+  display: none;
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestion {
+  flex: 0 1 280px;
+  min-width: 220px;
+  width: auto;
+  min-height: 48px;
+  padding: 10px 16px;
+  border-radius: 18px;
+  background: var(--md-sys-color-surface-container-low);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  text-align: center;
+  border: 0;
+  color: var(--md-sys-color-on-surface);
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestion:hover {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  transform: translateY(-2px);
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestion:focus-visible {
+  outline: none;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.orbi-chat-page-panel .orbi-chat-suggestions[hidden] {
+  display: none !important;
+}
+
+.orbi-chat-page-panel .orbi-chat-input {
+  align-self: center;
+  flex: 1 1 0%;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  font-size: var(--md-sys-typescale-body-large-size);
+}
+
+.orbi-chat-page-panel #orbi-chat-send {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  height: 52px;
+  min-height: 52px;
+  border-radius: 50%;
+}
+
+.orbi-chat-page-panel #orbi-chat-send[hidden],
+.orbi-chat-page-panel #orbi-chat-send [hidden] {
+  display: none !important;
+}
+
+.orbi-chat-page-panel .orbi-chat-send-arrow {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.orbi-chat-page-panel .orbi-chat-send-stop {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.orbi-chat-page-panel #orbi-chat-send [hidden] {
+  display: none !important;
+}
+
+.orbi-assistant-content-area {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.orbi-assistant-main {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.orbi-assistant-footer {
+  display: none;
+}
+
+.m3-nav-item {
+  width: 76px;
+  min-height: 58px;
+  padding: 7px 4px;
+  border-radius: 22px;
+  border: 0;
+  font-size: 13px;
+  line-height: 1.2;
+  animation: orbi-nav-enter 420ms var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-nav-items li:nth-child(1) .m3-nav-item { animation-delay: 30ms; }
+.m3-nav-items li:nth-child(2) .m3-nav-item { animation-delay: 65ms; }
+.m3-nav-items li:nth-child(3) .m3-nav-item { animation-delay: 100ms; }
+.m3-nav-items li:nth-child(4) .m3-nav-item { animation-delay: 135ms; }
+.m3-nav-items li:nth-child(5) .m3-nav-item { animation-delay: 170ms; }
+.m3-nav-items li:nth-child(6) .m3-nav-item { animation-delay: 205ms; }
+.m3-nav-items li:nth-child(7) .m3-nav-item { animation-delay: 240ms; }
+.m3-nav-items li:nth-child(8) .m3-nav-item { animation-delay: 275ms; }
+
+.m3-nav-item .material-symbols-outlined,
+.m3-nav-item svg {
+  font-size: 22px;
+  transition: transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
+    font-variation-settings var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-item:hover .material-symbols-outlined,
+.m3-nav-item:hover svg {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.m3-nav-item.active .material-symbols-outlined,
+.m3-nav-item.active svg,
+.m3-nav-item[aria-expanded="true"] .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.m3-filled-button:hover,
+button[type="submit"]:not(.m3-text-button):not(.m3-outlined-button):hover {
+  filter: brightness(.96);
+  transform: translateY(-1px);
+}
+
+.m3-outlined-button:hover,
+.m3-text-button:hover,
+.m3-nav-item:hover {
+  background-color: var(--orbi-interaction);
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-radius: var(--md-sys-shape-corner-medium);
+  transition: border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+}
+
+table { border-color: var(--md-sys-color-outline-variant); }
+th { color: var(--md-sys-color-on-surface-variant); }
+tbody tr { transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard); }
+tbody tr:hover { background: var(--md-sys-color-surface-container-low); }
+
+/* Entrada breve y escalonada para que el contenido se sienta vivo sin distraer. */
+main, .m3-main, .m3-main-content, .m3-content {
+  animation: orbi-content-enter var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+@keyframes orbi-content-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes orbi-nav-enter {
+  from { opacity: 0; transform: translateY(6px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .m3-nav-rail {
+    border: 0;
+    border-radius: 24px 24px 0 0;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 24px rgba(25, 29, 22, .08);
+    background: color-mix(in srgb, var(--md-sys-color-surface) 94%, transparent);
+    backdrop-filter: blur(16px);
+  }
+
+  .m3-nav-item {
+    width: 60px;
+    min-height: 56px;
+    padding: 6px 4px;
+    border-radius: 18px;
+  }
+
+  .orbi-chat-panel.orbi-chat-page-panel {
+    padding: 10px 14px 16px;
+  }
+
+  .orbi-assistant-screen { gap: 10px; }
+  .orbi-assistant-intro h2 { font-size: 22px; }
+  .orbi-chat-page-panel .orbi-chat-header { margin-bottom: 4px !important; }
+  .orbi-chat-page-panel .orbi-chat-new-button,
+  .orbi-chat-page-panel #orbi-chat-new.m3-icon-btn { min-width: 0; min-height: 48px; height: 48px; padding-inline: 18px; }
+  .orbi-chat-page-panel .orbi-chat-suggestions { gap: 7px; padding-bottom: 8px; }
+  .orbi-chat-page-panel .orbi-chat-suggestion { flex-basis: 240px; min-width: 200px; min-height: 42px; }
+  .orbi-chat-empty-state { min-height: 200px; gap: 10px; padding: 16px 8px; }
+  .orbi-chat-empty-state h1 { font-size: 30px; }
+  .orbi-chat-page-panel .orbi-chat-composer { min-height: 58px; padding-left: 16px; }
+  .orbi-chat-page-panel #orbi-chat-send { height: 44px; min-height: 44px; }
+  .orbi-assistant-content-area { height: calc(100dvh - 72px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Navegación lateral ampliable: el estado compacto conserva los accesos por icono. */
+.m3-nav-rail {
+  width: 260px;
+  align-items: stretch;
+  padding: 12px;
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-rail-header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 16px;
+}
+
+.m3-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--md-sys-color-on-surface);
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.m3-nav-brand:hover {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+.m3-nav-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: var(--md-sys-shape-corner-large);
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+  font-size: 24px;
+  transition: transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+/* La hoja externa de Material Symbols declara el icono inline; esta regla mantiene centrada su caja. */
+.m3-nav-brand .m3-nav-brand-mark.material-symbols-outlined {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.m3-nav-brand:hover .m3-nav-brand-mark {
+  transform: scale(1.04);
+}
+
+.m3-nav-items {
+  align-items: stretch;
+  gap: 6px;
+}
+
+.m3-nav-item {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.m3-nav-item > .material-symbols-outlined {
+  flex: 0 0 24px;
+  font-size: 22px;
+  text-align: center;
+}
+
+.m3-nav-item.orbi-profile-nav-item,
+.m3-nav-item.orbi-operation-nav-item {
+  width: 100%;
+}
+
+.m3-nav-item.orbi-profile-nav-item {
+  color: var(--md-sys-color-on-surface);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface));
+  opacity: 1;
+}
+
+.m3-nav-item.orbi-profile-nav-item:hover,
+.m3-nav-item.orbi-profile-nav-item:focus-visible {
+  color: var(--md-sys-color-on-surface);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 10%, var(--md-sys-color-surface));
+}
+
+.orbi-profile-nav-item .orbi-profile-label small {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.m3-nav-rail-footer {
+  align-items: stretch;
+  padding: 8px 0 0;
+}
+
+.m3-nav-toggle {
+  color: var(--md-sys-color-on-surface-variant);
+  background: var(--md-sys-color-surface-container);
+}
+
+.m3-nav-toggle:hover,
+.m3-nav-toggle:focus-visible {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.m3-content-area {
+  margin-left: 260px;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-rail {
+  width: 76px;
+  padding: 12px 8px;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.m3-app-layout.nav-collapsed .m3-content-area {
+  margin-left: 76px;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-rail-header {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-brand-label {
+  display: none;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-items {
+  align-items: center;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-item {
+  justify-content: center;
+  gap: 0;
+  width: 52px;
+  min-height: 52px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-item > span:not(.material-symbols-outlined) {
+  display: none;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-rail-footer {
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .m3-nav-rail {
+    width: 100%;
+    align-items: center;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+  }
+
+  .m3-nav-rail-header {
+    display: flex;
+    flex-direction: row;
+    width: auto;
+    flex: 0 0 auto;
+    padding: 0 4px;
+    gap: 4px;
+  }
+
+  .m3-nav-brand {
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .m3-nav-items {
+    align-items: center;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 4px;
+  }
+
+  .m3-nav-item {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    width: auto;
+    min-width: 64px;
+    min-height: 54px;
+    padding: 5px 8px;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  .m3-nav-item.orbi-profile-nav-item,
+  .m3-nav-item.orbi-operation-nav-item {
+    width: auto;
+  }
+
+  .m3-nav-rail-footer {
+    align-items: center;
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0 4px;
+  }
+
+  .m3-app-layout.nav-collapsed .m3-nav-rail {
+    width: 100%;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .m3-app-layout.nav-collapsed .m3-content-area {
+    margin-left: 0;
+    padding-bottom: 72px;
+  }
+
+  .m3-app-layout.nav-collapsed .m3-nav-items {
+    align-items: center;
+  }
+
+  .m3-app-layout.nav-collapsed .m3-nav-rail-header {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  .m3-app-layout.nav-collapsed .m3-nav-item {
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 6px 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .m3-nav-toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .m3-nav-item {
+    min-width: 56px;
+    padding-inline: 4px;
+  }
+}

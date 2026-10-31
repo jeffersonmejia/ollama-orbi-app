@@ -197,7 +197,7 @@ public class ApplicationDbContext : IdentityDbContext
         {
             entity.ToTable("payment", table =>
             {
-                table.HasCheckConstraint("ck_payment_provider", "provider IN ('PayPhone', 'PayPal')");
+                table.HasCheckConstraint("ck_payment_provider", "provider <> ''");
                 table.HasCheckConstraint("ck_payment_status", "status IN ('Pendiente', 'Aprobado', 'Rechazado', 'Reembolsado')");
                 table.HasCheckConstraint("ck_payment_amount", "amount >= 0");
             });

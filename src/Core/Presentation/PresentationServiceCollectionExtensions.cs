@@ -19,7 +19,7 @@ public static class PresentationServiceCollectionExtensions
 
         services.AddControllersWithViews()
             .AddRazorOptions(options => options.ViewLocationExpanders.Add(new FeatureViewLocationExpander()));
-        services.AddRazorPages(options => options.RootDirectory = "/Features/Identity/Presentation");
+        services.AddRazorPages();
         services.AddOrbiInfrastructure(configuration);
         services.AddDataProtection(configuration);
         services.AddOrbiIdentity();

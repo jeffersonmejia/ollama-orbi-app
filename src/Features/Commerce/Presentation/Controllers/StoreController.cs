@@ -90,7 +90,7 @@ public class StoreController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Checkout(string provider = "PayPhone")
+    public async Task<IActionResult> Checkout()
     {
         var userEmail = User.Identity?.Name ?? "usuario@local";
 
@@ -140,65 +140,6 @@ public class StoreController : Controller
         _context.Set<ShoppingCartItem>().RemoveRange(cartItems);
         await _context.SaveChangesAsync();
 
-        if (provider.Equals("PayPal", StringComparison.OrdinalIgnoreCase))
-        {
-            return RedirectToAction("CreatePayPalOrder", "Payment", new { orderId = order.PurchaseOrderId });
-        }
-
-        return RedirectToAction("CreateLink", "Payment", new { orderId = order.PurchaseOrderId });
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CheckoutPayPalButton()
-    {
-        var userEmail = User.Identity?.Name ?? "usuario@local";
-
-        var cartItems = await _context.Set<ShoppingCartItem>()
-            .Include(c => c.Product)
-            .Where(c => c.UserEmail == userEmail)
-            .ToListAsync();
-
-        if (!cartItems.Any())
-        {
-            TempData["Error"] = "Cart is empty.";
-            return RedirectToAction(nameof(Cart));
-        }
-
-        foreach (var item in cartItems)
-        {
-            if (item.Quantity > item.Product.Stock)
-            {
-                TempData["Error"] = $"Insufficient stock for {item.Product.Name}.";
-                return RedirectToAction(nameof(Cart));
-            }
-        }
-
-        var order = new PurchaseOrder
-        {
-            UserEmail = userEmail,
-            Status = "Pending"
-        };
-
-        foreach (var item in cartItems)
-        {
-            var subtotal = item.Quantity * item.Product.UnitPrice;
-
-            order.Details.Add(new PurchaseOrderDetail
-            {
-                ProductId = item.ProductId,
-                ProductName = item.Product.Name,
-                Quantity = item.Quantity,
-                UnitPrice = item.Product.UnitPrice,
-                Subtotal = subtotal
-            });
-
-            order.Total += subtotal;
-        }
-
-        _context.Set<PurchaseOrder>().Add(order);
-        _context.Set<ShoppingCartItem>().RemoveRange(cartItems);
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction("PayPalButton", "Payment", new { orderId = order.PurchaseOrderId });
+        return RedirectToAction("CreatePayPalOrder", "Payment", new { orderId = order.PurchaseOrderId });
     }
 }

@@ -84,6 +84,12 @@ public class HomeController : Controller
         return View();
     }
 
+    [AllowAnonymous]
+    public IActionResult Assistant()
+    {
+        return View();
+    }
+
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> ChartStats(string range = "6h")

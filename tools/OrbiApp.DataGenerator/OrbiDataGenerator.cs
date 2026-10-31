@@ -503,10 +503,10 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         {
             var orderId = ((index * 7919 - 1) % _plan.Orders) + 1;
             var order = _orders[orderId];
-            var provider = _faker.PickRandom("PayPhone", "PayPal");
+            const string provider = "PayPal";
             var status = _faker.PickRandom("Aprobado", "Aprobado", "Aprobado", "Pendiente", "Rechazado", "Reembolsado");
             writer.Write((long)index, NpgsqlDbType.Bigint); writer.Write(orderId, NpgsqlDbType.Integer);
-            writer.Write($"{(provider == "PayPhone" ? "PF" : "PP")}-{options.Seed:X8}-{index:X10}", NpgsqlDbType.Varchar);
+            writer.Write($"PP-{options.Seed:X8}-{index:X10}", NpgsqlDbType.Varchar);
             writer.Write(provider, NpgsqlDbType.Varchar); writer.Write(status, NpgsqlDbType.Varchar);
             writer.Write(order.Total, NpgsqlDbType.Numeric); writer.Write(order.Created.AddMinutes(_faker.Random.Int(1, 90)), NpgsqlDbType.TimestampTz);
             if (status == "Aprobado") writer.Write(order.Created.AddMinutes(_faker.Random.Int(2, 120)), NpgsqlDbType.TimestampTz); else writer.WriteNull();

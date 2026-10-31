@@ -20,6 +20,7 @@ publish/
 *.out
 cookies.txt
 
+
 # Config - sensitive
 appsettings.Development.json
 .env
@@ -27,8 +28,9 @@ appsettings.Development.json
 !.env.example
 DataProtectionKeys/
 secrets.json
-cmds.txt
 .docker/secrets/
+requerimientos.md
+
 
 # OS
 .DS_Store
@@ -44,6 +46,8 @@ admin.md
 *.txt
 *.md
 !/README.md
+# Instrucciones locales de agentes: se mantienen fuera del repositorio.
+/AGENTS.md
 
 # Local database artifacts and backups
 *.dump

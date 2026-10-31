@@ -550,7 +550,7 @@ namespace OrbiApp.Data.MigrationsIdentity
                         {
                             t.HasCheckConstraint("ck_payment_amount", "amount >= 0");
 
-                            t.HasCheckConstraint("ck_payment_provider", "provider IN ('PayPhone', 'PayPal')");
+                            t.HasCheckConstraint("ck_payment_provider", "provider <> ''");
 
                             t.HasCheckConstraint("ck_payment_status", "status IN ('Pendiente', 'Aprobado', 'Rechazado', 'Reembolsado')");
                         });

@@ -26,7 +26,7 @@
 
 .form-control:focus {
   border-color: var(--glass-green);
-  box-shadow: 0 0 0 0.2rem rgba(48, 164, 108, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(23, 105, 194, 0.15);
 }
 
 .form-group label {

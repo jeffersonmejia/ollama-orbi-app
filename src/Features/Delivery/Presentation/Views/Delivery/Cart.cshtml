@@ -81,17 +81,8 @@
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
                 <form asp-controller="Delivery" asp-action="Checkout" method="post">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="provider" value="PayPal" />
                     <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);">
                         <span class="material-symbols-outlined" style="font-size:18px;">account_balance_wallet</span> Pagar con PayPal
-                    </button>
-                </form>
-
-                <form asp-controller="Delivery" asp-action="Checkout" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="provider" value="PayPhone" />
-                    <button type="submit" class="m3-filled-button" style="background:var(--md-sys-color-secondary);color:var(--md-sys-color-on-secondary);">
-                        <span class="material-symbols-outlined" style="font-size:18px;">phone_iphone</span> Pagar con PayPhone
                     </button>
                 </form>
             </div>

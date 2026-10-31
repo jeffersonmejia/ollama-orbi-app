@@ -29,6 +29,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account.Manage
         public int RecoveryCodesLeft { get; set; }
         public bool Is2faEnabled { get; set; }
         public bool IsMachineRemembered { get; set; }
+        public bool HasPassword { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -46,6 +47,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account.Manage
             string passwordHash = null;
             if (_userStore is IUserPasswordStore<IdentityUser> userPasswordStore)
                 passwordHash = await userPasswordStore.GetPasswordHashAsync(user, HttpContext.RequestAborted);
+            HasPassword = !string.IsNullOrEmpty(passwordHash);
             ShowRemoveButton = passwordHash != null || CurrentLogins.Count > 1;
 
             HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null;

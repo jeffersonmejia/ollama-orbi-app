@@ -156,9 +156,6 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             [Display(Name = "Rol")]
             public string Role { get; set; }
 
-            [Required(ErrorMessage = "Selecciona un método de pago.")]
-            [Display(Name = "Método de pago preferido")]
-            public string PreferredPaymentMethod { get; set; } = "PayPal";
         }
 
 
@@ -168,7 +165,6 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             Input ??= new InputModel();
             Input.Role ??= "Usuario";
-            Input.PreferredPaymentMethod ??= "PayPal";
             LoadRoles();
             await LoadLocationsAsync();
         }
@@ -235,7 +231,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account
                         ProvinceCode = Input.ProvinceCode,
                         CityCode = Input.CityCode,
                         Reference = string.IsNullOrWhiteSpace(Input.Reference) ? null : Input.Reference.Trim(),
-                        PreferredPaymentMethod = Input.PreferredPaymentMethod
+                        PreferredPaymentMethod = "PayPal"
                     });
                     _context.Set<UserAddress>().Add(new UserAddress
                     {

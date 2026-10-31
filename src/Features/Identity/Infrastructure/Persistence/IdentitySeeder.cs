@@ -195,13 +195,13 @@ public static class IdentitySeeder
         var orderSeeds = new[]
         {
             new DemoOrder("DEMO-EC-ANA-FARMA-001", "Entregado", repartidor.Email,
-                "PayPhone", 5,
+                "PayPal", 5,
                 new[] { ("Alcohol antiséptico Coral 250 ml", 1), ("Suero oral Medigener coco 500 ml", 2) }),
             new DemoOrder("DEMO-EC-ANA-FARMA-002", "En camino", repartidor.Email,
                 "PayPal", 2,
                 new[] { ("Paracetamol Genfar 500 mg caja x10", 1), ("Hidraplus zinc fresa 400 ml", 1) }),
             new DemoOrder("DEMO-EC-ANA-FARMA-003", "En preparación", repartidor.Email,
-                "PayPhone", 1,
+                "PayPal", 1,
                 new[] { ("Vitamina C gomitas 36 g", 1), ("Chupete vitamina C y zinc caja x10", 1) }),
             new DemoOrder("DEMO-EC-ANA-FARMA-004", "Pendiente", null,
                 "PayPal", 0,
@@ -443,15 +443,13 @@ public static class IdentitySeeder
         await db.SaveChangesAsync();
 
         var payments = new List<DeliveryPayment>();
-        var providers = new[] { "PayPhone", "PayPal" };
-
         foreach (var o in orders.Where(o => o.Status == "Entregado" || o.Status == "En camino"))
         {
             payments.Add(new DeliveryPayment
             {
                 DeliveryOrderId = o.DeliveryOrderId,
                 ExternalId = $"DEMO-{o.DeliveryOrderId:D4}-{Guid.NewGuid():N}".Substring(0, 80),
-                Provider = providers[o.DeliveryOrderId % 2],
+                Provider = "PayPal",
                 Status = "Aprobado",
                 Amount = o.Total,
                 CreatedAt = o.CreatedAt,

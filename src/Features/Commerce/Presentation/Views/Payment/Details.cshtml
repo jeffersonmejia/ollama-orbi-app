@@ -27,16 +27,7 @@
             </div>
         </div>
 
-        @if (Model.Provider == "PayPhone" && !string.IsNullOrWhiteSpace(Model.PayphonePaymentUrl))
-        {
-            <div style="margin-top:1rem;">
-                <a class="m3-filled-button" href="@Model.PayphonePaymentUrl" target="_blank" style="width:100%;">
-                    Open PayPhone Payment Link
-                </a>
-            </div>
-        }
-
-        @if ((Model.Provider == "PayPal" || Model.Provider == "PayPalButton") && Model.Status == "Pending" && !string.IsNullOrWhiteSpace(Model.PayPalApprovalUrl))
+        @if (Model.Provider == "PayPal" && Model.Status == "Pending" && !string.IsNullOrWhiteSpace(Model.PayPalApprovalUrl))
         {
             <div style="margin-top:1rem;">
                 <a class="m3-filled-button" href="@Model.PayPalApprovalUrl" target="_blank" style="width:100%;">

@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS payment (
     amount numeric(10,2) NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     confirmed_at timestamp with time zone,
-    CONSTRAINT ck_payment_provider CHECK (provider IN ('PayPhone', 'PayPal')),
+    CONSTRAINT ck_payment_provider CHECK (provider <> ''),
     CONSTRAINT ck_payment_status CHECK (status IN ('Pendiente', 'Aprobado', 'Rechazado', 'Reembolsado')),
     CONSTRAINT ck_payment_amount CHECK (amount >= 0)
 );
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS user_profile (
     city_code varchar(4) NOT NULL REFERENCES ecuador_city(city_code),
     reference varchar(240),
     preferred_payment_method varchar(20) NOT NULL DEFAULT 'PayPal'
-        CHECK (preferred_payment_method IN ('PayPal', 'PayPhone')),
+        CHECK (preferred_payment_method = 'PayPal'),
     created_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
@@ -138,7 +138,36 @@ END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profile' AND column_name = 'preferred_payment_method') THEN
         ALTER TABLE user_profile ADD COLUMN preferred_payment_method varchar(20) NOT NULL DEFAULT 'PayPal'
-            CHECK (preferred_payment_method IN ('PayPal', 'PayPhone'));
+            CHECK (preferred_payment_method = 'PayPal');
+    END IF;
+    UPDATE user_profile SET preferred_payment_method = 'PayPal' WHERE preferred_payment_method <> 'PayPal';
+END $$;
+
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'ck_payment_provider'
+          AND pg_get_constraintdef(oid) NOT LIKE 'CHECK ((provider <> %'
+    ) THEN
+        ALTER TABLE payment DROP CONSTRAINT ck_payment_provider;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ck_payment_provider') THEN
+        ALTER TABLE payment ADD CONSTRAINT ck_payment_provider CHECK (provider <> '');
+    END IF;
+END $$;
+
+DO $$ DECLARE payment_method_check record; BEGIN
+    UPDATE user_profile SET preferred_payment_method = 'PayPal' WHERE preferred_payment_method <> 'PayPal';
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ck_user_profile_payment_method') THEN
+        FOR payment_method_check IN
+            SELECT conname FROM pg_constraint
+            WHERE conrelid = 'user_profile'::regclass
+              AND contype = 'c'
+              AND pg_get_constraintdef(oid) ILIKE '%preferred_payment_method%'
+        LOOP
+            EXECUTE format('ALTER TABLE user_profile DROP CONSTRAINT %I', payment_method_check.conname);
+        END LOOP;
+        ALTER TABLE user_profile ADD CONSTRAINT ck_user_profile_payment_method CHECK (preferred_payment_method = 'PayPal');
     END IF;
 END $$;
 

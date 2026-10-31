@@ -6,6 +6,7 @@ public class PaymentTransaction
     public int PurchaseOrderId { get; set; }
     public PurchaseOrder PurchaseOrder { get; set; } = null!;
     public string ClientTransactionId { get; set; } = string.Empty;
+    // Datos históricos de pagos conservados para transacciones ya registradas.
     public string? PayphonePaymentUrl { get; set; }
     public string? PayphoneTransactionId { get; set; }
     public int AmountInCents { get; set; }
@@ -14,7 +15,7 @@ public class PaymentTransaction
     public DateTime? ConfirmedAt { get; set; }
 
 
-    public string Provider { get; set; } = "PayPhone";
+    public string Provider { get; set; } = "PayPal";
 
     public string? PayPalOrderId { get; set; }
 

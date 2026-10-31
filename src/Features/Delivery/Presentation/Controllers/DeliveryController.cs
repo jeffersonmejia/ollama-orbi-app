@@ -22,20 +22,17 @@ public class DeliveryController : Controller
 
     private readonly IApplicationDataSession _context;
     private readonly IPayPalGateway _payPalService;
-    private readonly IPayPhoneGateway _payPhoneService;
     private readonly ISuggestMarketPriceUseCase _suggestMarketPrice;
     private readonly ApplicationDbContext _database;
 
     public DeliveryController(
         IApplicationDataSession context,
         IPayPalGateway payPalService,
-        IPayPhoneGateway payPhoneService,
         ISuggestMarketPriceUseCase suggestMarketPrice,
         ApplicationDbContext database)
     {
         _context = context;
         _payPalService = payPalService;
-        _payPhoneService = payPhoneService;
         _suggestMarketPrice = suggestMarketPrice;
         _database = database;
     }
@@ -213,14 +210,8 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Usuario")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Checkout(string provider)
+    public async Task<IActionResult> Checkout()
     {
-        if (provider is not ("PayPal" or "PayPhone"))
-        {
-            TempData["Error"] = "Proveedor de pago no válido.";
-            return RedirectToAction(nameof(Cart));
-        }
-
         var email = User.Identity!.Name!;
         var userId = CurrentUserId;
 
@@ -293,14 +284,14 @@ public class DeliveryController : Controller
                 DeliveryOrderId = order.DeliveryOrderId,
                 ChangedByUserId = userId,
                 NewStatus = "Pendiente",
-                Note = $"Pedido creado desde carrito — pago: {provider}"
+                Note = "Pedido creado desde carrito — pago: PayPal"
             });
 
             _context.Set<DeliveryPayment>().Add(new DeliveryPayment
             {
                 DeliveryOrderId = order.DeliveryOrderId,
                 ExternalId = $"PENDING-{Guid.NewGuid():N}",
-                Provider = provider,
+                Provider = "PayPal",
                 Status = "Pendiente",
                 Amount = total,
                 CreatedAt = DateTimeOffset.UtcNow
@@ -326,51 +317,25 @@ public class DeliveryController : Controller
 
         string paymentUrl;
 
-        if (provider == "PayPal")
+        string reference = $"Orbi Order #{string.Join(",", createdOrderIds)}";
+        try
         {
-            string reference = $"Orbi Order #{string.Join(",", createdOrderIds)}";
-            try
-            {
-                var returnUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentSuccess";
-                var cancelUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentCancel";
-                var result = await _payPalService.CreateOrderAsync(grandTotal, reference, returnUrl, cancelUrl);
+            var returnUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentSuccess";
+            var cancelUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentCancel";
+            var result = await _payPalService.CreateOrderAsync(grandTotal, reference, returnUrl, cancelUrl);
 
-                if (firstPayment != null)
-                {
-                    firstPayment.ExternalId = result.OrderId;
-                    await _context.SaveChangesAsync();
-                }
-
-                paymentUrl = result.ApprovalUrl;
-            }
-            catch (Exception ex)
+            if (firstPayment != null)
             {
-                TempData["Error"] = $"Error al conectar con PayPal: {ex.Message}";
-                return RedirectToAction(nameof(Cart));
+                firstPayment.ExternalId = result.OrderId;
+                await _context.SaveChangesAsync();
             }
+
+            paymentUrl = result.ApprovalUrl;
         }
-        else
+        catch (Exception ex)
         {
-            string clientTransactionId = DateTime.Now.ToString("yyMMddHHmmssfff")[..15];
-            string reference = $"Orbi Order #{string.Join(",", createdOrderIds)}";
-            try
-            {
-                var link = await _payPhoneService.CreatePaymentLinkAsync(
-                    grandTotal, clientTransactionId, reference);
-
-                if (firstPayment != null)
-                {
-                    firstPayment.ExternalId = clientTransactionId;
-                    await _context.SaveChangesAsync();
-                }
-
-                paymentUrl = link;
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al conectar con PayPhone: {ex.Message}";
-                return RedirectToAction(nameof(Cart));
-            }
+            TempData["Error"] = $"Error al conectar con PayPal: {ex.Message}";
+            return RedirectToAction(nameof(Cart));
         }
 
         _context.Set<DeliveryCartItem>().RemoveRange(items);
@@ -448,55 +413,6 @@ public class DeliveryController : Controller
     public IActionResult PaymentCancel()
     {
         TempData["Error"] = "El pago con PayPal fue cancelado.";
-        return RedirectToAction(nameof(MyOrders));
-    }
-
-    [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> PaymentPayPhoneCallback(string? clientTransactionId)
-    {
-        if (string.IsNullOrWhiteSpace(clientTransactionId))
-        {
-            TempData["Error"] = "PayPhone no devolvió referencia válida.";
-            return RedirectToAction(nameof(MyOrders));
-        }
-
-        await using var transaction = await _database.Database.BeginTransactionAsync();
-        var paymentId = await _context.Set<DeliveryPayment>()
-            .Where(p => p.Provider == "PayPhone" && p.ExternalId == clientTransactionId)
-            .Select(p => (long?)p.PaymentId)
-            .FirstOrDefaultAsync();
-
-        if (paymentId == null)
-        {
-            TempData["Error"] = "Pago PayPhone no encontrado.";
-            return RedirectToAction(nameof(MyOrders));
-        }
-
-        await _database.AcquirePaymentLockAsync("delivery-payment", paymentId.Value);
-
-        var payment = await _context.Set<DeliveryPayment>()
-            .FirstOrDefaultAsync(p => p.Provider == "PayPhone" && p.ExternalId == clientTransactionId);
-
-        if (payment != null)
-        {
-            if (payment.Status != "Aprobado")
-            {
-                payment.Status = "Aprobado";
-                payment.ConfirmedAt = DateTimeOffset.UtcNow;
-
-                var order = await _context.Set<DeliveryOrder>().FindAsync(payment.DeliveryOrderId);
-                if (order != null) order.Status = "Comprado";
-
-                await _context.SaveChangesAsync();
-            }
-            await transaction.CommitAsync();
-            TempData["Success"] = "¡Pago con PayPhone completado exitosamente!";
-        }
-        else
-        {
-            TempData["Error"] = "Pago PayPhone no encontrado.";
-        }
-
         return RedirectToAction(nameof(MyOrders));
     }
 

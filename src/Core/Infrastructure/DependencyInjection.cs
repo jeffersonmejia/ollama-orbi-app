@@ -26,13 +26,14 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options => options
-            .UseNpgsql(connectionString)
+            .UseNpgsql(connectionString, postgres => postgres
+                .EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorCodesToAdd: null)
+                .CommandTimeout(60))
             .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
         services.AddScoped<IApplicationDataSession, ApplicationDataSession>();
-
-        services.Configure<PayPhoneSettings>(configuration.GetSection("PayPhone"));
-        services.AddHttpClient<PayPhoneApiLinkService>();
-        services.AddTransient<IPayPhoneGateway>(provider => provider.GetRequiredService<PayPhoneApiLinkService>());
 
         services.AddHttpClient<OllamaProductService>(client =>
         {

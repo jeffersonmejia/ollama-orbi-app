@@ -7,11 +7,6 @@ public interface IPayPalGateway
     Task<PayPalCaptureResult> CaptureOrderAsync(string orderId);
 }
 
-public interface IPayPhoneGateway
-{
-    Task<string> CreatePaymentLinkAsync(decimal total, string clientTransactionId, string reference);
-}
-
 public sealed class PayPalOrderResult
 {
     public string OrderId { get; set; } = string.Empty;
