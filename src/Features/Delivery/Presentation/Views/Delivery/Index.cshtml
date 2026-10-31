@@ -1,0 +1,122 @@
+@using OrbiApp.Models.Delivery
+@model DeliveryCatalogViewModel
+
+@{
+    ViewData["Title"] = "Tiendas Orbi";
+    var defaultAddress = Model.Addresses.FirstOrDefault(address => address.IsDefault) ?? Model.Addresses.FirstOrDefault();
+}
+
+<div class="m3-page orbi-store-page">
+    @{
+        var provinceName = ViewBag.UserProvinceName as string;
+        var cityName = ViewBag.UserCityName as string;
+    }
+
+    <form asp-action="Index" method="get" class="orbi-store-filters">
+        <div class="orbi-store-search">
+            <span class="material-symbols-outlined">search</span>
+            <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" />
+            @if (!string.IsNullOrEmpty(cityName))
+            {
+                <span class="orbi-inline-location">
+                    <span class="material-symbols-outlined">location_on</span>@cityName · @provinceName
+                    <a asp-area="Identity" asp-page="/Account/Manage/Addresses" class="orbi-inline-edit" title="Editar ubicación"><span class="material-symbols-outlined">edit</span></a>
+                </span>
+            }
+        </div>
+        <label class="orbi-price-filter" for="precioMinimo"><span class="material-symbols-outlined">attach_money</span><span>Mín.</span><input id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" aria-label="Precio mínimo" /></label>
+        <label class="orbi-price-filter" for="precioMaximo"><span class="material-symbols-outlined">payments</span><span>Máx.</span><input id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" aria-label="Precio máximo" /></label>
+        <input type="hidden" name="categoria" value="@ViewBag.Categoria" />
+        <button type="submit" class="m3-filled-button">Aplicar</button>
+        <a asp-action="Index" class="m3-text-button">Limpiar</a>
+    </form>
+
+    <section class="orbi-category-grid" aria-label="Categorías de tiendas">
+        <a class="orbi-category-card @(ViewBag.Categoria == "Restaurantes" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Restaurantes" ? null : "Restaurantes")" aria-pressed="@(ViewBag.Categoria == "Restaurantes")">
+            <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
+            <span><strong>Restaurantes</strong><small>Comida rápida y antojos</small></span>
+        </a>
+        <a class="orbi-category-card @(ViewBag.Categoria == "Farmacia" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Farmacia" ? null : "Farmacia")" aria-pressed="@(ViewBag.Categoria == "Farmacia")">
+            <img src="~/assets/categorias/farmacias.png" alt="Mostrador de farmacia" />
+            <span><strong>Farmacias</strong><small>Salud y cuidado</small></span>
+        </a>
+        <a class="orbi-category-card @(ViewBag.Categoria == "Supermercado" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Supermercado" ? null : "Supermercado")" aria-pressed="@(ViewBag.Categoria == "Supermercado")">
+            <img src="~/assets/categorias/supermercado.png" alt="Interior de supermercado" />
+            <span><strong>Supermercado</strong><small>Compras para el hogar</small></span>
+        </a>
+    </section>
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="orbi-alert orbi-alert-error">@error</div>
+    }
+
+    @if (User.IsInRole("Usuario") && defaultAddress is null)
+    {
+        <div class="orbi-alert">Agrega una dirección en tu perfil para realizar pedidos.</div>
+    }
+
+    @if (!Model.Products.Any())
+    {
+        <div class="m3-card orbi-category-empty">No hay productos que coincidan con los filtros.</div>
+    }
+    <div class="orbi-product-grid">
+        @foreach (var product in Model.Products)
+        {
+            <article class="m3-card orbi-product-card">
+                <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
+                <h2>@product.Name</h2>
+                <p class="orbi-store-location"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_on</span>@product.Store.Address</p>
+                @if (product.Store.City is not null || product.Store.Province is not null)
+                {
+                    <p class="orbi-store-location" style="margin-top:2px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">map</span>@(product.Store.City?.Name ?? "")@(product.Store.City is not null && product.Store.Province is not null ? ", " : "")@(product.Store.Province?.Name ?? "")</p>
+                }
+                <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
+
+                @if (User.IsInRole("Usuario"))
+                {
+                    <form asp-action="AddToCart" method="post" class="orbi-product-order-form">
+                        <input type="hidden" name="productId" value="@product.DeliveryProductId" />
+                        <div class="orbi-quantity-field">
+                            <span>Cantidad</span>
+                            <div class="orbi-quantity-control">
+                                <button type="button" class="orbi-quantity-button" data-quantity-action="decrease" aria-label="Disminuir cantidad"><span class="material-symbols-outlined">remove</span></button>
+                                <input id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="999" inputmode="numeric" aria-label="Cantidad personalizada, entre 1 y 999" required />
+                                <button type="button" class="orbi-quantity-button" data-quantity-action="increase" aria-label="Aumentar cantidad"><span class="material-symbols-outlined">add</span></button>
+                            </div>
+                        </div>
+                        <button type="submit" class="m3-filled-button"><span class="material-symbols-outlined" style="font-size:18px;">add_shopping_cart</span> Agregar al carrito</button>
+                    </form>
+                }
+            </article>
+        }
+    </div>
+    <partial name="_Pagination" />
+</div>
+
+<script>
+    (() => {
+        document.querySelectorAll('.orbi-quantity-control').forEach(control => {
+            const input = control.querySelector('input');
+            control.querySelectorAll('[data-quantity-action]').forEach(button => button.addEventListener('click', () => {
+                const minimum = Number(input.min) || 1;
+                const maximum = Number(input.max) || 999;
+                const current = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
+                input.value = button.dataset.quantityAction === 'increase'
+                    ? Math.min(maximum, current + 1)
+                    : Math.max(minimum, current - 1);
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }));
+            const normalizeQuantity = () => {
+                const minimum = Number(input.min) || 1;
+                const maximum = Number(input.max) || 999;
+                input.value = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
+            };
+            input.addEventListener('keydown', event => {
+                if (['-', '+', 'e', 'E', '.', ','].includes(event.key)) event.preventDefault();
+            });
+            input.addEventListener('input', normalizeQuantity);
+            input.addEventListener('change', normalizeQuantity);
+        });
+    })();
+</script>
