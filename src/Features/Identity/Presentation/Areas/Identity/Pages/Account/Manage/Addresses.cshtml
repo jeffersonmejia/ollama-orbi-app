@@ -1,0 +1,67 @@
+@page
+@model AddressesModel
+@{
+    ViewData["Title"] = "Direcciones";
+    ViewData["ActivePage"] = ManageNavPages.Addresses;
+    var editing = Model.AddressInput?.UserAddressId.HasValue == true;
+}
+
+<div class="orbi-account-page">
+    <header class="orbi-account-page-title"><h1>Direcciones</h1><p>Lugares que puedes usar para recibir tus pedidos.</p></header>
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>@(editing ? "Editar dirección" : "Nueva dirección")</h2><p>Identifícala como Casa, Trabajo u otro nombre breve.</p></div>
+            @if(editing){<a asp-page="./Addresses" class="m3-text-button">Cancelar</a>}else{<span class="material-symbols-outlined">add_location_alt</span>}
+        </div>
+        <form method="post" asp-page-handler="SaveAddress" class="orbi-address-form">
+            <input asp-for="AddressInput.UserAddressId" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger orbi-field-full" role="alert"></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.Label"></label><input asp-for="AddressInput.Label" class="m3-text-field-input" placeholder="Casa" /><span asp-validation-for="AddressInput.Label" class="text-danger"></span></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.AddressLine1"></label><input asp-for="AddressInput.AddressLine1" class="m3-text-field-input" placeholder="Av. principal y número" /><span asp-validation-for="AddressInput.AddressLine1" class="text-danger"></span></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.AddressLine2"></label><input asp-for="AddressInput.AddressLine2" class="m3-text-field-input" placeholder="Calle secundaria" /></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.ProvinceCode"></label><select asp-for="AddressInput.ProvinceCode" id="profile-province" class="m3-text-field-input" required><option value="">Selecciona</option>@foreach(var province in Model.Provinces){<option value="@province.Code">@province.Name</option>}</select></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.CityCode"></label><select asp-for="AddressInput.CityCode" id="profile-city" class="m3-text-field-input" required><option value="">Selecciona</option>@foreach(var city in Model.Cities){<option value="@city.Code" data-province="@city.ProvinceCode">@city.Name</option>}</select><span asp-validation-for="AddressInput.CityCode" class="text-danger"></span></div>
+            <div class="m3-text-field"><label class="m3-text-field-label" asp-for="AddressInput.Reference"></label><input asp-for="AddressInput.Reference" class="m3-text-field-input" placeholder="Opcional" /></div>
+            <label class="orbi-address-default"><input asp-for="AddressInput.IsDefault" /> <span>Usar como dirección principal</span></label>
+            <div class="orbi-form-actions"><button type="submit" class="m3-filled-button">@(editing ? "Guardar cambios" : "Agregar dirección")</button></div>
+        </form>
+    </section>
+
+    <section class="orbi-address-list">
+        @foreach (var address in Model.Addresses)
+        {
+            <article class="orbi-google-card orbi-saved-address @(address.IsDefault ? "is-default" : "")">
+                <span class="material-symbols-outlined">@(address.IsDefault ? "home" : "location_on")</span>
+                <div><div class="orbi-address-title"><h2>@address.Label</h2>@if(address.IsDefault){<small>Principal</small>}</div><p>@address.FormattedAddress</p></div>
+                <div class="orbi-address-actions">
+                    <a asp-page="./Addresses" asp-route-editAddressId="@address.UserAddressId" class="m3-text-button">Editar</a>
+                    @if (!address.IsDefault)
+                    {
+                        <form method="post" asp-page-handler="SetDefault"><input type="hidden" name="id" value="@address.UserAddressId" /><button class="m3-text-button" type="submit">Principal</button></form>
+                        <form method="post" asp-page-handler="DeleteAddress" onsubmit="return confirm('¿Eliminar esta dirección?');"><input type="hidden" name="id" value="@address.UserAddressId" /><button class="m3-text-button orbi-danger-button" type="submit">Eliminar</button></form>
+                    }
+                </div>
+            </article>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const province = document.getElementById('profile-province');
+            const city = document.getElementById('profile-city');
+            const options = Array.from(city.options).slice(1);
+            function filterCities(preserve) {
+                const selected = preserve ? city.value : '';
+                options.forEach(option => option.hidden = option.dataset.province !== province.value);
+                if (!options.some(option => !option.hidden && option.value === selected)) city.value = '';
+            }
+            province.addEventListener('change', () => filterCities(false));
+            filterCities(true);
+        })();
+    </script>
+}

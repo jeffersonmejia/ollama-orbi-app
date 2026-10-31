@@ -1,0 +1,21 @@
+﻿@page
+@model AccessDeniedModel
+@{
+    ViewData["Title"] = "Acceso denegado";
+}
+
+<section class="access-denied-panel">
+    <div class="access-denied-icon" aria-hidden="true">!</div>
+    <div class="access-denied-copy">
+        <span>Permiso insuficiente</span>
+        <h1>@ViewData["Title"]</h1>
+        <p>
+            Esta seccion esta reservada para usuarios con rol Administrador. Si necesitas entrar al panel administrativo,
+            cierra sesion e inicia con una cuenta autorizada.
+        </p>
+    </div>
+    <div class="access-denied-actions">
+        <a class="m3-filled-button" asp-area="" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+        <a class="m3-outlined-button" asp-area="Identity" asp-page="/Account/Login">Cambiar de cuenta</a>
+    </div>
+</section>

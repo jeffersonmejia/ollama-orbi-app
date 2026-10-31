@@ -1,0 +1,61 @@
+@page
+@model PaymentMethodsModel
+@{
+    ViewData["Title"] = "Método de pago";
+    ViewData["ActivePage"] = ManageNavPages.PaymentMethods;
+}
+
+<div class="orbi-account-page">
+    <header class="orbi-account-page-title">
+        <h1>Método de pago</h1>
+        <p>Elige cómo deseas pagar tus pedidos.</p>
+    </header>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading">
+            <div><h2>Proveedor preferido</h2><p>Selecciona el método que usarás en tus próximas compras.</p></div>
+            <span class="material-symbols-outlined">payment</span>
+        </div>
+        <form id="payment-form" method="post" class="orbi-account-rows">
+            <div class="orbi-payment-options">
+                <label class="orbi-payment-option @(Model.CurrentMethod == "PayPal" ? "active" : "")">
+                    <input type="radio" name="preferredPayment" value="PayPal" @(Model.CurrentMethod == "PayPal" ? "checked" : "") />
+                    <div class="orbi-payment-option-inner">
+                        <span class="material-symbols-outlined">account_balance_wallet</span>
+                        <strong>PayPal</strong>
+                        <small>Pago rápido y seguro</small>
+                    </div>
+                </label>
+                <label class="orbi-payment-option @(Model.CurrentMethod == "PayPhone" ? "active" : "")">
+                    <input type="radio" name="preferredPayment" value="PayPhone" @(Model.CurrentMethod == "PayPhone" ? "checked" : "") />
+                    <div class="orbi-payment-option-inner">
+                        <span class="material-symbols-outlined">smartphone</span>
+                        <strong>PayPhone</strong>
+                        <small>Paga desde tu celular</small>
+                    </div>
+                </label>
+            </div>
+            <div class="orbi-form-actions">
+                <button class="m3-filled-button" type="submit">Guardar preferencia</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const radios = document.querySelectorAll('input[name="preferredPayment"]');
+            function refresh() {
+                radios.forEach(r => {
+                    const card = r.closest('.orbi-payment-option');
+                    if (card) card.classList.toggle('active', r.checked);
+                });
+            }
+            radios.forEach(r => r.addEventListener('change', refresh));
+            refresh();
+        })();
+    </script>
+}
