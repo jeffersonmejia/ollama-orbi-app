@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrbiApp.Models.Commerce;
 using OrbiApp.Application.Features.Payments.Ports;
+using OrbiApp.Application.Features.Shared.Ports;
+using OrbiApp.Data;
 
 namespace OrbiApp.Controllers;
 
@@ -12,15 +14,18 @@ public class PaymentController : Controller
     private readonly IApplicationDataSession _context;
     private readonly IPayPhoneGateway _payPhoneService;
     private readonly IPayPalGateway _payPalService;
+    private readonly ApplicationDbContext _database;
 
     public PaymentController(
         IApplicationDataSession context,
         IPayPhoneGateway payPhoneService,
-        IPayPalGateway payPalService)
+        IPayPalGateway payPalService,
+        ApplicationDbContext database)
     {
         _context = context;
         _payPhoneService = payPhoneService;
         _payPalService = payPalService;
+        _database = database;
     }
 
     public async Task<IActionResult> CreateLink(int orderId)
@@ -106,6 +111,16 @@ public class PaymentController : Controller
             return BadRequest("PayPal did not return an order token.");
         }
 
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var paymentId = await _context.Set<PaymentTransaction>()
+            .Where(p => (p.Provider == "PayPal" || p.Provider == "PayPalButton") && p.PayPalOrderId == token)
+            .Select(p => new { p.PaymentTransactionId, p.PurchaseOrderId })
+            .FirstOrDefaultAsync();
+
+        if (paymentId == null) return NotFound();
+
+        await _database.AcquirePaymentLockAsync("commerce-order", paymentId.PurchaseOrderId);
+
         var payment = await _context.Set<PaymentTransaction>()
             .Include(p => p.PurchaseOrder)
             .ThenInclude(o => o.Details)
@@ -127,8 +142,11 @@ public class PaymentController : Controller
         if (capture.Status == "COMPLETED")
         {
             payment.Status = "Paid";
-            payment.PurchaseOrder.Status = "Paid";
-            await DescontarStockAsync(payment.PurchaseOrder);
+            if (payment.PurchaseOrder.Status != "Paid")
+            {
+                payment.PurchaseOrder.Status = "Paid";
+                await DescontarStockAsync(payment.PurchaseOrder);
+            }
         }
         else
         {
@@ -136,6 +154,7 @@ public class PaymentController : Controller
         }
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return RedirectToAction(nameof(Details), new { id = payment.PaymentTransactionId });
     }
@@ -172,6 +191,13 @@ public class PaymentController : Controller
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> MarkAsPaid(int id)
     {
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var orderId = await _context.Set<PaymentTransaction>()
+            .Where(p => p.PaymentTransactionId == id)
+            .Select(p => (int?)p.PurchaseOrderId)
+            .FirstOrDefaultAsync();
+        if (orderId == null) return NotFound();
+        await _database.AcquirePaymentLockAsync("commerce-order", orderId.Value);
         var payment = await _context.Set<PaymentTransaction>()
             .Include(p => p.PurchaseOrder)
             .ThenInclude(o => o.Details)
@@ -183,10 +209,15 @@ public class PaymentController : Controller
         {
             payment.Status = "Paid";
             payment.ConfirmedAt = DateTime.UtcNow;
-            payment.PurchaseOrder.Status = "Paid";
-            await DescontarStockAsync(payment.PurchaseOrder);
+            if (payment.PurchaseOrder.Status != "Paid")
+            {
+                payment.PurchaseOrder.Status = "Paid";
+                await DescontarStockAsync(payment.PurchaseOrder);
+            }
             await _context.SaveChangesAsync();
         }
+
+        await transaction.CommitAsync();
 
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -254,6 +285,13 @@ public class PaymentController : Controller
     [HttpPost]
     public async Task<IActionResult> CapturePayPalButtonOrderJson([FromBody] PayPalButtonCaptureRequest request)
     {
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var orderId = await _context.Set<PaymentTransaction>()
+            .Where(p => p.PaymentTransactionId == request.PaymentTransactionId)
+            .Select(p => (int?)p.PurchaseOrderId)
+            .FirstOrDefaultAsync();
+        if (orderId == null) return Json(new { success = false, message = "Transaction not found." });
+        await _database.AcquirePaymentLockAsync("commerce-order", orderId.Value);
         var payment = await _context.Set<PaymentTransaction>()
             .Include(p => p.PurchaseOrder)
             .ThenInclude(o => o.Details)
@@ -270,6 +308,16 @@ public class PaymentController : Controller
             });
         }
 
+        if (payment.Status == "Paid")
+        {
+            await transaction.CommitAsync();
+            return Json(new
+            {
+                success = true,
+                redirectUrl = Url.Action("Details", "Payment", new { id = payment.PaymentTransactionId })
+            });
+        }
+
         var capture = await _payPalService.CaptureOrderAsync(request.PayPalOrderId);
 
         payment.PayPalCaptureId = capture.CaptureId;
@@ -279,8 +327,11 @@ public class PaymentController : Controller
         if (capture.Status == "COMPLETED")
         {
             payment.Status = "Paid";
-            payment.PurchaseOrder.Status = "Paid";
-            await DescontarStockAsync(payment.PurchaseOrder);
+            if (payment.PurchaseOrder.Status != "Paid")
+            {
+                payment.PurchaseOrder.Status = "Paid";
+                await DescontarStockAsync(payment.PurchaseOrder);
+            }
         }
         else
         {
@@ -288,6 +339,7 @@ public class PaymentController : Controller
         }
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return Json(new
         {

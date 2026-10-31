@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using OrbiApp.Infrastructure.Features.Payments.Settings;
 using OrbiApp.Application.Features.Payments.Ports;
@@ -97,6 +98,10 @@ public class PayPalService : IPayPalGateway
 
         request.Headers.Authorization =
             new AuthenticationHeaderValue("Bearer", accessToken);
+        // A stable request ID makes retries of this capture return the original
+        // result instead of creating a second capture at PayPal.
+        var requestId = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"orbi-capture:{orderId}")));
+        request.Headers.TryAddWithoutValidation("PayPal-Request-Id", requestId);
 
         request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 

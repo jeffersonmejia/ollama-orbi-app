@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using OrbiApp.Application.Features.Delivery.Ports;
 using OrbiApp.Application.Features.Payments.Ports;
 using OrbiApp.Application.Features.Shared.Ports;
+using OrbiApp.Data;
 
 namespace OrbiApp.Controllers;
 
@@ -23,17 +24,20 @@ public class DeliveryController : Controller
     private readonly IPayPalGateway _payPalService;
     private readonly IPayPhoneGateway _payPhoneService;
     private readonly ISuggestMarketPriceUseCase _suggestMarketPrice;
+    private readonly ApplicationDbContext _database;
 
     public DeliveryController(
         IApplicationDataSession context,
         IPayPalGateway payPalService,
         IPayPhoneGateway payPhoneService,
-        ISuggestMarketPriceUseCase suggestMarketPrice)
+        ISuggestMarketPriceUseCase suggestMarketPrice,
+        ApplicationDbContext database)
     {
         _context = context;
         _payPalService = payPalService;
         _payPhoneService = payPhoneService;
         _suggestMarketPrice = suggestMarketPrice;
+        _database = database;
     }
 
     public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1)
@@ -384,18 +388,29 @@ public class DeliveryController : Controller
             return RedirectToAction(nameof(MyOrders));
         }
 
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var paymentId = await _context.Set<DeliveryPayment>()
+            .Where(p => p.Provider == "PayPal" && p.ExternalId == token)
+            .Select(p => (long?)p.PaymentId)
+            .FirstOrDefaultAsync();
+
+        if (paymentId == null)
+        {
+            TempData["Error"] = "Pago no encontrado o ya procesado.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        await _database.AcquirePaymentLockAsync("delivery-payment", paymentId.Value);
+
         var payment = await _context.Set<DeliveryPayment>()
             .Include(p => p.Order)
             .FirstOrDefaultAsync(p => p.Provider == "PayPal" && p.ExternalId == token);
 
-        if (payment == null)
-        {
-            TempData["Error"] = "Pago no encontrado.";
-            return RedirectToAction(nameof(MyOrders));
-        }
+        if (payment == null) return NotFound();
 
         if (payment.Status == "Aprobado")
         {
+            await transaction.CommitAsync();
             TempData["Success"] = "El pago ya fue procesado.";
             return RedirectToAction(nameof(MyOrders));
         }
@@ -418,6 +433,7 @@ public class DeliveryController : Controller
             }
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             TempData["Success"] = "¡Pago con PayPal completado exitosamente!";
         }
         catch (Exception ex)
@@ -444,18 +460,36 @@ public class DeliveryController : Controller
             return RedirectToAction(nameof(MyOrders));
         }
 
+        await using var transaction = await _database.Database.BeginTransactionAsync();
+        var paymentId = await _context.Set<DeliveryPayment>()
+            .Where(p => p.Provider == "PayPhone" && p.ExternalId == clientTransactionId)
+            .Select(p => (long?)p.PaymentId)
+            .FirstOrDefaultAsync();
+
+        if (paymentId == null)
+        {
+            TempData["Error"] = "Pago PayPhone no encontrado.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        await _database.AcquirePaymentLockAsync("delivery-payment", paymentId.Value);
+
         var payment = await _context.Set<DeliveryPayment>()
             .FirstOrDefaultAsync(p => p.Provider == "PayPhone" && p.ExternalId == clientTransactionId);
 
         if (payment != null)
         {
-            payment.Status = "Aprobado";
-            payment.ConfirmedAt = DateTimeOffset.UtcNow;
+            if (payment.Status != "Aprobado")
+            {
+                payment.Status = "Aprobado";
+                payment.ConfirmedAt = DateTimeOffset.UtcNow;
 
-            var order = await _context.Set<DeliveryOrder>().FindAsync(payment.DeliveryOrderId);
-            if (order != null) order.Status = "Comprado";
+                var order = await _context.Set<DeliveryOrder>().FindAsync(payment.DeliveryOrderId);
+                if (order != null) order.Status = "Comprado";
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+            }
+            await transaction.CommitAsync();
             TempData["Success"] = "¡Pago con PayPhone completado exitosamente!";
         }
         else
