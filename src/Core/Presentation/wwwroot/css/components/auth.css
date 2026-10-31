@@ -1,0 +1,147 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.auth-card {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-bg-strong);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-xl);
+  padding: 2rem 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  display: grid;
+  gap: 1.2rem;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .glass-input {
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.password-toggle:hover {
+  color: var(--glass-green-dark);
+}
+
+.auth-input {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.auth-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-text);
+  font-size: 0.85rem;
+}
+
+.auth-checkbox-input {
+  accent-color: var(--glass-green);
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+}
+
+.auth-btn {
+  width: 100%;
+  text-align: center;
+}
+
+.auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.auth-description {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+}
+
+.auth-list {
+  display: grid;
+  gap: 1.5rem;
+  padding-left: 1.2rem;
+  margin: 1rem 0;
+  color: var(--color-text);
+}
+
+.auth-list li p {
+  margin: 0.3rem 0;
+}
+
+.auth-qr {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.auth-form-inline {
+  display: grid;
+  gap: 1rem;
+  max-width: 400px;
+}
+
+.auth-role-summary {
+  border: 1px solid var(--color-border);
+  background: var(--glass-card);
+  color: var(--color-muted);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.auth-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 0.5rem 0;
+}
+
+.auth-external-heading {
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}

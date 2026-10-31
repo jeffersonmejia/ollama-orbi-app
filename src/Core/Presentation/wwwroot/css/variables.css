@@ -1,0 +1,46 @@
+:root {
+  --glass-green: #30a46c;
+  --glass-green-bright: #57c785;
+  --glass-green-dark: #166534;
+  --color-text: #1d2f24;
+  --color-text-muted: #6b7f70;
+  --color-muted: #8899aa;
+  --color-page: #dcefe8;
+  --color-white: #ffffff;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+  --color-danger-bg: rgba(254, 226, 226, 0.52);
+  --color-danger-border: rgba(220, 38, 38, 0.22);
+  --color-table-odd: rgba(255, 255, 255, 0.18);
+  --color-table-even: rgba(255, 255, 255, 0.32);
+  --color-table-hover: rgba(48, 164, 108, 0.10);
+  --color-overlay-light: rgba(255, 255, 255, 0.45);
+  --color-overlay-input: rgba(15, 23, 42, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.28);
+  --glass-bg-strong: rgba(255, 255, 255, 0.42);
+  --glass-nav: rgba(255, 255, 255, 0.48);
+  --glass-card: rgba(255, 255, 255, 0.24);
+  --glass-card-strong: rgba(255, 255, 255, 0.38);
+  --glass-sheen: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(255, 255, 255, 0.14) 38%,
+    rgba(48, 164, 108, 0.08) 100%
+  );
+  --color-border: rgba(255, 255, 255, 0.64);
+  --glass-blur: blur(34px) saturate(210%) contrast(1.06);
+  --glass-blur-soft: blur(30px) saturate(200%) contrast(1.04);
+  --aside-width: 200px;
+  --shadow-card: 0 22px 70px rgba(29, 47, 36, 0.08);
+  --shadow-profile-avatar: inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 14px 30px rgba(22, 101, 52, 0.12);
+  --radius-sm: 0.8rem;
+  --radius-md: 1.2rem;
+  --radius-lg: 1.4rem;
+  --radius-xl: 1.6rem;
+  --radius-full: 999px;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  --transition-fast: 0.18s;
+  --transition-normal: 0.25s;
+}

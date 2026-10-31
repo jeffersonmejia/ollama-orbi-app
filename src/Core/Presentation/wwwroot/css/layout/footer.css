@@ -1,0 +1,10 @@
+.app-footer {
+  text-align: center;
+  padding: 0.35rem 1rem 1.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.app-footer a {
+  color: var(--glass-green);
+}

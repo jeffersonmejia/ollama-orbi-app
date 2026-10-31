@@ -1,0 +1,158 @@
+.m3-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0);
+  animation: m3-ripple-effect 600ms var(--md-sys-motion-easing-standard);
+}
+
+@keyframes m3-ripple-effect {
+  0% {
+    transform: scale(0);
+    opacity: 0.12;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes m3-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes m3-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes m3-fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes m3-fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes m3-slide-in-right {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes m3-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.m3-anim-fade-in {
+  animation: m3-fade-in var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-standard) both;
+}
+
+.m3-anim-fade-in-up {
+  animation: m3-fade-in-up var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-anim-fade-in-down {
+  animation: m3-fade-in-down var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-anim-fade-in-scale {
+  animation: m3-fade-in-scale var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-anim-card-enter {
+  animation: m3-card-enter var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.m3-stagger-1 { animation-delay: 0.03s; }
+.m3-stagger-2 { animation-delay: 0.06s; }
+.m3-stagger-3 { animation-delay: 0.09s; }
+.m3-stagger-4 { animation-delay: 0.12s; }
+.m3-stagger-5 { animation-delay: 0.15s; }
+.m3-stagger-6 { animation-delay: 0.18s; }
+.m3-stagger-7 { animation-delay: 0.21s; }
+.m3-stagger-8 { animation-delay: 0.24s; }
+
+.m3-hover-lift {
+  transition: transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized-decelerate), box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+.m3-skeleton {
+  background: linear-gradient(90deg,
+    var(--md-sys-color-surface-container-highest) 25%,
+    var(--md-sys-color-surface-container) 50%,
+    var(--md-sys-color-surface-container-highest) 75%
+  );
+  background-size: 200% 100%;
+  animation: m3-skeleton-shimmer 1.5s var(--md-sys-motion-easing-standard) infinite;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+@keyframes m3-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.m3-elevated {
+  transition: box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.m3-elevated:hover {
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

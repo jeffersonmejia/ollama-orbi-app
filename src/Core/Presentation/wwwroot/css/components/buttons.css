@@ -1,0 +1,36 @@
+.btn-primary {
+  border: 1px solid var(--color-border);
+  background: var(--glass-green);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  padding: 0.55rem 1.2rem;
+  transition: background var(--transition-fast), transform 0.12s;
+}
+
+.btn-primary:hover {
+  background: var(--glass-green-dark);
+  color: var(--color-white);
+}
+
+.btn-danger {
+  border-radius: var(--radius-full);
+}
+
+.form-control {
+  border: 1px solid var(--color-border);
+  background: var(--glass-card-strong);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.85rem;
+}
+
+.form-control:focus {
+  border-color: var(--glass-green);
+  box-shadow: 0 0 0 0.2rem rgba(48, 164, 108, 0.15);
+}
+
+.form-group label {
+  color: var(--color-text);
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}

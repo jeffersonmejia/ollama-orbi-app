@@ -1,0 +1,160 @@
+.glass-title {
+  color: var(--color-text);
+  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
+  line-height: 1;
+  text-align: center;
+  margin: 1.5rem 0 0;
+}
+
+.glass-link {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-card);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  color: var(--glass-green);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.72rem;
+  font-size: 0.82rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    transform 0.12s;
+}
+
+.glass-link:hover {
+  background: var(--glass-green);
+  color: var(--color-white);
+  transform: scale(0.97);
+  text-decoration: none;
+}
+
+.glass-link-danger {
+  color: var(--color-danger);
+}
+
+.glass-link-danger:hover {
+  background: var(--color-danger);
+  color: var(--color-white);
+}
+
+.glass-input {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-card);
+  background-blend-mode: screen, normal;
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  color: var(--color-text);
+  border-radius: var(--radius-full);
+  padding: 0.62rem 1rem;
+  font-size: 0.9rem;
+  outline: none;
+  flex: 1;
+  max-width: 320px;
+}
+
+.glass-input:focus {
+  border-color: var(--glass-green);
+}
+
+.glass-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.glass-btn-primary {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-green);
+  background-blend-mode: screen, normal;
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  padding: 0.62rem 1.2rem;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform 0.12s;
+}
+
+.glass-btn-primary:hover {
+  background: var(--glass-green-dark);
+  transform: scale(0.97);
+}
+
+.glass-btn-secondary {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-card);
+  background-blend-mode: screen, normal;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  padding: 0.62rem 1.2rem;
+  font-size: 0.86rem;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.glass-btn-secondary:hover {
+  background: var(--glass-bg-strong);
+  color: var(--glass-green);
+  text-decoration: none;
+}
+
+.glass-btn {
+  border: 1px solid var(--color-border);
+  background: var(--glass-sheen), var(--glass-card);
+  background-blend-mode: screen, normal;
+  color: var(--glass-green);
+  border-radius: var(--radius-full);
+  min-width: 2.4rem;
+  height: 2.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    transform 0.12s;
+}
+
+.glass-btn:hover:not(:disabled) {
+  background: var(--glass-green);
+  color: var(--color-white);
+  transform: scale(0.95);
+}
+
+.glass-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.glass-page {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  min-width: 2.4rem;
+  height: 2.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-decoration: none;
+}
+
+.glass-page:hover {
+  background: var(--glass-card);
+  color: var(--glass-green);
+}
+
+.glass-page.active {
+  background: var(--glass-green);
+  color: var(--color-white);
+}
+
+.glass-ellipsis {
+  color: var(--color-text-muted);
+  min-width: 1.6rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
