@@ -28,7 +28,7 @@ appsettings.Development.json
 DataProtectionKeys/
 secrets.json
 cmds.txt
-src/.docker/secrets/
+.docker/secrets/
 
 # OS
 .DS_Store

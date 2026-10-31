@@ -5,7 +5,7 @@ volumes:
     driver: local
 
 networks:
-  sakila_net:
+  orbi_net:
     driver: bridge
     internal: false
     ipam:
@@ -15,10 +15,10 @@ networks:
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: sakila-postgres
+    container_name: orbi-postgres
     restart: unless-stopped
     networks:
-      sakila_net:
+      orbi_net:
         ipv4_address: 172.28.0.10
     ports:
       - "127.0.0.1:5433:5432"
@@ -26,13 +26,15 @@ services:
       POSTGRES_DB: orbi_app
       POSTGRES_USER: jef_db_first
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     secrets:
       - postgres_password
+      - orbi_app_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./src/db/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
-      - ./src/db/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
+      - ./src/Features/Shared/Infrastructure/Sql/orbi-schema.sql:/docker-entrypoint-initdb.d/001_orbi_schema.sql:ro
+      - ./src/Features/Shared/Infrastructure/Sql/orbi-data.sql:/docker-entrypoint-initdb.d/002_orbi_data.sql:ro
+      - ./.docker/init/003_create_app_role.sh:/docker-entrypoint-initdb.d/003_create_app_role.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U jef_db_first -d orbi_app"]
       interval: 10s
@@ -41,14 +43,6 @@ services:
       start_period: 30s
     security_opt:
       - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 128M
     tmpfs:
       - /tmp
       - /var/run/postgresql
@@ -62,4 +56,6 @@ services:
 
 secrets:
   postgres_password:
-    file: ./src/.docker/secrets/postgres_password
+    file: ./.docker/secrets/postgres_password
+  orbi_app_password:
+    file: ./.docker/secrets/orbi_app_password
