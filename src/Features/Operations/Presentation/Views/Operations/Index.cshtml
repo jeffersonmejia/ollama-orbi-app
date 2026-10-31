@@ -1,0 +1,51 @@
+@model OrbiApp.Models.Operations.OperationsDashboardViewModel
+@{
+    ViewData["Title"] = "Operaciones";
+    var activeSection = ViewBag.ActiveSection as string ?? "pedidos";
+}
+
+<div class="orbi-operations-page">
+    <header class="orbi-operations-header">
+        <div>
+            <h1>Centro de operaciones</h1>
+            <p>Herramientas disponibles para tu rol en Orbi.</p>
+        </div>
+    </header>
+    <partial name="_Alerts" />
+
+    <div class="orbi-admin-stack">
+        <nav class="orbi-subnav" aria-label="Secciones de operaciones">
+            @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
+            {
+                <a class="orbi-subnav-item @(activeSection == "pedidos" ? "active" : "")" asp-action="Index" asp-route-section="pedidos">
+                    <span class="material-symbols-outlined">receipt_long</span><span>Pedidos</span>
+                </a>
+            }
+
+        </nav>
+
+        <div class="orbi-admin-content">
+            @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
+            {
+                <div class="orbi-admin-table-card">
+                    <div class="orbi-admin-table-heading">
+                        <div>
+                            <h2>Pedidos y entregas</h2>
+                            <p>Incidencias y historial de cambios de estado.</p>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; padding:0 18px 18px;">
+                        <a class="m3-card orbi-operation-card" asp-action="DeliveryIncidents">
+                            <span class="material-symbols-outlined">report</span>
+                            <h2>Incidencias</h2>
+                        </a>
+                        <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
+                            <span class="material-symbols-outlined">history</span>
+                            <h2>Historial de pedidos</h2>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
