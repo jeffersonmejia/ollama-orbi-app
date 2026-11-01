@@ -1,0 +1,15 @@
+flowchart LR
+  Browser[Navegador] -->|HTTP local :5175| Presentation[ASP.NET Core Presentation<br/>MVC + Razor Pages Identity<br/>Blazor InteractiveAuto]
+  Presentation --> Application[Application<br/>Use cases and ports]
+  Application --> Domain[Domain<br/>business models and rules]
+  Infrastructure[Infrastructure<br/>EF Core, external clients, workers] --> Application
+  Presentation --> Infrastructure
+  Infrastructure -->|Npgsql :5433 -> :5432| PostgreSQL[(PostgreSQL 16<br/>Docker Compose)]
+  Infrastructure -->|HTTP localhost:11434| Ollama[Ollama local<br/>qwen2.5:0.5b]
+  Infrastructure -->|HTTPS REST configured| PayPal[PayPal]
+  Infrastructure -->|HTTPS GET configured| Markets[Fybeca / Pharmacys / Medicity]
+  Infrastructure -->|SMTP STARTTLS configured| SMTP[SMTP provider]
+  Infrastructure --> EmailWorker[EmailQueueWorker]
+  Infrastructure --> BackupWorker[BackupService]
+  Sonar[Isolated SonarQube audit<br/>127.0.0.1:9001] -. analysis input .-> Presentation
+  ZAP[OWASP ZAP passive baseline] -. local HTTP scope .-> Presentation

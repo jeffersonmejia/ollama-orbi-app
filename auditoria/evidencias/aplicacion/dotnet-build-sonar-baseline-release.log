@@ -1,0 +1,174 @@
+  Determinando los proyectos que se van a restaurar...
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+  Todos los proyectos están actualizados para la restauración.
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\tools\OrbiApp.DataGenerator\GeneratorOptions.cs(102,76): warning CS8622: La nulabilidad de los tipos de referencia del tipo de parámetro"path" de "string Path.GetFullPath(string path)" no coincide con el delegado de destino "Func<string?, string>" (posiblemente debido a los atributos de nulabilidad). [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(168,27): warning S2245: Use a cryptographically strong random number generator. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\Program.cs(17,5): warning S6966: Await WriteLineAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(571,66): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(479,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,70): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,68): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(704,71): warning S4790: Use a stronger hashing algorithm. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,72): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,71): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,118): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(393,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(394,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(395,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(396,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(397,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(398,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(399,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(400,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(401,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(402,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(403,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(404,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(405,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(406,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(407,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(408,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(418,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(419,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(420,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(421,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(422,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(423,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(424,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(425,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(426,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(427,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(428,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+  OrbiApp.DataGenerator -> [REPO]\tools\OrbiApp.DataGenerator\bin\Release\net10.0\OrbiApp.DataGenerator.dll
+  Sonar: (OrbiApp.DataGenerator.csproj) Project processed successfully
+  Domain -> [REPO]\src\Core\Domain\bin\Release\net10.0\OrbiApp.Domain.dll
+  Sonar: (Domain.csproj) Project processed successfully
+  Application -> [REPO]\src\Core\Application\bin\Release\net10.0\OrbiApp.Application.dll
+  Sonar: (Application.csproj) Project processed successfully
+[REPO]\src\Features\Identity\Infrastructure\Persistence\IdentitySeeder.cs(36,29): warning S6966: Await ToListAsync instead. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(74,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(69,20): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(43,25): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(138,16): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(137,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+  Infrastructure -> [REPO]\src\Core\Infrastructure\bin\Release\net10.0\OrbiApp.Infrastructure.dll
+  Sonar: (Infrastructure.csproj) Project processed successfully
+  Presentation.Client -> [REPO]\src\Core\Presentation.Client\bin\Release\net10.0\OrbiApp.Presentation.Client.dll
+  Presentation.Client (Blazor output) -> [REPO]\src\Core\Presentation.Client\bin\Release\net10.0\wwwroot
+  Sonar: (Presentation.Client.csproj) Project processed successfully
+[REPO]\src\Core\Presentation\Configuration\FeatureViewLocationExpander.cs(26,73): warning CS8604: Posible argumento de referencia nulo para el parámetro "key" en "bool IReadOnlyDictionary<string, string>.TryGetValue(string key, out string value)". [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Program.cs(11,1): warning S6966: Await RunAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Operations\Presentation\Controllers\OperationsController.cs(418,25): warning S6932: Use model binding instead of accessing the raw request data [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Identity\Presentation\Areas\Identity\Pages\Account\Manage\_Layout.cshtml(18,21): warning S6966: Await RenderSectionAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(492,30): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(485,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(535,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(534,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(531,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(529,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+  Presentation -> [REPO]\src\Core\Presentation\bin\Release\net10.0\OrbiApp.Presentation.dll
+  Sonar: (Presentation.csproj) Project processed successfully
+
+Compilación correcta.
+
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\tools\OrbiApp.DataGenerator\GeneratorOptions.cs(102,76): warning CS8622: La nulabilidad de los tipos de referencia del tipo de parámetro"path" de "string Path.GetFullPath(string path)" no coincide con el delegado de destino "Func<string?, string>" (posiblemente debido a los atributos de nulabilidad). [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(168,27): warning S2245: Use a cryptographically strong random number generator. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\Program.cs(17,5): warning S6966: Await WriteLineAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(571,66): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(479,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,70): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,68): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(704,71): warning S4790: Use a stronger hashing algorithm. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,72): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,71): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,118): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(393,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(394,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(395,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(396,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(397,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(398,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(399,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(400,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(401,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(402,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(403,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(404,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(405,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(406,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(407,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(408,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(418,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(419,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(420,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(421,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(422,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(423,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(424,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(425,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(426,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(427,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(428,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\src\Features\Identity\Infrastructure\Persistence\IdentitySeeder.cs(36,29): warning S6966: Await ToListAsync instead. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(74,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(69,20): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(43,25): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(138,16): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(137,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Core\Presentation\Configuration\FeatureViewLocationExpander.cs(26,73): warning CS8604: Posible argumento de referencia nulo para el parámetro "key" en "bool IReadOnlyDictionary<string, string>.TryGetValue(string key, out string value)". [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Program.cs(11,1): warning S6966: Await RunAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Operations\Presentation\Controllers\OperationsController.cs(418,25): warning S6932: Use model binding instead of accessing the raw request data [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Identity\Presentation\Areas\Identity\Pages\Account\Manage\_Layout.cshtml(18,21): warning S6966: Await RenderSectionAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(492,30): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(485,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(535,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(534,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(531,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(529,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+    76 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:54.93

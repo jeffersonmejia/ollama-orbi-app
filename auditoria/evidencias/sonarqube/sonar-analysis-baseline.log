@@ -1,0 +1,558 @@
+=== SonarScanner begin (generated/third-party exclusions; SCM disabled due missing Git blob) ===
+SonarScanner for .NET 12.0
+Using the .NET Core version of the SonarScanner for .NET
+Pre-processing started.
+Preparing working directories...
+11:13:38.842  Updating build integration targets...
+11:13:39.113  Using SonarQube 26.10.0.133078.
+11:13:39.927  Fetching analysis configuration settings...
+11:13:41.349  Provisioning analyzer assemblies for cs...
+11:13:41.351  Installing required Roslyn analyzers...
+11:13:41.352  Processing plugin: csharp version 10.35.0.4138
+11:13:41.790  Provisioning analyzer assemblies for vbnet...
+11:13:41.790  Installing required Roslyn analyzers...
+11:13:41.791  Processing plugin: vbnet version 10.35.0.4138
+11:13:41.815  Incremental PR analysis: Base branch parameter was not provided.
+11:13:41.815  Cache data is empty. A full analysis will be performed.
+11:13:41.967  Pre-processing succeeded.
+EXIT_CODE=0
+=== dotnet build Release --no-incremental ===
+  Determinando los proyectos que se van a restaurar...
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+  Todos los proyectos están actualizados para la restauración.
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\tools\OrbiApp.DataGenerator\GeneratorOptions.cs(102,76): warning CS8622: La nulabilidad de los tipos de referencia del tipo de parámetro"path" de "string Path.GetFullPath(string path)" no coincide con el delegado de destino "Func<string?, string>" (posiblemente debido a los atributos de nulabilidad). [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(168,27): warning S2245: Use a cryptographically strong random number generator. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\Program.cs(17,5): warning S6966: Await WriteLineAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(571,66): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(393,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(394,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(395,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(396,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(704,71): warning S4790: Use a stronger hashing algorithm. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(479,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(397,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(398,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,70): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(399,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,68): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(400,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(401,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(402,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,72): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(403,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(404,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(405,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,71): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,118): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(406,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(407,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(408,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(418,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(419,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(420,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(421,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(422,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(423,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(424,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(425,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(426,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(427,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(428,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+  OrbiApp.DataGenerator -> [REPO]\tools\OrbiApp.DataGenerator\bin\Release\net10.0\OrbiApp.DataGenerator.dll
+  Sonar: (OrbiApp.DataGenerator.csproj) Project processed successfully
+  Domain -> [REPO]\src\Core\Domain\bin\Release\net10.0\OrbiApp.Domain.dll
+  Sonar: (Domain.csproj) Project processed successfully
+  Application -> [REPO]\src\Core\Application\bin\Release\net10.0\OrbiApp.Application.dll
+  Sonar: (Application.csproj) Project processed successfully
+[REPO]\src\Features\Identity\Infrastructure\Persistence\IdentitySeeder.cs(36,29): warning S6966: Await ToListAsync instead. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(138,16): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(137,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(74,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(69,20): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(43,25): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+  Infrastructure -> [REPO]\src\Core\Infrastructure\bin\Release\net10.0\OrbiApp.Infrastructure.dll
+  Sonar: (Infrastructure.csproj) Project processed successfully
+  Presentation.Client -> [REPO]\src\Core\Presentation.Client\bin\Release\net10.0\OrbiApp.Presentation.Client.dll
+  Presentation.Client (Blazor output) -> [REPO]\src\Core\Presentation.Client\bin\Release\net10.0\wwwroot
+  Sonar: (Presentation.Client.csproj) Project processed successfully
+[REPO]\src\Core\Presentation\Configuration\FeatureViewLocationExpander.cs(26,73): warning CS8604: Posible argumento de referencia nulo para el parámetro "key" en "bool IReadOnlyDictionary<string, string>.TryGetValue(string key, out string value)". [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Program.cs(11,1): warning S6966: Await RunAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Operations\Presentation\Controllers\OperationsController.cs(418,25): warning S6932: Use model binding instead of accessing the raw request data [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Identity\Presentation\Areas\Identity\Pages\Account\Manage\_Layout.cshtml(18,21): warning S6966: Await RenderSectionAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(535,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(534,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(531,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(529,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(492,30): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(485,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+  Presentation -> [REPO]\src\Core\Presentation\bin\Release\net10.0\OrbiApp.Presentation.dll
+  Sonar: (Presentation.csproj) Project processed successfully
+
+Compilación correcta.
+
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7 [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx [[REPO]\OrbiApp.slnx]
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Infrastructure\Infrastructure.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Packaging" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1901: El paquete "NuGet.Protocol" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1902: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad moderada conocida, https://github.com/advisories/GHSA-2fmv-rv2c-59x7
+[REPO]\src\Core\Presentation\Presentation.csproj : warning NU1903: El paquete "System.Security.Cryptography.Pkcs" 10.0.0 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-846f-f764-76mx
+[REPO]\tools\OrbiApp.DataGenerator\GeneratorOptions.cs(102,76): warning CS8622: La nulabilidad de los tipos de referencia del tipo de parámetro"path" de "string Path.GetFullPath(string path)" no coincide con el delegado de destino "Func<string?, string>" (posiblemente debido a los atributos de nulabilidad). [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(168,27): warning S2245: Use a cryptographically strong random number generator. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\Program.cs(17,5): warning S6966: Await WriteLineAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(571,66): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(393,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(394,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(395,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(478,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(396,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(704,71): warning S4790: Use a stronger hashing algorithm. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(479,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(397,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(398,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(480,70): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(399,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(481,68): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(400,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(401,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,40): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(489,84): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(402,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(490,72): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(403,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(404,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(405,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,71): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(491,118): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(406,21): warning S6966: Await WriteNullAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(407,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(408,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(418,21): warning S6966: Await StartRowAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(419,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(420,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(421,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(422,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(423,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(424,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(425,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(426,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(427,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\tools\OrbiApp.DataGenerator\OrbiDataGenerator.cs(428,21): warning S6966: Await WriteAsync instead. [[REPO]\tools\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj]
+[REPO]\src\Features\Identity\Infrastructure\Persistence\IdentitySeeder.cs(36,29): warning S6966: Await ToListAsync instead. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(138,16): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(137,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(74,26): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(69,20): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Features\Delivery\Infrastructure\ExternalMarketPriceService.cs(43,25): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Infrastructure\Infrastructure.csproj]
+[REPO]\src\Core\Presentation\Configuration\FeatureViewLocationExpander.cs(26,73): warning CS8604: Posible argumento de referencia nulo para el parámetro "key" en "bool IReadOnlyDictionary<string, string>.TryGetValue(string key, out string value)". [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Program.cs(11,1): warning S6966: Await RunAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Operations\Presentation\Controllers\OperationsController.cs(418,25): warning S6932: Use model binding instead of accessing the raw request data [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Identity\Presentation\Areas\Identity\Pages\Account\Manage\_Layout.cshtml(18,21): warning S6966: Await RenderSectionAsync instead. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(535,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(534,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(531,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(529,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(492,30): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+[REPO]\src\Features\Home\Presentation\Controllers\HomeController.cs(485,13): warning S6444: Pass a timeout to limit the execution time. [[REPO]\src\Core\Presentation\Presentation.csproj]
+    76 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:52.64
+EXIT_CODE=0
+=== SonarScanner end ===
+SonarScanner for .NET 12.0
+Using the .NET Core version of the SonarScanner for .NET
+Post-processing started.
+11:14:36.634  Starting with SonarScanner for .NET v8 the way the `sonar.projectBaseDir` property is automatically detected has changed and this has an impact on the files that are analyzed and other properties that are resolved relative to it like `sonar.exclusions` and `sonar.test.exclusions`. If you would like to customize the behavior, please set the `sonar.projectBaseDir` property to point to a directory that contains all the source code you want to analyze. The path may be relative (to the directory from which the analysis was started) or absolute.
+11:14:40.232  Using Java found in Analysis Config: [USERPROFILE]\.sonar\cache\d35f31e712f0fcf6ac5a093edc90204fbff22f720ba3950bd09d331d5e621636\OpenJDK21U-jre_x64_windows_hotspot_21.0.12.1_1.zip_extracted\jdk-21.0.12.1+1-jre\bin\java.exe
+11:14:41.517  INFO: Starting SonarScanner Engine...
+11:14:41.522  INFO: Java 21.0.12.1 Eclipse Adoptium (64-bit)
+11:14:45.153  INFO: Load global settings
+11:14:45.418  INFO: Load global settings (done) | time=259ms
+11:14:45.427  INFO: Server id: 147B411E-AaGXzzxs01tYRZUboNW_
+11:14:45.450  INFO: Loading required plugins
+11:14:45.452  INFO: Load plugins index
+11:14:45.484  INFO: Load plugins index (done) | time=32ms
+11:14:45.484  INFO: Load/download plugins
+11:14:45.510  INFO: Load/download plugins (done) | time=25ms
+11:14:46.406  INFO: Load project settings for component key: 'orbi-auditoria'
+11:14:46.455  INFO: Load project settings for component key: 'orbi-auditoria' (done) | time=49ms
+11:14:46.493  INFO: Process project properties
+11:14:46.749  INFO: Process project properties (done) | time=254ms
+11:14:46.803  INFO: Project key: orbi-auditoria
+11:14:46.803  INFO: Base dir: [REPO]
+11:14:46.803  INFO: Working dir: [REPO]\.sonarqube\out\.sonar
+11:14:47.552  INFO: Load quality profiles
+11:14:47.681  INFO: Load quality profiles (done) | time=130ms
+11:14:47.786  INFO: Load active rules
+11:14:48.636  INFO: Load active rules (done) | time=849ms
+11:14:48.657  INFO: Load analysis cache
+11:14:48.758  INFO: Load analysis cache | time=101ms
+11:14:49.077  INFO: Preprocessing files...
+11:14:50.795  INFO: 6 languages detected in 266 preprocessed files (done) | time=1717ms
+11:14:50.795  INFO: 228 files ignored because of inclusion/exclusion patterns
+11:14:50.800  INFO: Loading plugins for detected languages
+11:14:50.801  INFO: Load/download plugins
+11:14:50.829  INFO: Load/download plugins (done) | time=29ms
+11:14:51.558  INFO: Executing phase 2 project builders
+11:14:51.795  INFO: Executing phase 2 project builders (done) | time=237ms
+11:14:51.829  INFO: Load project repositories
+11:14:52.278  INFO: Load project repositories (done) | time=449ms
+11:14:52.353  INFO: Indexing files...
+11:14:52.353  INFO: Project configuration:
+11:14:52.354  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.357  INFO: Indexing files of module 'Application'
+11:14:52.357  INFO:   Base dir: [REPO]\src\Core\Application
+11:14:52.361  INFO:   Source paths: obj/Application.csproj.nuget.dgspec.json, obj/project.assets....
+11:14:52.362  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.409  INFO: Indexing files of module 'OrbiApp.DataGenerator'
+11:14:52.409  INFO:   Base dir: [REPO]\tools\OrbiApp.DataGenerator
+11:14:52.410  INFO:   Source paths: GenerationPlan.cs, GeneratorOptions.cs, OrbiDataGenerator.cs,...
+11:14:52.410  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.489  INFO: Indexing files of module 'Infrastructure'
+11:14:52.490  INFO:   Base dir: [REPO]\src\Core\Infrastructure
+11:14:52.490  INFO:   Source paths: obj/Infrastructure.csproj.nuget.dgspec.json, obj/project.asse...
+11:14:52.491  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.498  INFO: Indexing files of module 'Presentation'
+11:14:52.498  INFO:   Base dir: [REPO]\src\Core\Presentation
+11:14:52.504  INFO:   Source paths: appsettings.json, Features/_ViewImports.cshtml, Features/_Vie...
+11:14:52.504  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.600  INFO: Indexing files of module 'Presentation.Client'
+11:14:52.600  INFO:   Base dir: [REPO]\src\Core\Presentation.Client
+11:14:52.603  INFO:   Source paths: obj/Presentation.Client.csproj.nuget.dgspec.json, obj/project...
+11:14:52.604  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.623  INFO: Indexing files of module 'Domain'
+11:14:52.624  INFO:   Base dir: [REPO]\src\Core\Domain
+11:14:52.624  INFO:   Source paths: obj/Domain.csproj.nuget.dgspec.json, obj/project.assets.json,...
+11:14:52.624  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.625  INFO: Indexing files of module 'Orbi - Auditoria'
+11:14:52.625  INFO:   Base dir: [REPO]
+11:14:52.628  INFO:   Source paths: auditoria/sonarqube-compose.yml, .docker/init/003_create_app_...
+11:14:52.628  INFO:   Excluded sources: auditoria/**, **/bin/**, **/obj/**, **/publish/**, **/node_modules/**, **/packages/**, **/wwwroot/lib/**, **/wwwroot/_framework/**
+11:14:52.770  INFO: 266 files indexed (done) | time=415ms
+11:14:52.773  INFO: Quality profile for cs: Sonar way core
+11:14:52.773  INFO: Quality profile for css: Sonar way core
+11:14:52.774  INFO: Quality profile for js: Sonar way core
+11:14:52.774  INFO: Quality profile for json: Sonar way comprehensive
+11:14:52.774  INFO: Quality profile for web: Sonar way core
+11:14:52.774  INFO: Quality profile for yaml: Sonar way comprehensive
+11:14:52.774  INFO: ------------- Run sensors on module Domain
+11:14:52.974  INFO: Load metrics repository
+11:14:53.081  INFO: Load metrics repository (done) | time=107ms
+11:14:54.883  INFO: Reflections took 647 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:55.419  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:55.426  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=6ms
+11:14:55.426  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:55.427  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:55.428  INFO: Sensor Java Config Sensor [iac]
+11:14:55.430  INFO: There are no files to be analyzed for the Java language
+11:14:55.430  INFO: Sensor Java Config Sensor [iac] (done) | time=3ms
+11:14:55.431  INFO: Sensor IaC Docker Sensor [iac]
+11:14:55.437  INFO: There are no files to be analyzed for the Docker language
+11:14:55.437  INFO: Sensor IaC Docker Sensor [iac] (done) | time=5ms
+11:14:55.437  INFO: Sensor C# Project Type Information [csharp]
+11:14:55.445  INFO: Sensor C# Project Type Information [csharp] (done) | time=8ms
+11:14:55.445  INFO: Sensor C# Analysis Log [csharp]
+11:14:55.465  INFO: Roslyn version: 5.9.0.0
+11:14:55.465  INFO: Language version: CSharp14
+11:14:55.465  INFO: Concurrent execution: enabled
+11:14:55.465  INFO: Sensor C# Analysis Log [csharp] (done) | time=19ms
+11:14:55.465  INFO: Sensor C# Method Declarations [csharp]
+11:14:55.468  INFO: Sensor C# Method Declarations [csharp] (done) | time=2ms
+11:14:55.468  INFO: Sensor C# Properties [csharp]
+11:14:55.471  INFO: Sensor C# Properties [csharp] (done) | time=3ms
+11:14:55.475  INFO: ------------- Run sensors on module Application
+11:14:55.692  INFO: Reflections took 107 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:55.720  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:55.721  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=1ms
+11:14:55.722  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:55.722  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=1ms
+11:14:55.722  INFO: Sensor Java Config Sensor [iac]
+11:14:55.722  INFO: There are no files to be analyzed for the Java language
+11:14:55.722  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:55.723  INFO: Sensor IaC Docker Sensor [iac]
+11:14:55.724  INFO: There are no files to be analyzed for the Docker language
+11:14:55.724  INFO: Sensor IaC Docker Sensor [iac] (done) | time=1ms
+11:14:55.724  INFO: Sensor C# Project Type Information [csharp]
+11:14:55.725  INFO: Sensor C# Project Type Information [csharp] (done) | time=0ms
+11:14:55.725  INFO: Sensor C# Analysis Log [csharp]
+11:14:55.728  INFO: Roslyn version: 5.9.0.0
+11:14:55.728  INFO: Language version: CSharp14
+11:14:55.728  INFO: Concurrent execution: enabled
+11:14:55.729  INFO: Sensor C# Analysis Log [csharp] (done) | time=3ms
+11:14:55.729  INFO: Sensor C# Method Declarations [csharp]
+11:14:55.731  INFO: Sensor C# Method Declarations [csharp] (done) | time=1ms
+11:14:55.731  INFO: Sensor C# Telemetry [csharp]
+11:14:55.736  INFO: Sensor C# Telemetry [csharp] (done) | time=4ms
+11:14:55.736  INFO: Sensor C# Telemetry Json [csharp]
+11:14:55.800  INFO: Sensor C# Telemetry Json [csharp] (done) | time=63ms
+11:14:55.800  INFO: Sensor C# Properties [csharp]
+11:14:55.801  INFO: Sensor C# Properties [csharp] (done) | time=2ms
+11:14:55.802  INFO: Sensor HTML [web]
+11:14:55.824  INFO: Sensor HTML [web] (done) | time=21ms
+11:14:55.825  INFO: ------------- Run sensors on module OrbiApp.DataGenerator
+11:14:56.066  INFO: Reflections took 92 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:56.092  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:56.092  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=0ms
+11:14:56.093  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:56.093  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:56.093  INFO: Sensor Java Config Sensor [iac]
+11:14:56.093  INFO: There are no files to be analyzed for the Java language
+11:14:56.094  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:56.094  INFO: Sensor IaC Docker Sensor [iac]
+11:14:56.096  INFO: There are no files to be analyzed for the Docker language
+11:14:56.096  INFO: Sensor IaC Docker Sensor [iac] (done) | time=1ms
+11:14:56.096  INFO: Sensor C# Project Type Information [csharp]
+11:14:56.096  INFO: Sensor C# Project Type Information [csharp] (done) | time=1ms
+11:14:56.097  INFO: Sensor C# Analysis Log [csharp]
+11:14:56.099  INFO: Roslyn version: 5.9.0.0
+11:14:56.099  INFO: Language version: CSharp14
+11:14:56.099  INFO: Concurrent execution: enabled
+11:14:56.099  INFO: Sensor C# Analysis Log [csharp] (done) | time=2ms
+11:14:56.099  INFO: Sensor C# Method Declarations [csharp]
+11:14:56.101  INFO: Sensor C# Method Declarations [csharp] (done) | time=0ms
+11:14:56.101  INFO: Sensor C# Telemetry [csharp]
+11:14:56.103  INFO: Sensor C# Telemetry [csharp] (done) | time=2ms
+11:14:56.103  INFO: Sensor C# Telemetry Json [csharp]
+11:14:56.139  INFO: Sensor C# Telemetry Json [csharp] (done) | time=35ms
+11:14:56.139  INFO: Sensor C# Properties [csharp]
+11:14:56.142  INFO: Sensor C# Properties [csharp] (done) | time=1ms
+11:14:56.143  INFO: Sensor HTML [web]
+11:14:56.146  INFO: Sensor HTML [web] (done) | time=2ms
+11:14:56.147  INFO: ------------- Run sensors on module Infrastructure
+11:14:56.302  INFO: Reflections took 59 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:56.320  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:56.321  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=1ms
+11:14:56.321  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:56.321  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:56.321  INFO: Sensor Java Config Sensor [iac]
+11:14:56.321  INFO: There are no files to be analyzed for the Java language
+11:14:56.321  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:56.322  INFO: Sensor IaC Docker Sensor [iac]
+11:14:56.323  INFO: There are no files to be analyzed for the Docker language
+11:14:56.323  INFO: Sensor IaC Docker Sensor [iac] (done) | time=2ms
+11:14:56.323  INFO: Sensor C# Project Type Information [csharp]
+11:14:56.323  INFO: Sensor C# Project Type Information [csharp] (done) | time=0ms
+11:14:56.323  INFO: Sensor C# Analysis Log [csharp]
+11:14:56.325  INFO: Roslyn version: 5.9.0.0
+11:14:56.325  INFO: Language version: CSharp14
+11:14:56.326  INFO: Concurrent execution: enabled
+11:14:56.326  INFO: Sensor C# Analysis Log [csharp] (done) | time=2ms
+11:14:56.326  INFO: Sensor C# Method Declarations [csharp]
+11:14:56.329  INFO: Sensor C# Method Declarations [csharp] (done) | time=4ms
+11:14:56.330  INFO: Sensor C# Telemetry [csharp]
+11:14:56.332  INFO: Sensor C# Telemetry [csharp] (done) | time=3ms
+11:14:56.332  INFO: Sensor C# Telemetry Json [csharp]
+11:14:56.357  INFO: Sensor C# Telemetry Json [csharp] (done) | time=25ms
+11:14:56.358  INFO: Sensor C# Properties [csharp]
+11:14:56.359  INFO: Sensor C# Properties [csharp] (done) | time=1ms
+11:14:56.359  INFO: Sensor HTML [web]
+11:14:56.361  INFO: Sensor HTML [web] (done) | time=0ms
+11:14:56.362  INFO: ------------- Run sensors on module Presentation.Client
+11:14:56.500  INFO: Reflections took 60 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:56.524  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:56.540  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=16ms
+11:14:56.540  INFO: Sensor IaC CloudFormation Sensor [iac]
+11:14:56.540  INFO: There are no files to be analyzed for the CloudFormation language
+11:14:56.540  INFO: Sensor IaC CloudFormation Sensor [iac] (done) | time=0ms
+11:14:56.540  INFO: Sensor IaC cfn-lint report Sensor [iac]
+11:14:56.541  INFO: Sensor IaC cfn-lint report Sensor [iac] (done) | time=0ms
+11:14:56.541  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:56.541  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:56.542  INFO: Sensor IaC Azure Resource Manager Sensor [iac]
+11:14:56.542  INFO: There are no files to be analyzed for the Azure Resource Manager language
+11:14:56.542  INFO: Sensor IaC Azure Resource Manager Sensor [iac] (done) | time=0ms
+11:14:56.542  INFO: Sensor Java Config Sensor [iac]
+11:14:56.542  INFO: There are no files to be analyzed for the Java language
+11:14:56.542  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:56.543  INFO: Sensor IaC Docker Sensor [iac]
+11:14:56.546  INFO: There are no files to be analyzed for the Docker language
+11:14:56.546  INFO: Sensor IaC Docker Sensor [iac] (done) | time=3ms
+11:14:56.546  INFO: Sensor C# Project Type Information [csharp]
+11:14:56.546  INFO: Sensor C# Project Type Information [csharp] (done) | time=1ms
+11:14:56.547  INFO: Sensor C# Analysis Log [csharp]
+11:14:56.553  INFO: Roslyn version: 5.9.0.0
+11:14:56.553  INFO: Language version: CSharp14
+11:14:56.553  INFO: Concurrent execution: enabled
+11:14:56.553  INFO: Sensor C# Analysis Log [csharp] (done) | time=6ms
+11:14:56.554  INFO: Sensor C# Method Declarations [csharp]
+11:14:56.555  INFO: Sensor C# Method Declarations [csharp] (done) | time=2ms
+11:14:56.555  INFO: Sensor C# Telemetry [csharp]
+11:14:56.557  INFO: Sensor C# Telemetry [csharp] (done) | time=1ms
+11:14:56.557  INFO: Sensor C# Telemetry Json [csharp]
+11:14:56.562  INFO: Sensor C# Telemetry Json [csharp] (done) | time=4ms
+11:14:56.562  INFO: Sensor C# Properties [csharp]
+11:14:56.564  INFO: Sensor C# Properties [csharp] (done) | time=1ms
+11:14:56.564  INFO: Sensor HTML [web]
+11:14:56.565  INFO: Sensor HTML [web] (done) | time=0ms
+11:14:56.565  INFO: ------------- Run sensors on module Presentation
+11:14:56.705  INFO: Reflections took 57 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:56.723  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:56.730  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=7ms
+11:14:56.730  INFO: Sensor IaC CloudFormation Sensor [iac]
+11:14:56.730  INFO: There are no files to be analyzed for the CloudFormation language
+11:14:56.731  INFO: Sensor IaC CloudFormation Sensor [iac] (done) | time=0ms
+11:14:56.731  INFO: Sensor IaC cfn-lint report Sensor [iac]
+11:14:56.731  INFO: Sensor IaC cfn-lint report Sensor [iac] (done) | time=0ms
+11:14:56.731  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:56.731  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:56.731  INFO: Sensor IaC Azure Resource Manager Sensor [iac]
+11:14:56.732  INFO: There are no files to be analyzed for the Azure Resource Manager language
+11:14:56.732  INFO: Sensor IaC Azure Resource Manager Sensor [iac] (done) | time=0ms
+11:14:56.732  INFO: Sensor Java Config Sensor [iac]
+11:14:56.732  INFO: There are no files to be analyzed for the Java language
+11:14:56.732  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:56.732  INFO: Sensor IaC Docker Sensor [iac]
+11:14:56.738  INFO: There are no files to be analyzed for the Docker language
+11:14:56.738  INFO: Sensor IaC Docker Sensor [iac] (done) | time=6ms
+11:14:56.739  INFO: Sensor C# Project Type Information [csharp]
+11:14:56.739  INFO: Sensor C# Project Type Information [csharp] (done) | time=1ms
+11:14:56.739  INFO: Sensor C# Analysis Log [csharp]
+11:14:56.742  INFO: Roslyn version: 5.9.0.0
+11:14:56.742  INFO: Language version: CSharp14
+11:14:56.742  INFO: Concurrent execution: enabled
+11:14:56.742  INFO: Sensor C# Analysis Log [csharp] (done) | time=2ms
+11:14:56.742  INFO: Sensor C# Method Declarations [csharp]
+11:14:56.745  INFO: Sensor C# Method Declarations [csharp] (done) | time=3ms
+11:14:56.745  INFO: Sensor C# Telemetry [csharp]
+11:14:56.749  INFO: Sensor C# Telemetry [csharp] (done) | time=4ms
+11:14:56.749  INFO: Sensor C# Telemetry Json [csharp]
+11:14:56.753  INFO: Sensor C# Telemetry Json [csharp] (done) | time=4ms
+11:14:56.754  INFO: Sensor C# Properties [csharp]
+11:14:56.755  INFO: Sensor C# Properties [csharp] (done) | time=0ms
+11:14:56.755  INFO: Sensor HTML [web]
+11:14:58.276  INFO: Sensor HTML [web] (done) | time=1519ms
+11:14:58.276  INFO: ------------- Run sensors on module Orbi - Auditoria
+11:14:58.533  INFO: Reflections took 126 ms to scan 1 urls, producing 30 keys and 303 values
+11:14:58.566  INFO: Sensor IaC YAML File Type Classification Sensor [iac]
+11:14:58.598  INFO: Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=31ms
+11:14:58.599  INFO: Sensor IaC CloudFormation Sensor [iac]
+11:14:58.599  INFO: There are no files to be analyzed for the CloudFormation language
+11:14:58.599  INFO: Sensor IaC CloudFormation Sensor [iac] (done) | time=0ms
+11:14:58.599  INFO: Sensor IaC cfn-lint report Sensor [iac]
+11:14:58.599  INFO: Sensor IaC cfn-lint report Sensor [iac] (done) | time=0ms
+11:14:58.599  INFO: Sensor IaC Kustomization Sensor [iac]
+11:14:58.601  INFO: Sensor IaC Kustomization Sensor [iac] (done) | time=1ms
+11:14:58.601  INFO: Sensor IaC hadolint report Sensor [iac]
+11:14:58.601  INFO: Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+11:14:58.601  INFO: Sensor Java Config Sensor [iac]
+11:14:58.601  INFO: There are no files to be analyzed for the Java language
+11:14:58.602  INFO: Sensor Java Config Sensor [iac] (done) | time=0ms
+11:14:58.602  INFO: Sensor IaC Docker Sensor [iac]
+11:14:58.645  INFO: There are no files to be analyzed for the Docker language
+11:14:58.645  INFO: Sensor IaC Docker Sensor [iac] (done) | time=43ms
+11:14:58.645  INFO: Sensor C# Project Type Information [csharp]
+11:14:58.646  INFO: Sensor C# Project Type Information [csharp] (done) | time=1ms
+11:14:58.647  INFO: Sensor C# Analysis Log [csharp]
+11:14:58.647  INFO: Sensor C# Analysis Log [csharp] (done) | time=0ms
+11:14:58.647  INFO: Sensor C# Method Declarations [csharp]
+11:14:58.648  INFO: Sensor C# Method Declarations [csharp] (done) | time=0ms
+11:14:58.648  INFO: Sensor C# Telemetry [csharp]
+11:14:58.648  INFO: Sensor C# Telemetry [csharp] (done) | time=0ms
+11:14:58.648  INFO: Sensor C# Telemetry Json [csharp]
+11:14:58.648  INFO: Sensor C# Telemetry Json [csharp] (done) | time=1ms
+11:14:58.653  INFO: Sensor C# Properties [csharp]
+11:14:58.654  INFO: Sensor C# Properties [csharp] (done) | time=0ms
+11:14:58.654  INFO: Sensor HTML [web]
+11:15:01.869  INFO: Sensor HTML [web] (done) | time=3221ms
+11:15:01.870  INFO: Sensor IaC Kubernetes Sensor [iac]
+11:15:02.111  INFO: There are no files to be analyzed for the Kubernetes language
+11:15:02.111  INFO: Sensor IaC Kubernetes Sensor [iac] (done) | time=242ms
+11:15:02.111  INFO: Sensor TextAndSecretsSensor [text]
+11:15:02.180  INFO: Available processors: 8
+11:15:02.180  INFO: Using 8 threads for analysis.
+11:15:03.360  INFO: The property "sonar.tests" is not set. To improve the analysis accuracy, we categorize a file as a test file if any of the following is true:
+  * The filename starts with "test"
+  * The filename contains "test." or "tests."
+  * Any directory in the file path is named: "doc", "docs", "test", "tests", "mock" or "mocks"
+  * Any directory in the file path has a name ending in "test" or "tests"
+
+11:15:03.482  INFO: Start fetching files for the text and secrets analysis
+11:15:03.878  INFO: Using Git CLI to retrieve dirty files
+11:15:04.069  INFO: Retrieving language associated files and files included via "sonar.text.inclusions" that are tracked by git
+11:15:04.074  INFO: Starting the text and secrets analysis
+11:15:04.078  INFO: 251 source files to be analyzed for the text and secrets analysis
+11:15:05.179  INFO: 251/251 source files have been analyzed for the text and secrets analysis
+11:15:05.187  INFO: Sensor TextAndSecretsSensor [text] (done) | time=3076ms
+11:15:05.188  INFO: ------------- Run sensors on project
+11:15:06.288  INFO: Sensor C# Telemetry processor [csharp]
+11:15:06.294  INFO: Sensor C# Telemetry processor [csharp] (done) | time=5ms
+11:15:06.294  INFO: Sensor C# Telemetry Json processor [csharp]
+11:15:06.341  INFO: Sensor C# Telemetry Json processor [csharp] (done) | time=47ms
+11:15:06.341  INFO: Sensor C# [csharp]
+11:15:09.499  INFO: Importing 6 Roslyn reports
+11:15:09.908  INFO: Found 6 MSBuild C# projects: 5 MAIN projects. 1 with no MAIN nor TEST files.
+11:15:09.908  INFO: Sensor C# [csharp] (done) | time=3567ms
+11:15:09.908  INFO: Sensor Analysis Warnings import [csharp]
+11:15:09.913  INFO: Sensor Analysis Warnings import [csharp] (done) | time=4ms
+11:15:09.913  INFO: Sensor C# File Caching Sensor [csharp]
+11:15:10.045  INFO: Sensor C# File Caching Sensor [csharp] (done) | time=131ms
+11:15:10.045  INFO: Sensor JavaScript/TypeScript/CSS analysis [javascript]
+11:15:12.665  INFO: Detected os: Windows 11 arch: amd64 alpine: false. Platform: WIN_X64
+11:15:12.666  INFO: Deploy location [USERPROFILE]\.sonar\js\node-runtime, tagetRuntime: [USERPROFILE]\.sonar\js\node-runtime\node.exe,  version: [USERPROFILE]\.sonar\js\node-runtime\version.txt
+11:15:12.785  INFO: Using embedded Node.js runtime.
+11:15:12.785  INFO: Using Node.js executable: '[USERPROFILE]\.sonar\js\node-runtime\node.exe'.
+11:15:34.667  INFO: Memory configuration: OS (32451 MB), Node.js (4288 MB).
+11:15:34.789  INFO: gRPC analyze-project server listening on 127.0.0.1:28772
+11:15:35.530  INFO: Plugin version: [14.0.0.46108]
+11:15:46.557  INFO: Found 0 tsconfig.json file(s): []
+11:15:53.986  INFO: 26 source files to be analyzed
+11:15:53.986  INFO: Analyzing 3 file(s) using default options [lib: lib.esnext.d.ts, lib.dom.d.ts]
+11:15:53.986  INFO: 26/26 source files have been analyzed
+11:15:54.014  INFO: Hit the cache for 0 out of 3
+11:15:54.016  INFO: Miss the cache for 3 out of 3: ANALYSIS_MODE_INELIGIBLE [3/3]
+11:15:54.016  INFO: Sensor JavaScript/TypeScript/CSS analysis [javascript] (done) | time=43971ms
+11:15:54.016  INFO: Sensor IaC Project Sensor [iac]
+11:15:54.020  INFO: Sensor IaC Project Sensor [iac] (done) | time=3ms
+11:15:54.020  INFO: Sensor Zero Coverage Sensor
+11:15:54.217  INFO: Sensor Zero Coverage Sensor (done) | time=196ms
+11:15:54.217  INFO: ------------- Gather SCA dependencies on project
+11:15:54.235  INFO: Dependency analysis skipped
+11:15:54.241  INFO: SCM Publisher is disabled
+11:15:54.317  INFO: CPD Executor 66 files had no CPD blocks
+11:15:54.317  INFO: CPD Executor Calculating CPD for 161 files
+11:15:54.707  INFO: CPD Executor CPD calculation finished (done) | time=390ms
+11:15:56.127  INFO: Analysis report generated in 1247ms, dir size=2.3 MB
+11:16:06.379  INFO: Analysis report compressed in 10251ms, zip size=853.4 kB
+11:16:06.515  INFO: Analysis report uploaded in 135ms
+11:16:06.518  INFO: ANALYSIS SUCCESSFUL, you can find the results at: http://127.0.0.1:9001/dashboard?id=orbi-auditoria
+11:16:06.518  INFO: Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+11:16:06.518  INFO: More about the report processing at http://127.0.0.1:9001/api/ce/task?id=431baa9e-8c4f-4612-97c1-68f7e99fd76a
+11:16:07.977  INFO: Analysis total time: 1:26.423 min
+11:16:08.076  INFO: SonarScanner Engine completed successfully
+11:16:08.171  The scanner engine has finished successfully
+11:16:08.172  Post-processing succeeded.
+EXIT_CODE=0

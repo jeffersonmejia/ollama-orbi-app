@@ -17,6 +17,7 @@
   <ItemGroup>
     <Compile Include="../../Program.cs" Link="Program.cs" />
     <Compile Include="../../Features/**/Presentation/**/*.cs" />
+    <ProjectReference Include="../Presentation.Client/Presentation.Client.csproj" />
     <Content Include="../../Features/**/*.cshtml"
              Exclude="../../Features/Identity/Presentation/Areas/Identity/Pages/**/*.cshtml"
              Link="Features/%(RecursiveDir)%(Filename)%(Extension)" />
@@ -25,6 +26,7 @@
     <ProjectReference Include="../Domain/Domain.csproj" />
     <ProjectReference Include="../Application/Application.csproj" />
     <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: Opciones públicas de registro de Orbi
+  version: 1.0.0
+paths:
+  /api/identity/registration/options:
+    get:
+      operationId: getRegistrationOptions
+      summary: Obtiene los roles y ubicaciones disponibles para el registro
+      description: Devuelve catálogos públicos y un token antifalsificación para enviar el formulario Identity.
+      security: []
+      responses:
+        '200':
+          description: Catálogos y token antifalsificación cargados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationOptions'
+        '408':
+          description: La solicitud agotó el tiempo máximo configurado
+        '500':
+          description: No se pudieron cargar los catálogos
+components:
+  schemas:
+    RegistrationOptions:
+      type: object
+      required: [requestToken, roles, provinces, cities]
+      properties:
+        requestToken:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [Usuario, Vendedor, Repartidor]
+        provinces:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProvinceOption'
+        cities:
+          type: array
+          items:
+            $ref: '#/components/schemas/CityOption'
+    ProvinceOption:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    CityOption:
+      type: object
+      required: [code, name, provinceCode]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        provinceCode:
+          type: string

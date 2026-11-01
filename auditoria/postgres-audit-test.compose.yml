@@ -1,0 +1,48 @@
+services:
+  postgres-audit-test:
+    image: postgres:16-alpine
+    container_name: orbi-audit-postgres-test
+    restart: "no"
+    ports:
+      - "127.0.0.1:55433:5432"
+    environment:
+      POSTGRES_DB: orbi_audit
+      POSTGRES_USER: orbi_audit_admin
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets:
+      - postgres_password
+      - orbi_app_password
+    volumes:
+      - audit_postgres_data:/var/lib/postgresql/data
+      - ../.docker/init/003_create_app_role.sh:/docker-entrypoint-initdb.d/003_create_app_role.sh:ro
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID
+    mem_limit: 512m
+    cpus: 1.0
+    stop_grace_period: 1m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orbi_audit_admin -d orbi_audit"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  audit_postgres_data:
+
+secrets:
+  postgres_password:
+    file: ../.docker/secrets/orbi-audit-test-postgres-admin-password
+  orbi_app_password:
+    file: ../.docker/secrets/orbi-audit-test-postgres-app-password

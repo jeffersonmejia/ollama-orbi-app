@@ -1,0 +1,17 @@
+{
+  "checkedAtUtc": "2026-11-01T16:43:52.9988641Z",
+  "container": "orbi-audit-postgres-test",
+  "image": "postgres:16-alpine",
+  "health": "healthy",
+  "publishedBinding": "127.0.0.1:55433",
+  "database": "orbi_audit",
+  "publicTableCount": 0,
+  "applicationRole": {
+    "name": "orbi_app",
+    "superuser": false,
+    "canCreateDatabase": false
+  },
+  "appPort5176Listening": false,
+  "dataVolume": "orbi-audit-test_audit_postgres_data",
+  "originalPostgres": "orbi-postgres unchanged"
+}

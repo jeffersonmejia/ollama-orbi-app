@@ -1,0 +1,48 @@
+{
+  "capturedAt": "2026-11-01 11:26:32 -05:00",
+  "process": "Existing Debug binary on localhost:5175; not restarted after source change",
+  "responses": [
+    {
+      "path": "/",
+      "status": 200,
+      "headerNames": [
+        "Content-Type",
+        "Date",
+        "Server",
+        "Transfer-Encoding"
+      ],
+      "xContentTypeOptions": null
+    },
+    {
+      "path": "/Identity/Account/Login",
+      "status": 200,
+      "headerNames": [
+        "Cache-Control",
+        "Content-Type",
+        "Date",
+        "Expires",
+        "Pragma",
+        "Server",
+        "Set-Cookie",
+        "Transfer-Encoding",
+        "X-Frame-Options"
+      ],
+      "xContentTypeOptions": null
+    },
+    {
+      "path": "/app/asistente",
+      "status": 200,
+      "headerNames": [
+        "blazor-enhanced-nav",
+        "Cache-Control",
+        "Content-Security-Policy",
+        "Content-Type",
+        "Date",
+        "Pragma",
+        "Server",
+        "Transfer-Encoding"
+      ],
+      "xContentTypeOptions": null
+    }
+  ]
+}

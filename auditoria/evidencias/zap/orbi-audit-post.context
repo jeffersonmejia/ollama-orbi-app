@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+  <context>
+    <name>Orbi-local-passive-audit</name>
+    <desc>Contexto pasivo para instancia Orbi aislada en host.docker.internal:5176; excluye Registro para impedir envíos de formularios por el spider.</desc>
+    <inscope>true</inscope>
+    <incregexes>^http://host\.docker\.internal:5176(/.*)?$</incregexes>
+    <excregexes>^http://host\.docker\.internal:5176/(Payment|Delivery|Operations|Inventory)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/(Store)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/Home/(RestoreBackup|BackupStatus|ProductChat|PanelAdministrador|ChartStats|MonthlySalesAnalytics|TableCounts|RoleCharts)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/Identity/Account/(Logout|Manage|ExternalLogin|ConfirmEmail|ConfirmEmailChange|ResetPassword|DeletePersonalData)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/signin-google(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/api/(?!security/antiforgery)(.*)$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5176/Identity/Account/Register(/.*)?$</excregexes>
+  </context>
+</configuration>

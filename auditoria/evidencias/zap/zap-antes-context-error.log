@@ -1,0 +1,4 @@
+2026-11-01 America/Guayaquil
+ZAP Baseline initial attempt: exit 1.
+Confirmed error: URL_NOT_IN_CONTEXT for target http://host.docker.internal:5175 (target without trailing slash did not match the include regex requiring /).
+The include regex was corrected to allow the exact origin and all paths. The failed run did not start its spider scan. No active scan was performed.

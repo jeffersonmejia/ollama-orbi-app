@@ -1,0 +1,55 @@
+{
+  "checkedAtUtc": "2026-11-01T16:34:01.6074816Z",
+  "processId": 26200,
+  "processPath": "src/Core/Presentation/bin/Debug/net10.0/OrbiApp.Presentation.exe",
+  "urls": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": [
+        "text/html; charset=utf-8"
+      ],
+      "nosniff": null
+    },
+    {
+      "path": "/Identity/Account/Login",
+      "status": 200,
+      "contentType": [
+        "text/html; charset=utf-8"
+      ],
+      "nosniff": null
+    },
+    {
+      "path": "/Identity/Account/Register",
+      "status": 200,
+      "contentType": [
+        "text/html; charset=utf-8"
+      ],
+      "nosniff": null
+    },
+    {
+      "path": "/app/asistente",
+      "status": 200,
+      "contentType": [
+        "text/html; charset=utf-8"
+      ],
+      "nosniff": null
+    },
+    {
+      "path": "/errors/404",
+      "status": 404,
+      "contentType": [
+        "text/html; charset=utf-8"
+      ],
+      "nosniff": null
+    },
+    {
+      "path": "/api/security/antiforgery",
+      "status": 200,
+      "contentType": [
+        "application/json; charset=utf-8"
+      ],
+      "nosniff": null
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+  <context>
+    <name>Orbi-local-passive-audit</name>
+    <desc>Only anonymous GET discovery for Orbi on the local host. No active scan.</desc>
+    <inscope>true</inscope>
+    <incregexes>^http://host\.docker\.internal:5175(/.*)?$</incregexes>
+    <excregexes>^http://host\.docker\.internal:5175/(Payment|Delivery|Operations|Inventory)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5175/(Store)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5175/Home/(RestoreBackup|BackupStatus|ProductChat|PanelAdministrador|ChartStats|MonthlySalesAnalytics|TableCounts|RoleCharts)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5175/Identity/Account/(Logout|Manage|ExternalLogin|ConfirmEmail|ConfirmEmailChange|ResetPassword|DeletePersonalData)(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5175/signin-google(/.*)?$</excregexes>
+    <excregexes>^http://host\.docker\.internal:5175/api/(?!security/antiforgery)(.*)$</excregexes>
+  </context>
+</configuration>

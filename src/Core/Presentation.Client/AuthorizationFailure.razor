@@ -1,0 +1,23 @@
+@if (AuthenticationState.User.Identity?.IsAuthenticated == true)
+{
+    <section class="orbi-route-error" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+        <h1>Acceso denegado</h1>
+        <p>Tu cuenta no tiene permisos para abrir esta sección.</p>
+        <LegacyNavigationLink Href="/app/asistente" Class="m3-filled-button">Volver al asistente</LegacyNavigationLink>
+    </section>
+}
+else
+{
+    <section class="orbi-route-error" role="alert">
+        <span class="material-symbols-outlined" aria-hidden="true">login</span>
+        <h1>Inicia sesión para continuar</h1>
+        <p>Esta sección requiere una cuenta de Orbi.</p>
+        <LegacyNavigationLink Href="/Identity/Account/Login" Class="m3-filled-button">Iniciar sesión</LegacyNavigationLink>
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public AuthenticationState AuthenticationState { get; set; } = default!;
+}

@@ -263,6 +263,12 @@ dotnet build .\OrbiApp.slnx
 
 Los proyectos de dominio, aplicación e infraestructura se compilan como referencias del host. El generador de datos es independiente y se restaura/compila con `dotnet build .\src\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj`.
 
+### Navegación Blazor progresiva
+
+La interfaz conserva MVC y Razor Pages mientras se migran módulos por etapas. El asistente ya está disponible en `/app/asistente` con **Interactive Auto**: se renderiza primero en el servidor y puede pasar a WebAssembly después de descargar el cliente (`src/Core/Presentation.Client`). Los controladores, Identity, acceso a PostgreSQL y Ollama permanecen en el servidor; el cliente no referencia las capas de dominio, aplicación ni infraestructura. `/Home/Assistant` redirige a la nueva ruta.
+
+Los límites configurables en `src/Core/Presentation/appsettings.json` son `Blazor:RequestTimeoutSeconds`, `Blazor:HttpClientTimeoutSeconds` y `Blazor:AssistantTimeoutSeconds`. El endpoint de chat conserva su respuesta NDJSON en streaming, protección antifalsificación y cancelación cuando el cliente corta la solicitud. Las vistas MVC/Razor Pages existentes siguen atendiendo los módulos aún no migrados.
+
 Para añadir una integración externa, define el puerto en `Features/<Feature>/Application` e implementa el adaptador en `Features/<Feature>/Infrastructure`; registra la implementación desde `src/Core/Infrastructure`. Para contratos genéricos que usan varias funcionalidades, utiliza `src/Core/Application/Ports`.
 
 ## 7. Generación masiva de datos

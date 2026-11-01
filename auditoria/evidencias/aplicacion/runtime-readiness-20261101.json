@@ -1,0 +1,28 @@
+{
+  "checkedAtUtc": "2026-11-01T16:49:58.3333905Z",
+  "purpose": "Runtime readiness check for isolated post-fix verification",
+  "requests": [
+    {
+      "port": 5175,
+      "reachable": true,
+      "status": 200,
+      "server": [
+        "Kestrel"
+      ],
+      "xContentTypeOptions": ""
+    },
+    {
+      "port": 5176,
+      "reachable": false,
+      "error": "HttpRequestException"
+    }
+  ],
+  "isolatedPostgres": {
+    "container": "orbi-audit-postgres-test",
+    "state": "running",
+    "health": "healthy",
+    "host": "127.0.0.1",
+    "port": 55433
+  },
+  "startedBackend": false
+}

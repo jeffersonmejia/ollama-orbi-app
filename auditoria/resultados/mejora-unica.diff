@@ -1,0 +1,22 @@
+diff --git "auditoria\\evidencias\\mejora\\WebApplicationExtensions.antes.cs" "src\\Core\\Presentation\\WebApplicationExtensions.cs"
+index 74fa8db..6f688b4 100644
+--- "auditoria\\evidencias\\mejora\\WebApplicationExtensions.antes.cs"
++++ "src\\Core\\Presentation\\WebApplicationExtensions.cs"
+@@ -7,6 +7,17 @@ public static class WebApplicationExtensions
+ {
+     public static WebApplication UseOrbiPresentation(this WebApplication app)
+     {
++        app.Use(async (context, next) =>
++        {
++            context.Response.OnStarting(() =>
++            {
++                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
++                return Task.CompletedTask;
++            });
++
++            await next();
++        });
++
+         if (app.Environment.IsDevelopment())
+         {
+             app.UseWebAssemblyDebugging();

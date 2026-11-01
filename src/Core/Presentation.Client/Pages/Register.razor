@@ -1,0 +1,168 @@
+@page "/registro"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Crear cuenta - Orbi</PageTitle>
+
+<main class="orbi-register-page">
+    <section class="orbi-register-card" aria-labelledby="register-title">
+        <h1 id="register-title">Crear cuenta</h1>
+
+        @if (_oauthError == "profile")
+        {
+            <p class="orbi-register-message" role="alert">Revisa tus datos personales y de ubicación antes de continuar con Google.</p>
+        }
+        else if (_oauthError == "google")
+        {
+            <p class="orbi-register-message" role="alert">No se pudo completar el registro con Google. Inténtalo nuevamente.</p>
+        }
+
+        <form id="registerForm" class="orbi-register-grid" action="@_postUrl" method="post" novalidate>
+            <input type="hidden" name="__RequestVerificationToken" value="@_requestToken" />
+            <div class="orbi-register-progress" aria-label="Progreso del registro">
+                <span class="active" aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+            </div>
+
+            <section class="orbi-register-step active" data-step="0">
+                <h2>1. Datos personales</h2>
+                <label>Nombres<input name="Input.FirstName" autocomplete="given-name" maxlength="80" required /></label>
+                <label>Apellidos<input name="Input.LastName" autocomplete="family-name" maxlength="80" required /></label>
+                <label>Cédula<input name="Input.Cedula" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" required /></label>
+                <label>Rol
+                    <select name="Input.Role" id="Input_Role" required disabled>
+                        <option value="">@_rolesLoading</option>
+                    </select>
+                </label>
+                <p id="roleSummary" class="orbi-register-hint"></p>
+                <p class="orbi-register-hint orbi-register-full">Los pagos de pedidos se procesan con PayPal.</p>
+                <div class="orbi-register-actions"><button type="button" class="orbi-register-next">Siguiente</button></div>
+            </section>
+
+            <section class="orbi-register-step" data-step="1">
+                <h2>2. Ubicación y dirección</h2>
+                <label>Provincia
+                    <select name="Input.ProvinceCode" id="Input_ProvinceCode" required disabled>
+                        <option value="">@_locationsLoading</option>
+                    </select>
+                </label>
+                <label>Ciudad
+                    <select name="Input.CityCode" id="Input_CityCode" required disabled>
+                        <option value="">@_locationsLoading</option>
+                    </select>
+                </label>
+                <label>Calle principal<input name="Input.AddressLine1" autocomplete="address-line1" maxlength="160" required /></label>
+                <label>Calle secundaria<input name="Input.AddressLine2" autocomplete="address-line2" maxlength="160" required /></label>
+                <label class="orbi-register-full">Referencia (opcional)<input name="Input.Reference" maxlength="240" /></label>
+                <div class="orbi-register-actions">
+                    <button type="button" class="orbi-register-previous">Anterior</button>
+                    <button type="button" class="orbi-register-next">Siguiente</button>
+                </div>
+            </section>
+
+            <section class="orbi-register-step" data-step="2">
+                <h2>3. Datos de acceso</h2>
+                <label class="orbi-register-full">Correo electrónico<input name="Input.Email" type="email" autocomplete="username" required /></label>
+                <label>Contraseña<input name="Input.Password" type="password" autocomplete="new-password" minlength="6" maxlength="100" required /></label>
+                <label>Confirmar contraseña<input name="Input.ConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="100" required /></label>
+                <div class="orbi-register-google orbi-register-full">
+                    <span>O regístrate con Google</span>
+                    <button type="submit" name="provider" value="Google" formnovalidate formaction="@_googleUrl">
+                        <img src="/assets/icons/google.png" alt="" aria-hidden="true" /> Registrarse con Google
+                    </button>
+                </div>
+                <div class="orbi-register-actions">
+                    <button type="button" class="orbi-register-previous">Anterior</button>
+                    <button type="submit">Crear cuenta</button>
+                </div>
+            </section>
+        </form>
+
+        @if (_catalogError)
+        {
+            <div class="orbi-register-load-error" role="alert">
+                No se pudieron cargar los roles y ubicaciones. <button type="button" @onclick="RetryLoadAsync">Reintentar</button>
+            </div>
+        }
+    </section>
+</main>
+
+@code {
+    private IJSObjectReference? _module;
+    private string _requestToken = string.Empty;
+    private string _rolesLoading = "Cargando roles…";
+    private string _locationsLoading = "Cargando ubicaciones…";
+    private string _postUrl = "/Identity/Account/Register";
+    private string _googleUrl = "/Identity/Account/ExternalLogin?registration=true";
+    private string? _oauthError;
+    private bool _catalogError;
+
+    protected override void OnInitialized()
+    {
+        var query = new Uri(Navigation.Uri).Query;
+        var returnUrl = ReadQueryValue(query, "returnUrl");
+        _oauthError = ReadQueryValue(query, "oauthError");
+        if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+            _postUrl = AddQuery(_postUrl, "returnUrl", returnUrl);
+            _googleUrl = AddQuery(_googleUrl, "returnUrl", returnUrl);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "/Pages/Register.razor.js");
+        await _module.InvokeVoidAsync("initializeWizard");
+        await LoadOptionsAsync();
+    }
+
+    private async Task RetryLoadAsync()
+    {
+        _catalogError = false;
+        _rolesLoading = "Cargando roles…";
+        _locationsLoading = "Cargando ubicaciones…";
+        StateHasChanged();
+        await LoadOptionsAsync();
+    }
+
+    private async Task LoadOptionsAsync()
+    {
+        try
+        {
+            var options = await _module!.InvokeAsync<RegistrationOptionsResponse>("loadOptions");
+            _requestToken = options.RequestToken;
+            _rolesLoading = "Selecciona un rol";
+            _locationsLoading = "Selecciona una provincia";
+            await _module!.InvokeVoidAsync("populateOptions", options);
+        }
+        catch (JSException)
+        {
+            _catalogError = true;
+            _rolesLoading = "No se pudieron cargar los roles";
+            _locationsLoading = "No se pudieron cargar las ubicaciones";
+        }
+        StateHasChanged();
+    }
+
+    private static string ReadQueryValue(string query, string key)
+    {
+        foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            if (Uri.UnescapeDataString(parts[0].Replace('+', ' ')) == key)
+                return parts.Length == 2 ? Uri.UnescapeDataString(parts[1].Replace('+', ' ')) : string.Empty;
+        }
+        return string.Empty;
+    }
+
+    private static string AddQuery(string url, string key, string value) =>
+        $"{url}{(url.Contains('?') ? '&' : '?')}{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is null) return;
+        try { await _module.DisposeAsync(); }
+        catch (JSDisconnectedException) { }
+    }
+}

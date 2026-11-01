@@ -159,14 +159,21 @@ namespace OrbiApp.Areas.Identity.Pages.Account
         }
 
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
-            ReturnUrl = returnUrl;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            Input ??= new InputModel();
-            Input.Role ??= "Usuario";
-            LoadRoles();
-            await LoadLocationsAsync();
+            var target = Url.Content("~/registro");
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                target = QueryHelpers.AddQueryString(target, "returnUrl", returnUrl);
+            }
+
+            var oauthError = Request.Query["oauthError"].ToString();
+            if (oauthError is "profile" or "google")
+            {
+                target = QueryHelpers.AddQueryString(target, "oauthError", oauthError);
+            }
+
+            return Task.FromResult<IActionResult>(LocalRedirect(target));
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)

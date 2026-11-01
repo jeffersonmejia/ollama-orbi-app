@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -87,7 +88,7 @@ public class HomeController : Controller
     [AllowAnonymous]
     public IActionResult Assistant()
     {
-        return View();
+        return Redirect("/app/asistente");
     }
 
     [Authorize]
@@ -296,6 +297,7 @@ public class HomeController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
+    [RequestTimeout("assistant")]
     public async Task ProductChat(string message, string? context, CancellationToken cancellationToken)
     {
         message = message?.Trim() ?? string.Empty;

@@ -9,10 +9,10 @@ secrets.txt
 *.sln.docstates
 
 # Build
-bin/
-obj/
-publish/
-/src/bin*/
+**/bin/
+**/obj/
+**/publish/
+.sonarqube/
 
 # Logs
 *.log
@@ -46,6 +46,11 @@ admin.md
 *.txt
 *.md
 !/README.md
+!/auditoria/README.md
+!/auditoria/resultados/*.md
+!/auditoria/resultados/*.txt
+!/auditoria/resultados/*.log
+!/auditoria/evidencias/**/*.log
 # Instrucciones locales de agentes: se mantienen fuera del repositorio.
 /AGENTS.md
 

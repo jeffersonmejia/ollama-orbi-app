@@ -1,0 +1,179 @@
+{
+  "generatedAt": "2026-11-01 11:23:27 -05:00",
+  "host": "Windows x64, local workstation",
+  "repositoryCommit": "153f8a59e98debb421465db9455bf4d11d76c21d",
+  "auditBranch": "audit/orbi-sonar-zap-20261101",
+  "worktreeBaseline": "Existing uncommitted application changes preserved; audit analyzes current worktree.",
+  "technologies": [
+    ".NET SDK 10.0.403 / ASP.NET Core 10.0.14",
+    "ASP.NET Core MVC and Razor Pages",
+    "Blazor InteractiveAuto (Server and WebAssembly render modes registered)",
+    "EF Core with Npgsql",
+    "PostgreSQL 16 in Docker Compose",
+    "JavaScript and CSS",
+    "MailKit SMTP"
+  ],
+  "components": [
+    {
+      "name": "Presentation",
+      "kind": "ASP.NET Core process",
+      "observed": "Running",
+      "url": "http://localhost:5175",
+      "bindAddresses": [
+        "127.0.0.1",
+        "::1"
+      ]
+    },
+    {
+      "name": "PostgreSQL",
+      "kind": "Docker Compose service",
+      "image": "postgres:16-alpine",
+      "observed": "Up, healthy",
+      "hostBinding": "127.0.0.1:5433",
+      "containerPort": 5432
+    },
+    {
+      "name": "Ollama",
+      "kind": "Local HTTP service",
+      "configuredBaseUrl": "http://localhost:11434",
+      "configuredModel": "qwen2.5:0.5b",
+      "observed": "TCP listener on 127.0.0.1:11434",
+      "requestSent": false
+    },
+    {
+      "name": "PayPal",
+      "kind": "External payment provider",
+      "observed": "Client registered in Infrastructure; no payment request sent"
+    },
+    {
+      "name": "Market price sources",
+      "kind": "External HTTP GET integrations",
+      "hosts": [
+        "fybeca.com",
+        "pharmacys.com.ec",
+        "farmaciasmedicity.com"
+      ],
+      "observed": "Configured in code; not contacted"
+    },
+    {
+      "name": "Email",
+      "kind": "MailKit SMTP",
+      "observed": "MailKit SMTP and hosted EmailQueueWorker registered; no manual email action; the pre-existing application process may consume queued items."
+    },
+    {
+      "name": "BackupService",
+      "kind": "Background service",
+      "observed": "Hosted worker registered; default interval 5 minutes; the pre-existing application process may perform scheduled backups. No manual action or backup inspection by audit."
+    },
+    {
+      "name": "Data generator",
+      "kind": "Console tool",
+      "observed": "Present, not executed; feature flag is false"
+    },
+    {
+      "name": "SonarQube audit",
+      "kind": "Isolated Docker service",
+      "image": "sonarqube:community",
+      "hostBinding": "127.0.0.1:9001",
+      "observed": "UP; analysis task SUCCESS; dashboard available at 127.0.0.1:9001"
+    },
+    {
+      "name": "OWASP ZAP",
+      "kind": "Docker baseline scan",
+      "observed": "Baseline 2.17.0 completed successfully; passive-only; 42 URLs"
+    }
+  ],
+  "network": {
+    "dockerEngine": "29.8.0",
+    "swarm": "inactive; node is not a manager",
+    "composeAppNetwork": "orbi_net, bridge, internal=false",
+    "databaseExposure": "Loopback only at 127.0.0.1:5433",
+    "testRestrictions": [
+      "No payment, webhook, SMTP, logout, admin mutation, backup, restore, or generated-data requests",
+      "No authenticated test accounts supplied"
+    ]
+  },
+  "sourceEvidence": [
+    "docker-compose.yml",
+    "src/Program.cs",
+    "src/Core/Presentation/WebApplicationExtensions.cs",
+    "src/Core/Presentation/PresentationServiceCollectionExtensions.cs",
+    "src/Core/Infrastructure/DependencyInjection.cs",
+    "evidencias/aplicacion/route-attributes.csv"
+  ],
+  "distributedDependencyChecks": [
+    {
+      "component": "PostgreSQL",
+      "evidence": [
+        "docker-compose.yml",
+        "docker ps",
+        "Get-NetTCPConnection"
+      ],
+      "observed": "Postgres 16 published as 127.0.0.1:5433 -> container 5432; bridge network internal=false; PostgreSQL password is loaded from Docker secret files; persistent volume postgres_data.",
+      "runtimeCheck": "container healthy; no unauthorized database login attempted",
+      "riskBoundary": "Host-published listener is loopback-only; other containers attached to orbi_net can reach container port."
+    },
+    {
+      "component": "Ollama assistant",
+      "evidence": [
+        "src/Features/Home/Presentation/Controllers/HomeController.cs:297-360",
+        "src/Features/Assistant/Infrastructure/OllamaProductService.cs"
+      ],
+      "observed": "ProductChat is AllowAnonymous with anti-forgery, 2-500 character validation and named assistant request timeout. Authenticated requests construct a prompt with full name, username, email and role; configured Ollama base URL is 127.0.0.1:11434.",
+      "runtimeCheck": "listener observed; no prompt sent; no prompt-injection claim",
+      "riskBoundary": "Identity context is forwarded when an authenticated user chats; no evidence of external transmission because only localhost Ollama is configured."
+    },
+    {
+      "component": "PayPal",
+      "evidence": [
+        "src/Features/Commerce/Presentation/Controllers/PaymentController.cs:11,28-98",
+        "src/Features/Payments/Infrastructure/Services/PayPalService.cs:28-115"
+      ],
+      "observed": "PaymentController has class-level Authorize; server creates and captures PayPal orders. Capture sends PayPal-Request-Id derived from order id and stores provider result.",
+      "runtimeCheck": "no payment, capture, callback, webhook or provider request executed",
+      "riskBoundary": "Callback/capture behavior and provider signature validation were not dynamically assessed."
+    },
+    {
+      "component": "SMTP and email queue",
+      "evidence": [
+        "src/Features/Notifications/Infrastructure/EmailQueueWorker.cs:18-70",
+        "src/Features/Notifications/Infrastructure/GmailEmailSender.cs"
+      ],
+      "observed": "Worker polls pending email rows every 15 seconds, increments attempts, persists status, then sends via MailKit.",
+      "runtimeCheck": "no message enqueued or manually sent; pre-existing app process hosts the worker, so background queue activity was not inspected.",
+      "riskBoundary": "Recipient data and SMTP credentials were not copied into audit artifacts."
+    },
+    {
+      "component": "Backups and restore",
+      "evidence": [
+        "src/Features/Operations/Infrastructure/BackupService.cs:13-53,84-92,142-183",
+        "src/Core/Presentation/WebApplicationExtensions.cs:30-43"
+      ],
+      "observed": "BackupService defaults to a 5-minute interval and 12-file retention; uses pg_dump and psql. Administrative backup/restore routes were excluded from ZAP.",
+      "runtimeCheck": "no manual backup/restore initiated and no backup files inspected; pre-existing app process may run its scheduled worker.",
+      "riskBoundary": "No backup file, retention deletion or restore performed by audit."
+    },
+    {
+      "component": "External market pricing",
+      "evidence": [
+        "src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs:20-24,37-50"
+      ],
+      "observed": "Product query is sent to Fybeca, Pharmacys and Medicity over HTTPS GET in parallel; Sonar reports regex timeout issues in parsing/normalization.",
+      "runtimeCheck": "no provider contacted",
+      "riskBoundary": "External query disclosure, response size and timeout behavior were not dynamically tested."
+    }
+  ],
+  "deploymentEvidence": {
+    "composeFile": "docker-compose.yml",
+    "composeServices": [
+      "postgres"
+    ],
+    "applicationContainerConfigured": false,
+    "dockerfileFound": false,
+    "dockerStackFileFound": false,
+    "swarmActive": false,
+    "postgresNetwork": "orbi_net bridge, internal=false",
+    "postgresHostBinding": "127.0.0.1:5433 -> 5432",
+    "applicationRuntime": "Host process OrbiApp.Presentation.exe at 127.0.0.1:5175 and ::1:5175"
+  }
+}

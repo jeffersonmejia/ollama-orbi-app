@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-11-01 11:23:27 -05:00",
+  "baseUrl": "http://localhost:5175",
+  "observedUnauthenticated": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/Identity/Account/Login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/Identity/Account/Register",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/app/asistente",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/errors/404",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/antiforgery",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/ruta-inexistente-para-prueba",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/errors/401",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/errors/403",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/errors/500",
+      "status": 500
+    }
+  ],
+  "sourceRouteModel": {
+    "conventionalMvcRoute": "{controller=Home}/{action=Index}/{id?}",
+    "controllers": [
+      {
+        "name": "Home",
+        "authorization": "[Authorize] class-level, with selective [AllowAnonymous] and action-level roles"
+      },
+      {
+        "name": "Store",
+        "authorization": "[Authorize] class-level"
+      },
+      {
+        "name": "Payment",
+        "authorization": "[Authorize] class-level"
+      },
+      {
+        "name": "Delivery",
+        "authorization": "[Authorize] class-level; method-level authorization present"
+      },
+      {
+        "name": "Inventory",
+        "authorization": "[Authorize(Roles=Administrador)]"
+      },
+      {
+        "name": "Operations",
+        "authorization": "[Authorize(Roles=Administrador,Vendedor,Repartidor,Usuario)]"
+      },
+      {
+        "name": "Errors",
+        "authorization": "[AllowAnonymous]"
+      }
+    ],
+    "identity": "Razor Pages under /Identity/Account; Manage pages protected by Identity conventions",
+    "blazor": [
+      {
+        "method": "GET",
+        "path": "/app/asistente",
+        "renderMode": "InteractiveAuto",
+        "statusObserved": 200
+      }
+    ],
+    "explicitHttpApi": [
+      {
+        "method": "GET",
+        "path": "/api/security/antiforgery",
+        "auth": "AllowAnonymous",
+        "effect": "issues anti-forgery token/cookie; no business write",
+        "statusObserved": 200
+      }
+    ],
+    "attributeEvidence": "115 controller authorization/HTTP/routing attribute occurrences recorded in evidencias/aplicacion/route-attributes.csv; occurrences are not unique URL count"
+  },
+  "protectedRouteSamplesNotYetRechecked": [],
+  "excludedFromZap": [
+    "/Payment/**",
+    "/Delivery/**",
+    "/Operations/**",
+    "/Inventory/**",
+    "/Home/RestoreBackup",
+    "/Home/BackupStatus",
+    "/Home/ProductChat",
+    "/Identity/Account/Logout",
+    "/Identity/Account/Manage/**"
+  ],
+  "anonymousAuthorizationSamples": [
+    {
+      "method": "GET",
+      "path": "/Inventory/Index",
+      "status": 302,
+      "location": "/Identity/Account/Login",
+      "sourceRoles": [
+        "Administrador"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/Operations/Index",
+      "status": 302,
+      "location": "/Identity/Account/Login",
+      "sourceRoles": [
+        "Administrador",
+        "Vendedor",
+        "Repartidor",
+        "Usuario"
+      ]
+    }
+  ]
+}

@@ -25,19 +25,11 @@
 }
 
 @inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@using System.Security.Claims
 @{
-    var currentUserRole = string.Empty;
-    if (SignInManager.IsSignedIn(User))
-    {
-        var currentUser = await UserManager.GetUserAsync(User);
-        if (currentUser is not null)
-        {
-            currentUserRole = (await UserManager.GetRolesAsync(currentUser)).FirstOrDefault() ?? "Sin rol";
-        }
-    }
+    var currentUserRole = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value ?? string.Empty;
     var navPreferenceKey = SignInManager.IsSignedIn(User)
-        ? UserManager.GetUserId(User)
+        ? User.FindFirstValue(ClaimTypes.NameIdentifier)
         : "anonymous";
 }
 <div class="m3-app-layout" id="m3-app-layout" data-nav-preference-key="@navPreferenceKey">
@@ -59,7 +51,7 @@
             {
                 <li>
                     <a class="m3-nav-item @(currentController == "Home" && currentAction == "Assistant" ? "active" : "")"
-                       asp-area="" asp-controller="Home" asp-action="Assistant">
+                       href="/app/asistente">
                         <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
                         <span>Asistente</span>
                     </a>
@@ -102,7 +94,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Register">
+                    <a class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/registro">
                         <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
                         <span>Registro</span>
                     </a>
@@ -114,7 +106,7 @@
         {
             <div class="m3-nav-rail-footer">
                 <a class="m3-nav-item orbi-profile-nav-item" asp-area="Identity" asp-page="/Account/Manage/Index"
-                   title="@UserManager.GetUserName(User)">
+                   title="@User.Identity?.Name">
                     <span class="material-symbols-outlined" aria-hidden="true">person</span>
                     <span class="orbi-profile-label">
                         <span>Perfil</span>

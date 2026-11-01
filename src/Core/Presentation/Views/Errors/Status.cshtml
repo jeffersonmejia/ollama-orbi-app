@@ -1,0 +1,38 @@
+@model int
+@{
+    var heading = Model switch
+    {
+        401 => "Inicia sesión para continuar",
+        403 => "Acceso denegado",
+        404 => "No encontramos esta página",
+        408 or 504 => "La solicitud tardó demasiado",
+        429 => "Demasiadas solicitudes",
+        >= 500 => "Ocurrió un error interno",
+        _ => "No se pudo completar la solicitud"
+    };
+    var message = Model switch
+    {
+        401 => "Ingresa a tu cuenta de Orbi para acceder a esta sección.",
+        403 => "Tu cuenta no tiene permisos para acceder a este recurso.",
+        404 => "La dirección puede haber cambiado o ya no estar disponible.",
+        408 or 504 => "Intenta de nuevo. Si el problema continúa, vuelve más tarde.",
+        >= 500 => "Intenta de nuevo más tarde. No se muestran detalles internos por seguridad.",
+        _ => "Revisa la solicitud e inténtalo otra vez."
+    };
+    ViewData["Title"] = $"{Model} - Orbi";
+}
+
+<section class="orbi-route-error" role="alert">
+    <span class="material-symbols-outlined" aria-hidden="true">@(Model == 404 ? "search_off" : Model is 401 or 403 ? "lock" : "error")</span>
+    <p class="orbi-error-code">@Model</p>
+    <h1>@heading</h1>
+    <p>@message</p>
+    @if (Model == 401)
+    {
+        <a asp-area="Identity" asp-page="/Account/Login" class="m3-filled-button">Iniciar sesión</a>
+    }
+    else
+    {
+        <a asp-controller="Home" asp-action="Index" class="m3-filled-button">Volver al inicio</a>
+    }
+</section>

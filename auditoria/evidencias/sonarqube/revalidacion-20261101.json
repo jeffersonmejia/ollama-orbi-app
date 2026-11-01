@@ -1,0 +1,110 @@
+{
+  "checkedAtUtc": "2026-11-01T16:39:16.0766181Z",
+  "branch": "main",
+  "serverStatus": "UP",
+  "task": {
+    "id": "431baa9e-8c4f-4612-97c1-68f7e99fd76a",
+    "status": "SUCCESS",
+    "analysisId": "2609a7b2-753a-4934-bdcc-1fffe05c03c7",
+    "executedAt": "2026-11-01T11:16:17-05:00"
+  },
+  "qualityGate": {
+    "status": "OK",
+    "conditions": [
+      {
+        "metric": "new_violations",
+        "status": "OK",
+        "actualValue": "0",
+        "errorThreshold": "0"
+      }
+    ]
+  },
+  "measures": [
+    {
+      "metric": "coverage",
+      "value": "0.0"
+    },
+    {
+      "metric": "reliability_rating",
+      "value": "3.0"
+    },
+    {
+      "metric": "code_smells",
+      "value": "144"
+    },
+    {
+      "metric": "duplicated_lines_density",
+      "value": "0.7"
+    },
+    {
+      "metric": "security_rating",
+      "value": "4.0"
+    },
+    {
+      "metric": "security_hotspots",
+      "value": "0"
+    },
+    {
+      "metric": "sqale_rating",
+      "value": "1.0"
+    },
+    {
+      "metric": "bugs",
+      "value": "53"
+    },
+    {
+      "metric": "duplicated_blocks",
+      "value": "10"
+    },
+    {
+      "metric": "ncloc",
+      "value": "19266"
+    },
+    {
+      "metric": "vulnerabilities",
+      "value": "14"
+    },
+    {
+      "metric": "lines",
+      "value": "29740"
+    },
+    {
+      "metric": "software_quality_maintainability_rating",
+      "value": "1.0"
+    }
+  ],
+  "unresolvedIssues": {
+    "total": 211,
+    "byType": [
+      {
+        "type": "CODE_SMELL",
+        "count": 144
+      },
+      {
+        "type": "BUG",
+        "count": 53
+      },
+      {
+        "type": "VULNERABILITY",
+        "count": 14
+      }
+    ]
+  },
+  "resolvedIssues": {
+    "total": 75,
+    "byType": [
+      {
+        "type": "BUG",
+        "count": 75
+      },
+      {
+        "type": "CODE_SMELL",
+        "count": 0
+      },
+      {
+        "type": "VULNERABILITY",
+        "count": 0
+      }
+    ]
+  }
+}

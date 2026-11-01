@@ -1,0 +1,52 @@
+{
+  "capturedAt": "2026-11-01 11:17:45 -05:00",
+  "host": "http://127.0.0.1:5175",
+  "capturePolicy": "Header names and X-Content-Type-Options value only; Set-Cookie values omitted.",
+  "responses": [
+    {
+      "path": "/",
+      "status": 200,
+      "headerNames": [
+        "Content-Type",
+        "Date",
+        "Server",
+        "Transfer-Encoding"
+      ],
+      "xContentTypeOptions": null,
+      "contentType": null
+    },
+    {
+      "path": "/Identity/Account/Login",
+      "status": 200,
+      "headerNames": [
+        "Cache-Control",
+        "Content-Type",
+        "Date",
+        "Expires",
+        "Pragma",
+        "Server",
+        "Set-Cookie",
+        "Transfer-Encoding",
+        "X-Frame-Options"
+      ],
+      "xContentTypeOptions": null,
+      "contentType": null
+    },
+    {
+      "path": "/app/asistente",
+      "status": 200,
+      "headerNames": [
+        "blazor-enhanced-nav",
+        "Cache-Control",
+        "Content-Security-Policy",
+        "Content-Type",
+        "Date",
+        "Pragma",
+        "Server",
+        "Transfer-Encoding"
+      ],
+      "xContentTypeOptions": null,
+      "contentType": null
+    }
+  ]
+}

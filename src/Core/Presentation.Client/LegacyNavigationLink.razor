@@ -1,0 +1,14 @@
+@inject NavigationManager Navigation
+
+<a href="@Href" class="@Class" title="@Title" @onclick="Navigate" @onclick:preventDefault>
+    @ChildContent
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void Navigate() => Navigation.NavigateTo(Href, forceLoad: true);
+}

@@ -1,8 +1,11 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Identity;
 using OrbiApp.Data;
 using OrbiApp.Infrastructure;
+using OrbiApp.Presentation.Client.Networking;
 using OrbiApp.Presentation.Features;
 
 namespace OrbiApp.Presentation;
@@ -20,6 +23,32 @@ public static class PresentationServiceCollectionExtensions
         services.AddControllersWithViews()
             .AddRazorOptions(options => options.ViewLocationExpanders.Add(new FeatureViewLocationExpander()));
         services.AddRazorPages();
+        services.AddRazorComponents()
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents()
+            .AddAuthenticationStateSerialization();
+        services.AddCascadingAuthenticationState();
+        services.AddHttpContextAccessor();
+
+        var apiTimeoutSeconds = Math.Clamp(configuration.GetValue("Blazor:RequestTimeoutSeconds", 30), 1, 300);
+        var httpClientTimeoutSeconds = Math.Clamp(configuration.GetValue("Blazor:HttpClientTimeoutSeconds", 35), apiTimeoutSeconds + 1, 600);
+        services.Configure<ApiTimeoutOptions>(options =>
+        {
+            options.RequestTimeoutSeconds = apiTimeoutSeconds;
+            options.HttpClientTimeoutSeconds = httpClientTimeoutSeconds;
+        });
+        services.AddTransient<ApiTimeoutHandler>();
+        services.AddHttpClient("OrbiApi", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(httpClientTimeoutSeconds);
+        }).AddHttpMessageHandler<ApiTimeoutHandler>();
+        services.AddRequestTimeouts(options =>
+        {
+            options.AddPolicy("api", TimeSpan.FromSeconds(apiTimeoutSeconds));
+            options.AddPolicy("assistant", TimeSpan.FromSeconds(
+                Math.Clamp(configuration.GetValue("Blazor:AssistantTimeoutSeconds", 120), 1, 600)));
+        });
+
         services.AddOrbiInfrastructure(configuration);
         services.AddDataProtection(configuration);
         services.AddOrbiIdentity();

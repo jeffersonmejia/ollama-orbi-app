@@ -1,0 +1,19 @@
+Timestamp: 2026-11-01 10:53:34 -05:00
+Scope: anonymous/local smoke checks; no payment, email, logout, backup, restore, or business write
+GET / status=200 location= bytes=15343
+HEADERS / present= cookieNames=[omitidos]
+GET /Identity/Account/Login status=200 location= bytes=9448
+HEADERS /Identity/Account/Login present=X-Frame-Options cookieNames=[omitidos]
+GET /Identity/Account/Register status=200 location= bytes=35400
+GET /app/asistente status=200 location= bytes=10009
+HEADERS /app/asistente present=Content-Security-Policy cookieNames=[omitidos]
+GET /errors/401 status=401 location= bytes=381
+GET /errors/403 status=403 location= bytes=337
+GET /errors/404 status=404 location= bytes=367
+GET /errors/500 status=500 location= bytes=376
+GET /ruta-inexistente-para-auditoria status=404 location= bytes=367
+GET /Inventory/Index status=302 location=http://localhost:5175/Identity/Account/Login?ReturnUrl=%2FInventory%2FIndex bytes=0
+GET /Operations/Index status=302 location=http://localhost:5175/Identity/Account/Login?ReturnUrl=%2FOperations%2FIndex bytes=0
+GET /api/security/antiforgery status=200
+POST /Home/ProductChat invalid query status=400 validationMessage=True
+Authenticated role paths not tested: no authorized test accounts provided.
