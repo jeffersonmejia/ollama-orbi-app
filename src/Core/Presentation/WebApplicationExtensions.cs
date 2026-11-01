@@ -16,6 +16,18 @@ public static class WebApplicationExtensions
             context.Response.OnStarting(() =>
             {
                 context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+
+                var contentSecurityPolicies = context.Response.Headers["Content-Security-Policy"];
+                var hasFrameAncestors = contentSecurityPolicies.Any(policy =>
+                    policy?.Split(';').Any(directive =>
+                        directive.TrimStart().StartsWith("frame-ancestors", StringComparison.OrdinalIgnoreCase)) == true);
+
+                if (!hasFrameAncestors)
+                {
+                    context.Response.Headers.Append("Content-Security-Policy", "frame-ancestors 'self'");
+                }
+
                 return Task.CompletedTask;
             });
 
