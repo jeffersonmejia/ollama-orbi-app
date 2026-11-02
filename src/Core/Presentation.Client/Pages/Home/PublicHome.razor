@@ -1,0 +1,76 @@
+@page "/"
+@attribute [AllowAnonymous]
+@implements IAsyncDisposable
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Inicio - Dash</PageTitle>
+
+@if (!_ready)
+{
+    <p class="m3-loading-message" role="status">Cargando…</p>
+}
+else if (_showPublicHome)
+{
+    <section class="orbi-home-section orbi-home-public" aria-label="Bienvenido a Dash">
+        <div class="orbi-home-video-shell">
+            <video @ref="_video" class="orbi-home-video" autoplay muted loop playsinline preload="metadata" aria-label="Presentación de Dash">
+                <source src="/assets/video/home_publicidad.mp4" type="video/mp4" />
+                Tu navegador no puede reproducir este video.
+            </video>
+            <button type="button" class="m3-icon-btn orbi-home-video-mute" @onclick="ToggleMuteAsync"
+                    aria-label="@(_muted ? "Activar sonido" : "Silenciar video")" title="@(_muted ? "Activar sonido" : "Silenciar video")">
+                <span class="material-symbols-outlined" aria-hidden="true">@(_muted ? "volume_off" : "volume_up")</span>
+            </button>
+        </div>
+    </section>
+}
+
+@code {
+    private ElementReference _video;
+    private IJSObjectReference? _module;
+    private bool _ready;
+    private bool _showPublicHome;
+    private bool _muted = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        if (user.IsInRole("Usuario"))
+        {
+            Navigation.NavigateTo("/Delivery", replace: true);
+            return;
+        }
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            // Other role dashboards remain on their current MVC routes until their migration is requested.
+            Navigation.NavigateTo("/Home/Index", forceLoad: true, replace: true);
+            return;
+        }
+
+        _showPublicHome = true;
+        _ready = true;
+        StateHasChanged();
+        _module = await JS.InvokeAsync<IJSObjectReference>("import", "/Pages/Home/PublicHome.razor.js");
+        await _module.InvokeVoidAsync("setMuted", _video, _muted);
+    }
+
+    private async Task ToggleMuteAsync()
+    {
+        _muted = !_muted;
+        if (_module is not null)
+            await _module.InvokeVoidAsync("setMuted", _video, _muted);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is null) return;
+        try { await _module.DisposeAsync(); }
+        catch (JSDisconnectedException) { }
+    }
+}

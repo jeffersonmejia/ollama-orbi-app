@@ -168,7 +168,6 @@ public static class WebApplicationExtensions
             ResponseWriter = WriteHealthStatusAsync
         });
         app.MapRazorComponents<App>()
-            .AddInteractiveServerRenderMode()
             .AddInteractiveWebAssemblyRenderMode()
             .AddAdditionalAssemblies(typeof(_Imports).Assembly);
         app.MapFallbackToController("Status", "Errors");

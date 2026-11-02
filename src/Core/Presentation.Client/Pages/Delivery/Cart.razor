@@ -1,0 +1,330 @@
+@page "/Delivery/Cart"
+@attribute [Authorize(Roles = "Usuario")]
+@using System.Net
+@using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Mi carrito - Dash</PageTitle>
+
+<main class="m3-page orbi-cart-page">
+    <nav class="orbi-purchases-nav" aria-label="Secciones de compras">
+        <NavLink href="/Delivery/Cart" Match="NavLinkMatch.All" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+            <span>Carrito</span>
+        </NavLink>
+        <NavLink href="/Delivery/MyOrders" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+            <span>Pedidos</span>
+        </NavLink>
+        <NavLink href="/Delivery/MyPayments" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            <span>Pagos</span>
+        </NavLink>
+    </nav>
+
+    <h1 class="m3-page-title orbi-cart-title">
+        <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+        Mi Carrito
+    </h1>
+
+    @if (_error is not null)
+    {
+        <div class="orbi-cart-message orbi-cart-error" role="alert">
+            <span>@_error</span>
+            @if (_addressRequired)
+            {
+                <LegacyNavigationLink Href="/Identity/Account/Manage/Addresses" Class="m3-text-button">Agregar dirección</LegacyNavigationLink>
+            }
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <div class="m3-card orbi-cart-empty" role="status" aria-live="polite">
+            <span class="orbi-loader-ring" aria-hidden="true"></span>
+            <span>Cargando carrito…</span>
+        </div>
+    }
+    else if (_cart is null)
+    {
+        <div class="m3-card orbi-cart-empty" role="status">
+            <span>No se pudo cargar el carrito.</span>
+            <button type="button" class="m3-text-button" @onclick="LoadCartAsync">Intentar de nuevo</button>
+        </div>
+    }
+    else if (_cart.Items.Count == 0)
+    {
+        <div class="m3-card orbi-cart-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+            <p>Tu carrito está vacío</p>
+            <NavLink class="m3-filled-button" href="/Delivery">
+                <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                Ir a la tienda
+            </NavLink>
+        </div>
+    }
+    else
+    {
+        <div class="m3-card orbi-cart-table-card">
+            <div class="orbi-cart-table-wrap">
+                <table class="orbi-cart-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tienda</th>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Precio</th>
+                            <th scope="col">Subtotal</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _cart.Items)
+                        {
+                            <tr>
+                                <td data-label="Tienda">@item.StoreName</td>
+                                <td data-label="Producto">@item.ProductName</td>
+                                <td data-label="Cantidad">
+                                    <div class="orbi-cart-quantity" aria-label="Cantidad de @item.ProductName">
+                                        <button type="button" class="orbi-quantity-button" aria-label="Disminuir cantidad" disabled="@_busyItems.Contains(item.CartItemId)" @onclick="() => ChangeQuantityAsync(item, -1)">
+                                            <span class="material-symbols-outlined" aria-hidden="true">remove</span>
+                                        </button>
+                                        <output aria-live="polite">@item.Quantity</output>
+                                        <button type="button" class="orbi-quantity-button" aria-label="Aumentar cantidad" disabled="@(_busyItems.Contains(item.CartItemId) || item.Quantity >= 999)" @onclick="() => ChangeQuantityAsync(item, 1)">
+                                            <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td data-label="Precio">@item.UnitPrice.ToString("C2")</td>
+                                <td data-label="Subtotal">@item.Subtotal.ToString("C2")</td>
+                                <td data-label="Acciones">
+                                    <button type="button" class="orbi-cart-remove-button" aria-label="Eliminar @item.ProductName del carrito" title="Eliminar del carrito" disabled="@_busyItems.Contains(item.CartItemId)" @onclick="() => RemoveAsync(item)">
+                                        <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <section class="m3-card orbi-cart-summary" aria-label="Resumen del carrito">
+            <strong>Total: @_cart.Total.ToString("C2")</strong>
+            <button type="button" class="m3-filled-button" disabled="@_isCheckingOut" @onclick="CheckoutAsync">
+                <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
+                @(_isCheckingOut ? "Conectando con PayPal…" : "Pagar con PayPal")
+            </button>
+        </section>
+
+        @if (!_cart.HasAddress)
+        {
+            <div class="orbi-cart-address-message" role="note">
+                <span class="material-symbols-outlined" aria-hidden="true">location_off</span>
+                Necesitas registrar una dirección de entrega antes de pagar.
+                <LegacyNavigationLink Href="/Identity/Account/Manage/Addresses" Class="m3-text-button">Agregar dirección</LegacyNavigationLink>
+            </div>
+        }
+    }
+
+    <div class="orbi-cart-continue">
+        <NavLink class="m3-text-button" href="/Delivery">
+            <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+            Seguir comprando
+        </NavLink>
+    </div>
+</main>
+
+@code {
+    private DeliveryCartResponse? _cart;
+    private readonly HashSet<long> _busyItems = [];
+    private string? _requestToken;
+    private string? _error;
+    private bool _addressRequired;
+    private bool _isLoading = true;
+    private bool _isCheckingOut;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LoadCartAsync();
+    }
+
+    private async Task LoadCartAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        _addressRequired = false;
+        try
+        {
+            _cart = await Api.GetFromJsonAsync<DeliveryCartResponse>("/api/delivery/cart");
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException)
+        {
+            _cart = null;
+            _error = "No se pudo cargar el carrito. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangeQuantityAsync(DeliveryCartItemResponse item, int delta)
+    {
+        var quantity = item.Quantity + delta;
+        if (quantity <= 0)
+        {
+            await RemoveAsync(item);
+            return;
+        }
+
+        if (quantity > 999 || !_busyItems.Add(item.CartItemId))
+            return;
+
+        try
+        {
+            await EnsureRequestTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/delivery/cart/items/{item.CartItemId}")
+            {
+                Content = JsonContent.Create(new UpdateDeliveryCartQuantityRequest(quantity))
+            };
+            AddAntiforgeryToken(request);
+            using var response = await Api.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = await ReadErrorAsync(response, "No se pudo actualizar la cantidad.");
+                return;
+            }
+
+            if (_cart is not null)
+            {
+                var updatedItem = item with { Quantity = quantity, Subtotal = quantity * item.UnitPrice };
+                _cart = _cart with
+                {
+                    Items = _cart.Items.Select(current => current.CartItemId == item.CartItemId ? updatedItem : current).ToArray(),
+                    Total = _cart.Total + (delta * item.UnitPrice)
+                };
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException)
+        {
+            _error = "No se pudo actualizar la cantidad. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _busyItems.Remove(item.CartItemId);
+        }
+    }
+
+    private async Task RemoveAsync(DeliveryCartItemResponse item)
+    {
+        if (!_busyItems.Add(item.CartItemId))
+            return;
+
+        try
+        {
+            await EnsureRequestTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/delivery/cart/items/{item.CartItemId}");
+            AddAntiforgeryToken(request);
+            using var response = await Api.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = await ReadErrorAsync(response, "No se pudo quitar el producto del carrito.");
+                return;
+            }
+
+            if (_cart is not null)
+            {
+                _cart = _cart with
+                {
+                    Items = _cart.Items.Where(current => current.CartItemId != item.CartItemId).ToArray(),
+                    Total = _cart.Total - item.Subtotal
+                };
+            }
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException)
+        {
+            _error = "No se pudo quitar el producto del carrito. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _busyItems.Remove(item.CartItemId);
+        }
+    }
+
+    private async Task CheckoutAsync()
+    {
+        if (_isCheckingOut)
+            return;
+
+        _isCheckingOut = true;
+        _error = null;
+        _addressRequired = false;
+        try
+        {
+            await EnsureRequestTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/delivery/checkout")
+            {
+                Content = new FormUrlEncodedContent(Array.Empty<KeyValuePair<string, string>>())
+            };
+            request.Headers.Accept.ParseAdd("application/json");
+            AddAntiforgeryToken(request);
+            using var response = await Api.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = await ReadErrorAsync(response, "No se pudo iniciar el pago.");
+                _addressRequired = response.StatusCode == HttpStatusCode.Conflict;
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<CheckoutResponse>();
+            if (result is null || !Uri.TryCreate(result.RedirectUrl, UriKind.Absolute, out var paymentUri) || paymentUri.Scheme != Uri.UriSchemeHttps)
+            {
+                _error = "PayPal devolvió una dirección de pago no válida.";
+                return;
+            }
+
+            Navigation.NavigateTo(paymentUri.AbsoluteUri, forceLoad: true);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException)
+        {
+            _error = "No se pudo iniciar el pago. Inténtalo de nuevo más tarde.";
+        }
+        finally
+        {
+            _isCheckingOut = false;
+        }
+    }
+
+    private async Task EnsureRequestTokenAsync()
+    {
+        _requestToken ??= (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
+        if (string.IsNullOrWhiteSpace(_requestToken))
+            throw new InvalidOperationException("No se pudo obtener el token de seguridad.");
+    }
+
+    private void AddAntiforgeryToken(HttpRequestMessage request) => request.Headers.Add("RequestVerificationToken", _requestToken);
+
+    private static async Task<string> ReadErrorAsync(HttpResponseMessage response, string fallback)
+    {
+        try
+        {
+            using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            if (json.RootElement.TryGetProperty("message", out var message) && !string.IsNullOrWhiteSpace(message.GetString()))
+                return message.GetString()!;
+        }
+        catch (JsonException)
+        {
+        }
+
+        return fallback;
+    }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+    private sealed record CheckoutResponse(string RedirectUrl);
+}

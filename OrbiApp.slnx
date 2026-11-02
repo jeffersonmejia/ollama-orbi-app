@@ -7,8 +7,15 @@
     <Project Path="src/Core/Presentation.Client/Presentation.Client.csproj" />
     <Project Path="src/Core/Presentation/Presentation.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/OrbiApp.Database.Tests/OrbiApp.Database.Tests.csproj" />
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Contract/">
+    <Project Path="tests/Contract/OrbiApp.Contract.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Integration/OrbiApp.Integration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Performance/">
+    <Project Path="tests/Performance/OrbiApp.Performance.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/OrbiApp.DataGenerator/OrbiApp.DataGenerator.csproj" />

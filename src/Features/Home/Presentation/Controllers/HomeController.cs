@@ -91,12 +91,6 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [AllowAnonymous]
     public IActionResult Assistant()
     {
         return Redirect("/app/asistente");

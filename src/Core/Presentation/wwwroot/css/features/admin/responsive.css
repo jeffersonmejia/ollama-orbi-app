@@ -1,0 +1,36 @@
+@media (max-width: 1024px) {
+  .orbi-delivery-admin-shell .orbi-account-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .orbi-delivery-admin-shell .orbi-account-layout > aside {
+    position: static;
+  }
+
+  .orbi-admin-subnav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .orbi-admin-subnav a {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .orbi-delivery-admin-shell {
+    padding: 1rem 0.75rem;
+  }
+
+  .orbi-admin-subnav a {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .orbi-account-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

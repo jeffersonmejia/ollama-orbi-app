@@ -1,0 +1,14 @@
+@page "/Delivery/MyOrders"
+@attribute [Authorize(Roles = "Usuario")]
+
+<PageTitle>Mis pedidos - Dash</PageTitle>
+
+<OrdersList IsDeliveryPerson="false" SearchTerm="SearchTerm" Page="Page" />
+
+@code {
+    [SupplyParameterFromQuery(Name = "buscar")]
+    public string? SearchTerm { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+}

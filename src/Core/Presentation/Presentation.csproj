@@ -22,6 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="RazorShared/_ViewImports.cshtml" Link="Features/_ViewImports.cshtml" />
+    <Content Update="RazorShared/_ViewStart.cshtml" Link="Features/_ViewStart.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="../../Program.cs" Link="Program.cs" />
     <Compile Include="../../Features/**/Presentation/**/*.cs" />
     <ProjectReference Include="../Presentation.Client/Presentation.Client.csproj" />

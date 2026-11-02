@@ -1,0 +1,151 @@
+@page "/Identity/Account/Login"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using System.Net.Http.Json
+@inject HttpClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Iniciar sesión - Dash</PageTitle>
+
+<div class="orbi-login-page">
+    <section class="m3-card orbi-login-card" aria-labelledby="login-title">
+        <h1 id="login-title">Iniciar sesión</h1>
+        @if (_oauthError)
+        {
+            <p class="orbi-auth-message error" role="alert">No fue posible ingresar con Google. Inténtalo nuevamente.</p>
+        }
+        @if (_message is not null)
+        {
+            <p class="orbi-auth-message @(_isError ? "error" : string.Empty)" role="@(_isError ? "alert" : "status")">@_message</p>
+        }
+
+        <EditForm Model="_input" OnValidSubmit="LoginAsync" class="orbi-login-form">
+            <DataAnnotationsValidator />
+            <div class="m3-text-field">
+                <div class="orbi-auth-control">
+                    <span class="material-symbols-outlined orbi-auth-field-icon" aria-hidden="true">mail</span>
+                    <InputText id="login-email" @bind-Value="_input.Email" class="m3-text-field-input" autocomplete="username" placeholder=" " />
+                    <label for="login-email" class="orbi-auth-floating-label">Correo electrónico</label>
+                </div>
+                <ValidationMessage For="() => _input.Email" class="m3-validation-error" />
+            </div>
+            <div class="m3-text-field">
+                <div class="orbi-auth-control">
+                    <span class="material-symbols-outlined orbi-auth-field-icon" aria-hidden="true">lock</span>
+                    <InputText id="login-password" @bind-Value="_input.Password" type="password" class="m3-text-field-input" autocomplete="current-password" placeholder=" " />
+                    <label for="login-password" class="orbi-auth-floating-label">Contraseña</label>
+                </div>
+                <ValidationMessage For="() => _input.Password" class="m3-validation-error" />
+            </div>
+            <label class="m3-checkbox"><InputCheckbox @bind-Value="_input.RememberMe" /> Recordarme</label>
+            <button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Ingresando…" : "Ingresar")</button>
+        </EditForm>
+        <form method="post" action="@ExternalLoginUrl" class="orbi-login-google-form">
+            <input type="hidden" name="__RequestVerificationToken" value="@_requestToken" />
+            <input type="hidden" name="provider" value="Google" />
+            <button type="submit" class="m3-outlined-button orbi-google-login" disabled="@_busy">
+                <img class="orbi-google-mark" src="/assets/icons/google.png" alt="" aria-hidden="true" />
+                Ingresar con Google
+            </button>
+        </form>
+        <div class="orbi-login-links">
+            <a href="/Identity/Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
+            <NavLink href="/registro">Crear una cuenta</NavLink>
+        </div>
+    </section>
+</div>
+
+@code {
+    private readonly LoginInput _input = new();
+    private string? _requestToken;
+    private string? _message;
+    private bool _busy;
+    private bool _isError;
+    private bool _oauthError;
+    private string _returnUrl = "/";
+    private string ExternalLoginUrl => $"/Identity/Account/ExternalLogin?returnUrl={Uri.EscapeDataString(_returnUrl)}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _returnUrl = ReadLocalReturnUrl("returnUrl") ?? "/";
+        _oauthError = ReadQueryValue("oauthError") == "google";
+        try
+        {
+            _requestToken = (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
+        }
+        catch (HttpRequestException)
+        {
+            _message = "No se pudo iniciar sesión. Inténtalo nuevamente.";
+            _isError = true;
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        if (_busy) return;
+        _busy = true;
+        _message = null;
+        _isError = false;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_requestToken))
+                throw new InvalidOperationException("No se pudo validar la solicitud.");
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/identity/auth/login")
+            {
+                Content = JsonContent.Create(_input)
+            };
+            request.Headers.Add("RequestVerificationToken", _requestToken);
+            using var response = await Api.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo(_returnUrl, forceLoad: true, replace: true);
+                return;
+            }
+
+            _message = response.StatusCode switch
+            {
+                HttpStatusCode.Unauthorized => "El correo o la contraseña son incorrectos.",
+                HttpStatusCode.Forbidden => "Confirma tu correo antes de iniciar sesión.",
+                HttpStatusCode.Locked => "La cuenta está temporalmente bloqueada.",
+                (HttpStatusCode)428 => "Tu cuenta requiere un código de verificación.",
+                _ => "No se pudo iniciar sesión. Inténtalo nuevamente."
+            };
+            _isError = true;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or InvalidOperationException or TaskCanceledException)
+        {
+            _message = "No se pudo completar el inicio de sesión. Inténtalo nuevamente.";
+            _isError = true;
+        }
+        finally { _busy = false; }
+    }
+
+    private string? ReadLocalReturnUrl(string key)
+    {
+        var value = ReadQueryValue(key);
+        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
+    }
+
+    private string ReadQueryValue(string key)
+    {
+        var query = new Uri(Navigation.Uri).Query;
+        foreach (var pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            if (Uri.UnescapeDataString(parts[0].Replace('+', ' ')) == key)
+                return parts.Length == 2 ? Uri.UnescapeDataString(parts[1].Replace('+', ' ')) : string.Empty;
+        }
+        return string.Empty;
+    }
+
+    private sealed class LoginInput
+    {
+        [Required, EmailAddress, StringLength(256)] public string Email { get; set; } = string.Empty;
+        [Required, StringLength(100)] public string Password { get; set; } = string.Empty;
+        public bool RememberMe { get; set; }
+    }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+}

@@ -1,0 +1,57 @@
+.m3-main.orbi-public-home-main {
+    max-width: none;
+    padding: 8px;
+}
+
+.orbi-home-section.orbi-home-public {
+    min-width: 0;
+    padding: 0;
+}
+
+.orbi-home-video-shell {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--md-sys-shape-corner-large);
+    background: #000;
+}
+
+.orbi-home-video {
+    display: block;
+    width: 100%;
+    height: calc(100vh - 88px);
+    min-height: 420px;
+    max-height: 760px;
+    object-fit: cover;
+    opacity: .72;
+}
+
+.orbi-home-video-mute {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    color: #fff;
+    background: rgb(0 0 0 / 62%);
+}
+
+.orbi-home-video-mute:hover {
+    background: rgb(0 0 0 / 78%);
+}
+
+@media (max-width: 560px) {
+    .m3-main.orbi-public-home-main { padding: 4px; }
+    .orbi-home-video { height: calc(100vh - 132px); min-height: 360px; }
+    .orbi-home-video-mute { right: 10px; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orbi-home-video { animation: none; }
+}
+
+@media (max-width: 560px) {
+.orbi-home-video-mute {
+    right: 10px !important;
+    bottom: 12px !important;
+  
+}
+}

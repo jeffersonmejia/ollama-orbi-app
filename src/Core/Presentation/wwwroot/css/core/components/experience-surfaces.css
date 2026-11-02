@@ -1,0 +1,32 @@
+.orbi-delivery-card,
+.orbi-order-card,
+.orbi-payment-card,
+.orbi-address-card,
+.orbi-profile-card,
+.orbi-stat-card,
+.orbi-metric-card,
+.orbi-form-card,
+.orbi-panel {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  border-color: var(--orbi-card-border);
+  box-shadow: var(--orbi-card-shadow);
+  transition: background-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+
+}
+.orbi-delivery-card:hover,
+.orbi-order-card:hover,
+.orbi-payment-card:hover,
+.orbi-address-card:hover,
+.orbi-profile-card:hover,
+.orbi-stat-card:hover,
+.orbi-metric-card:hover,
+.orbi-form-card:hover,
+.orbi-panel:hover {
+  border-color: color-mix(in srgb, var(--md-sys-color-primary) 24%, var(--md-sys-color-outline-variant));
+  box-shadow: 0 4px 8px rgba(25, 29, 22, .08), 0 10px 24px rgba(25, 29, 22, .06);
+  transform: translateY(-2px);
+
+}

@@ -1,0 +1,52 @@
+.orbi-assistant-content-area {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.orbi-assistant-main {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.orbi-assistant-footer {
+  display: none;
+}
+
+  .orbi-chat-panel.orbi-chat-page-panel {
+    padding: 10px 14px 16px;
+  }
+
+  .orbi-assistant-screen { gap: 10px; }
+  .orbi-assistant-intro h2 { font-size: 22px; }
+  .orbi-chat-page-panel .orbi-chat-header { margin-bottom: 4px !important; }
+  .orbi-chat-page-panel .orbi-chat-new-button,
+  .orbi-chat-page-panel #orbi-chat-new.m3-icon-btn { min-width: 0; min-height: 48px; height: 48px; padding-inline: 18px; }
+  .orbi-chat-page-panel .orbi-chat-suggestions { gap: 7px; padding-bottom: 8px; }
+  .orbi-chat-page-panel .orbi-chat-suggestion { flex-basis: 240px; min-width: 200px; min-height: 42px; }
+  .orbi-chat-empty-state { min-height: 200px; gap: 10px; padding: 16px 8px; }
+  .orbi-chat-empty-state h1 { font-size: 30px; }
+  .orbi-chat-page-panel .orbi-chat-composer { min-height: 58px; padding-left: 16px; }
+  .orbi-chat-page-panel #orbi-chat-send { height: 44px; min-height: 44px; }
+  .orbi-assistant-content-area { height: calc(100dvh - 72px); }
+}
+.orbi-assistant-disabled {
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 32px;
+  text-align: center;
+}
+
+.orbi-assistant-disabled > .material-symbols-outlined {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 40px;
+}
+
+.orbi-assistant-disabled h1 { margin: 12px 0 8px; }
+.orbi-assistant-disabled p { margin: 0; color: var(--md-sys-color-on-surface-variant); }

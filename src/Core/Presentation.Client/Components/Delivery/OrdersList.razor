@@ -1,0 +1,355 @@
+@implements IDisposable
+@using System.Globalization
+@using System.Net
+@using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+@inject NavigationManager Navigation
+
+<main class="m3-page orbi-orders-page">
+    @if (!IsDeliveryPerson)
+    {
+        <nav class="orbi-purchases-nav" aria-label="Secciones de compras">
+            <NavLink href="/Delivery/Cart" class="orbi-purchases-nav-link">
+                <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+                <span>Carrito</span>
+            </NavLink>
+            <NavLink href="/Delivery/MyOrders" class="orbi-purchases-nav-link">
+                <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+                <span>Pedidos</span>
+            </NavLink>
+            <NavLink href="/Delivery/MyPayments" class="orbi-purchases-nav-link">
+                <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+                <span>Pagos</span>
+            </NavLink>
+        </nav>
+    }
+    else
+    {
+        <header class="orbi-orders-header">
+            <div>
+                <h1 class="m3-page-title">Mis entregas</h1>
+                <p>Pedidos asignados para entregar.</p>
+            </div>
+        </header>
+    }
+
+    <form class="orbi-order-search" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input type="search" @bind="_searchDraft" placeholder="Buscar por pedido, tienda, producto o estado" aria-label="Buscar pedidos" />
+        <button type="submit" class="m3-filled-button">Buscar</button>
+        @if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            <button type="button" class="m3-text-button" @onclick="ClearSearch">Limpiar</button>
+        }
+    </form>
+
+    @if (_notice is not null)
+    {
+        <div class="orbi-alert" role="status">@_notice</div>
+    }
+    @if (_error is not null)
+    {
+        <div class="orbi-orders-feedback is-error" role="alert">
+            <span>@_error</span>
+            <button type="button" class="m3-text-button" @onclick="LoadOrdersAsync">Intentar de nuevo</button>
+        </div>
+    }
+
+    <section class="m3-card orbi-orders-table-card" aria-label="@(IsDeliveryPerson ? "Mis entregas" : "Mis pedidos")">
+        @if (_isLoading)
+        {
+            <div class="orbi-orders-feedback" role="status" aria-live="polite">
+                <span class="orbi-loader-ring" aria-hidden="true"></span>
+                <span>Cargando @(IsDeliveryPerson ? "entregas" : "pedidos")…</span>
+            </div>
+        }
+        else if (_orders is { Orders.Count: 0 })
+        {
+            <div class="orbi-empty-state">No hay pedidos para mostrar.</div>
+        }
+        else if (_orders is not null)
+        {
+            <div class="orbi-orders-table-wrap">
+                <table class="m3-data-table orbi-orders-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Pedido</th>
+                            <th scope="col">Tienda y productos</th>
+                            <th scope="col">Dirección</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Estado</th>
+                            @if (IsDeliveryPerson) { <th scope="col">Acciones</th> }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in _orders.Orders)
+                        {
+                            <tr>
+                                <td><strong>#@order.DeliveryOrderId</strong><small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("es-EC"))</small></td>
+                                <td>
+                                    <strong>@order.StoreName</strong>
+                                    <small>@string.Join(" · ", order.Items.Select(item => $"{item.Quantity}× {item.ProductName}"))</small>
+                                </td>
+                                <td class="orbi-order-address">@order.DeliveryAddress</td>
+                                <td><strong>@order.Total.ToString("C2", CultureInfo.GetCultureInfo("es-EC"))</strong></td>
+                                <td><span class="orbi-order-status @StatusClass(order.Status)"><span class="orbi-status-dot"></span>@order.Status</span></td>
+                                @if (IsDeliveryPerson)
+                                {
+                                    <td>
+                                        <div class="orbi-delivery-actions">
+                                            <select value="@SelectedStatus(order)" aria-label="Estado del pedido #@order.DeliveryOrderId" disabled="@(_busyOrders.Contains(order.DeliveryOrderId) || order.Status == "Entregado")" @onchange="args => SelectStatus(order.DeliveryOrderId, args.Value?.ToString())">
+                                                <option value="Comprado">Comprado</option>
+                                                <option value="En camino">En camino</option>
+                                                <option value="Entregado">Entregado</option>
+                                            </select>
+                                            @if (order.Status != "Entregado")
+                                            {
+                                                <button class="m3-filled-button" type="button" disabled="@(_busyOrders.Contains(order.DeliveryOrderId) || SelectedStatus(order) == order.Status)" @onclick="() => UpdateStatusAsync(order)">
+                                                    @(_busyOrders.Contains(order.DeliveryOrderId) ? "Guardando…" : "Actualizar")
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (_orders.TotalPages > 1)
+            {
+                <nav class="m3-pagination" aria-label="Paginación de pedidos">
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_orders.HasPreviousPage)" @onclick="() => GoToPage(_orders.PageIndex - 1)">Anterior</button>
+                    @foreach (var pageNumber in VisiblePages())
+                    {
+                        if (pageNumber == _orders.PageIndex)
+                        {
+                            <span class="m3-pagination-btn active" aria-current="page">@pageNumber</span>
+                        }
+                        else if (pageNumber == 0)
+                        {
+                            <span class="m3-pagination-ellipsis" aria-hidden="true">…</span>
+                        }
+                        else
+                        {
+                            <button type="button" class="m3-pagination-btn" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                        }
+                    }
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_orders.HasNextPage)" @onclick="() => GoToPage(_orders.PageIndex + 1)">Siguiente</button>
+                </nav>
+            }
+        }
+    </section>
+</main>
+
+@code {
+    [Parameter] public bool IsDeliveryPerson { get; set; }
+    [Parameter] public string? SearchTerm { get; set; }
+    [Parameter] public int Page { get; set; } = 1;
+
+    private DeliveryOrdersResponse? _orders;
+    private readonly Dictionary<int, string> _selectedStatuses = [];
+    private readonly HashSet<int> _busyOrders = [];
+    private string _searchDraft = string.Empty;
+    private string? _error;
+    private string? _notice;
+    private string? _requestToken;
+    private bool _hasRendered;
+    private bool _isLoading = true;
+    private string? _loadedSearch;
+    private int _loadedPage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _searchDraft = SearchTerm ?? string.Empty;
+        if (_hasRendered && (_loadedSearch != SearchTerm || _loadedPage != Math.Max(1, Page)))
+            await LoadOrdersAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hasRendered = true;
+            await LoadOrdersAsync();
+        }
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        _notice = null;
+        StateHasChanged();
+
+        var page = Math.Max(1, Page);
+        var path = IsDeliveryPerson ? "/api/delivery/deliveries" : "/api/delivery/orders";
+        var query = new List<string> { $"page={page}" };
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+            query.Add($"buscar={Uri.EscapeDataString(SearchTerm.Trim())}");
+
+        try
+        {
+            using var response = await Api.GetAsync($"{path}?{string.Join("&", query)}");
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _error = "Tu sesión ya no está activa. Inicia sesión nuevamente.";
+                _orders = null;
+                return;
+            }
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                _error = "No tienes permiso para consultar esta sección.";
+                _orders = null;
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            _orders = await response.Content.ReadFromJsonAsync<DeliveryOrdersResponse>()
+                ?? throw new JsonException("La respuesta de pedidos estaba vacía.");
+            _selectedStatuses.Clear();
+            foreach (var order in _orders.Orders)
+                _selectedStatuses[order.DeliveryOrderId] = order.Status;
+            _loadedSearch = SearchTerm;
+            _loadedPage = page;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        {
+            _orders = null;
+            _error = "No se pudieron cargar los pedidos. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private Task SearchAsync()
+    {
+        NavigateToPage(1, _searchDraft.Trim());
+        return Task.CompletedTask;
+    }
+
+    private void ClearSearch() => NavigateToPage(1, string.Empty);
+
+    private void GoToPage(int page) => NavigateToPage(page, SearchTerm ?? string.Empty);
+
+    private void NavigateToPage(int page, string search)
+    {
+        var path = IsDeliveryPerson ? "/Delivery/Deliveries" : "/Delivery/MyOrders";
+        var query = new List<string>();
+        if (!string.IsNullOrWhiteSpace(search))
+            query.Add($"buscar={Uri.EscapeDataString(search)}");
+        if (page > 1)
+            query.Add($"page={page}");
+        Navigation.NavigateTo(query.Count == 0 ? path : $"{path}?{string.Join("&", query)}");
+    }
+
+    private string SelectedStatus(DeliveryOrderSummary order) =>
+        _selectedStatuses.GetValueOrDefault(order.DeliveryOrderId, order.Status);
+
+    private void SelectStatus(int orderId, string? status)
+    {
+        if (status is "Comprado" or "En camino" or "Entregado")
+            _selectedStatuses[orderId] = status;
+    }
+
+    private async Task UpdateStatusAsync(DeliveryOrderSummary order)
+    {
+        if (!_selectedStatuses.TryGetValue(order.DeliveryOrderId, out var status) || status == order.Status)
+            return;
+
+        _busyOrders.Add(order.DeliveryOrderId);
+        _error = null;
+        _notice = null;
+        try
+        {
+            await EnsureRequestTokenAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/delivery/deliveries/{order.DeliveryOrderId}/status")
+            {
+                Content = JsonContent.Create(new UpdateDeliveryOrderStatusRequest(status))
+            };
+            request.Headers.Add("RequestVerificationToken", _requestToken);
+            using var response = await Api.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                throw new InvalidOperationException("Tu sesión ya no está activa. Inicia sesión nuevamente.");
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+                throw new InvalidOperationException("No tienes permiso para actualizar esta entrega.");
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                throw new InvalidOperationException("La entrega ya no está asignada a tu cuenta.");
+            if (response.StatusCode == HttpStatusCode.Conflict)
+                throw new InvalidOperationException("La entrega cambió y ya no se puede actualizar. Recarga la lista.");
+            response.EnsureSuccessStatusCode();
+
+            _orders = _orders! with
+            {
+                Orders = _orders.Orders
+                    .Select(item => item.DeliveryOrderId == order.DeliveryOrderId ? item with { Status = status } : item)
+                    .ToArray()
+            };
+            _notice = $"El pedido #{order.DeliveryOrderId} ahora está en estado «{status}».";
+        }
+        catch (InvalidOperationException exception)
+        {
+            _error = exception.Message;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        {
+            _error = "No se pudo actualizar la entrega. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _busyOrders.Remove(order.DeliveryOrderId);
+        }
+    }
+
+    private async Task EnsureRequestTokenAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_requestToken))
+            return;
+
+        var token = await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery");
+        if (string.IsNullOrWhiteSpace(token?.RequestToken))
+            throw new JsonException("No se pudo obtener el token de seguridad.");
+        _requestToken = token.RequestToken;
+    }
+
+    private static string StatusClass(string status) => status switch
+    {
+        "Entregado" => "is-delivered",
+        "En camino" => "is-transit",
+        "En preparación" or "Comprado" => "is-preparing",
+        "Cancelado" => "is-cancelled",
+        _ => "is-pending"
+    };
+
+    private IEnumerable<int> VisiblePages()
+    {
+        if (_orders is null)
+            yield break;
+
+        var first = 1;
+        var last = _orders.TotalPages;
+        var start = Math.Max(first, _orders.PageIndex - 2);
+        var end = Math.Min(last, _orders.PageIndex + 2);
+        if (start > first)
+        {
+            yield return first;
+            if (start > first + 1) yield return 0;
+        }
+        for (var current = start; current <= end; current++)
+            yield return current;
+        if (end < last)
+        {
+            if (end < last - 1) yield return 0;
+            yield return last;
+        }
+    }
+
+    public void Dispose() { }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+}

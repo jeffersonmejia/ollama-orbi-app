@@ -1,0 +1,132 @@
+.m3-nav-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--md-sys-color-outline-variant);
+  margin: 4px 0;
+}
+
+.m3-nav-rail-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  width: 100%;
+}
+
+.m3-content-area {
+  flex: 1;
+  margin-left: 80px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: margin-left var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.m3-top-app-bar {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 16px;
+  background: var(--md-sys-color-surface);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.m3-top-app-bar-title {
+  font-size: var(--md-sys-typescale-title-large-size);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+  color: var(--md-sys-color-on-surface);
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.orbi-top-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.orbi-top-brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.orbi-top-brand-mark .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.m3-top-app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.m3-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.m3-nav-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-large);
+}
+
+.m3-nav-toggle:hover {
+  color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-primary-container);
+}
+
+.m3-icon-btn:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.m3-icon-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.m3-main {
+  flex: 1;
+  padding: 16px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.m3-footer {
+  text-align: center;
+  padding: 12px 24px 24px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-size);
+}
+
+.m3-footer a {
+  color: var(--md-sys-color-primary);
+}

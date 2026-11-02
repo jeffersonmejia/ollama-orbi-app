@@ -1,0 +1,9 @@
+.m3-nav-item.orbi-operation-nav-item {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .m3-nav-item.orbi-operation-nav-item {
+    width: auto;
+  }
+}

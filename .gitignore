@@ -1,84 +1,47 @@
-# IDE
-.idea/
-.vs/
-.vscode/
-*.suo
-*.user
-secrets.txt
-*.userosscache
-*.sln.docstates
-
-# Build
+# .NET build and test output
 **/bin/
 **/obj/
 **/publish/
-/.sonarqube/**
-!/.sonarqube/docker-compose.yml
-!/.sonarqube/prometheus.yml
-!/.sonarqube/SonarQube.Analysis.xml
-!/.sonarqube/README.md
-!/.sonarqube/.env.example
-!/.sonarqube/telegraf.conf
-!/.sonarqube/grafana/
-/.sonarqube/grafana/**
-!/.sonarqube/grafana/provisioning/
-/.sonarqube/grafana/provisioning/**
-!/.sonarqube/grafana/provisioning/datasources/
-!/.sonarqube/grafana/provisioning/datasources/datasources.yml
-!/.sonarqube/grafana/provisioning/dashboards/
-!/.sonarqube/grafana/provisioning/dashboards/provider.yml
-!/.sonarqube/grafana/dashboards/
-!/.sonarqube/grafana/dashboards/performance.json
-/.sonarqube/.env
-/.sonarqube/secrets/
+TestResults/
+artifacts/
 
-# Logs
-.logs/
-*.log
-*.err
-*.out
-cookies.txt
-.logs/
-
-
-# Config - sensitive
-appsettings.Development.json
-.env
-.env.*
-!.env.example
-DataProtectionKeys/
-secrets.json
-.docker/secrets/
-requerimientos.md
-
-
-# OS
+# IDE and operating system state
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
 .DS_Store
 Thumbs.db
 
-# PID
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+secrets.json
+.docker/secrets/
+**/DataProtectionKeys/
+/.sonarqube/.env
+/.sonarqube/secrets/
+
+# Generated SonarQube state; keep the checked-in configuration under .sonarqube
+/.sonarqube/bin/
+/.sonarqube/conf/
+/.sonarqube/out/
+
+# Logs, temporary files, and local databases/backups
+.logs/
+*.log
+!/audit/**/*.log
+*.err
+*.out
 *.pid
-
-# Sensitive
-admin.md
-
-# Text files and local documentation (only the root README is versioned)
-*.txt
-*.md
-!/README.md
-!/auditoria/README.md
-!/auditoria/resultados/*.md
-!/auditoria/resultados/*.txt
-!/auditoria/resultados/*.log
-!/auditoria/evidencias/**/*.log
-# Instrucciones locales de agentes: se mantienen fuera del repositorio.
-/AGENTS.md
-
-# Local observability documentation and non-secret development metrics config
-!/.sonarqube/README.md
-
-# Local database artifacts and backups
+cookies.txt
 *.dump
 *.tar
 backups/
-/test.md
+
+# Local-only instructions
+/AGENTS.md

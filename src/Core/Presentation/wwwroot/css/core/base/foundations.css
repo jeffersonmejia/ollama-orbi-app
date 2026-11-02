@@ -1,0 +1,23 @@
+html { scroll-behavior: smooth; 
+}
+body {
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+
+}
+::selection {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+
+}
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--md-sys-color-primary) 62%, white);
+  outline-offset: 3px;
+
+}
+@media (max-width: 768px) {
+@media (prefers-reduced-motion: reduce) {
+html { scroll-behavior: auto; 
+}
+}
+}

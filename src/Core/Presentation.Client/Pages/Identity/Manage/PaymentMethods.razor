@@ -1,0 +1,30 @@
+@page "/Identity/Account/Manage/PaymentMethods"
+@attribute [Authorize]
+
+<PageTitle>Pagos - Dash</PageTitle>
+
+<div class="orbi-account-shell">
+    <AccountManageNavigation />
+    <div class="orbi-account-page">
+        <header class="orbi-account-page-title">
+            <h1>Pagos</h1>
+            <p>Los pedidos se pagan con PayPal.</p>
+        </header>
+
+        <section class="orbi-google-card">
+            <div class="orbi-google-card-heading">
+                <div><h2>Proveedor de pago</h2><p>PayPal está configurado para tus compras.</p></div>
+                <span class="material-symbols-outlined" aria-hidden="true">payment</span>
+            </div>
+            <div class="orbi-payment-options">
+                <div class="orbi-payment-option active" aria-current="true">
+                    <div class="orbi-payment-option-inner">
+                        <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
+                        <strong>PayPal</strong>
+                        <small>Pago rápido y seguro</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

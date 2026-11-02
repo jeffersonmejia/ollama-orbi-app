@@ -1,0 +1,180 @@
+/* Navegación lateral: estados, marca, adaptación y barra móvil. */
+.m3-nav-rail {
+  background: var(--md-sys-color-surface-container-low);
+  border: 0;
+  box-shadow: none;
+  padding: 16px 8px;
+  gap: 8px;
+}
+
+.m3-nav-item,
+.m3-bottom-nav-item {
+  transition-property: color, background-color, border-color, box-shadow, transform;
+  transition-duration: var(--md-sys-motion-duration-short3);
+  transition-timing-function: var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-item.active {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+}
+
+.m3-nav-item.active:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary-container) 88%, var(--md-sys-color-primary));
+}
+
+.m3-nav-item {
+  width: 76px;
+  min-height: 58px;
+  padding: 7px 4px;
+  border-radius: 22px;
+  border: 0;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.m3-nav-item .material-symbols-outlined,
+.m3-nav-item svg {
+  font-size: 22px;
+  transition: transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate),
+    font-variation-settings var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-item.active .material-symbols-outlined,
+.m3-nav-item.active svg,
+.m3-nav-item[aria-expanded="true"] .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+@media (max-width: 768px) {
+  .m3-nav-rail {
+    border: 0;
+    border-radius: 24px 24px 0 0;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 24px rgba(25, 29, 22, .08);
+    background: color-mix(in srgb, var(--md-sys-color-surface) 94%, transparent);
+    backdrop-filter: blur(16px);
+  }
+
+  .m3-nav-item {
+    width: 60px;
+    min-height: 56px;
+    padding: 6px 4px;
+    border-radius: 18px;
+  }
+
+}
+
+.m3-nav-item:hover { background-color: var(--orbi-interaction); }
+
+/* Navegación lateral ampliable: el estado compacto conserva los accesos por icono. */
+.m3-nav-rail {
+  width: 260px;
+  align-items: stretch;
+  padding: 12px;
+  transition: width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.m3-nav-rail-header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 16px;
+}
+
+.m3-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--md-sys-color-on-surface);
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.m3-nav-brand:hover {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+.m3-nav-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: var(--md-sys-shape-corner-large);
+  color: var(--orbi-nav-active-icon);
+  background: var(--orbi-nav-active-container);
+  font-size: 24px;
+  transition: transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+/* La hoja externa de Material Symbols declara el icono inline; esta regla mantiene centrada su caja. */
+.m3-nav-brand .m3-nav-brand-mark.material-symbols-outlined {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.m3-nav-brand:hover .m3-nav-brand-mark {
+  transform: scale(1.04);
+}
+
+.m3-nav-items {
+  align-items: stretch;
+  gap: 6px;
+}
+
+.m3-nav-item {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.m3-nav-item > .material-symbols-outlined {
+  flex: 0 0 24px;
+  font-size: 22px;
+  text-align: center;
+}
+
+.m3-nav-rail-footer {
+  align-items: stretch;
+  padding: 8px 0 0;
+}
+
+.m3-nav-toggle {
+  color: var(--md-sys-color-on-surface-variant);
+  background: var(--md-sys-color-surface-container);
+}
+
+.m3-nav-toggle:hover,
+.m3-nav-toggle:focus-visible {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.m3-content-area {
+  margin-left: 260px;
+}
+
+.m3-app-layout.nav-collapsed .m3-nav-rail {
+  width: 76px;
+  padding: 12px 8px;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+}

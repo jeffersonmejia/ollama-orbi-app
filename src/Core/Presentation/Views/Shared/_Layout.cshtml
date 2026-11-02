@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 @using System.Security.Claims
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString();
+    var isPublicIdentityPage = currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true
+        || currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true;
+    var isUserPurchasesPage = currentController == "Delivery"
+        && currentAction is "MyOrders" or "MyPayments" or "Cart" or "Checkout" or "PaymentSuccess";
+}
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -9,21 +18,62 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="~/css/m3/m3-theme.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-components.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-animations.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/operations.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/delivery.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/profile-addresses.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/admin.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/components/pagination.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-experience.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/features/assistant/assistant.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/tokens/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/tokens/experience.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/base/reset.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/base/foundations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout/shell-base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout/app-bar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/navigation/rail-base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/navigation/rail-collapse.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/navigation/mobile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/navigation/states.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/foundation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/data-display.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/feedback.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/collections.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/illustrations-icons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/pagination.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/experience.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/motion/animations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/motion/experience.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/runtime/blazor-navigation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/operations/operations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/operations/experience-cards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/delivery/catalog.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/delivery/operations.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/delivery/purchases.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/identity/account.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/admin/legacy-panel.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/admin/delivery-shell.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/admin/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components/experience-surfaces.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/layout-composer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/conversation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/states.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/experience.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/chat-runtime.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/features/errors/errors.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-navigation.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/m3/m3-blazor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/home/public-home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/home/experience-cards.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/features/identity/signin.css" asp-append-version="true" />
+    @if (User.Identity?.IsAuthenticated == true && !isPublicIdentityPage)
+    {
+        <link rel="stylesheet" href="~/css/features/identity/navigation.css" asp-append-version="true" />
+    }
+    @if (User.Identity?.IsAuthenticated == true && !isPublicIdentityPage
+        && (User.IsInRole("Administrador") || User.IsInRole("Vendedor") || User.IsInRole("Repartidor")))
+    {
+        <link rel="stylesheet" href="~/css/features/operations/navigation.css" asp-append-version="true" />
+    }
+    @if (ViewContext.RouteData.Values["page"]?.ToString()?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        <link rel="stylesheet" href="~/css/features/registration/layout.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/features/registration/fields.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/features/registration/actions.css" asp-append-version="true" />
+    }
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script>
         try {
@@ -95,16 +145,6 @@
     </script>
 </head>
 <body>
-
-@{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-    var currentPage = ViewContext.RouteData.Values["page"]?.ToString();
-    var isPublicIdentityPage = currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true
-        || currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true;
-    var isUserPurchasesPage = currentController == "Delivery"
-        && currentAction is "MyOrders" or "MyPayments" or "Cart" or "UpdateCartItem" or "RemoveFromCart" or "Checkout" or "PaymentSuccess";
-}
 
 @inject SignInManager<IdentityUser> SignInManager
 @{

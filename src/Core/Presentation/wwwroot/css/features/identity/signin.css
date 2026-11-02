@@ -7,6 +7,30 @@
 }
 
 .orbi-login-card:hover { box-shadow: none; }
+.orbi-login-page {
+    display: grid;
+    min-height: calc(100vh - 140px);
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 1rem;
+    align-items: center;
+}
+.orbi-login-card { width: 100%; padding: 2rem; }
+.orbi-login-card h1 {
+    margin: 0 0 1.5rem;
+    color: var(--md-sys-color-on-surface);
+    font-size: var(--md-sys-typescale-headline-small-size);
+    font-weight: var(--md-sys-typescale-headline-small-weight);
+    text-align: center;
+}
+.orbi-login-form { display: grid; gap: 1rem; }
+.orbi-login-google-form { margin-top: .75rem; }
+.orbi-login-google-form > button { width: 100%; }
+.orbi-login-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: .75rem; }
+.orbi-login-links a { color: var(--md-sys-color-primary); text-decoration: none; }
+.orbi-login-links a:hover { text-decoration: underline; }
+.orbi-auth-message { margin: 0 0 1rem; padding: .75rem; border-radius: var(--md-sys-shape-corner-small); background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+.orbi-auth-message.error { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
 .orbi-auth-control {
         --orbi-auth-field-background: var(--md-sys-color-surface-container-lowest, #fff);
         position: relative;
@@ -105,4 +129,29 @@
 
 .orbi-auth-control input:user-invalid + .orbi-auth-floating-label {
     color: var(--md-sys-color-error);
+}
+
+.orbi-login-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+  gap: 12px;
+
+}
+.orbi-login-actions > button {
+  width: 100%;
+  white-space: nowrap;
+
+}
+.orbi-google-mark {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 2px;
+
+}
+@media (max-width: 420px) {
+.orbi-login-actions {
+    grid-template-columns: 1fr;
+  
+}
 }

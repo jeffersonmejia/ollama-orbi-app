@@ -45,6 +45,7 @@ public class DeliveryController : Controller
         _pageCache = pageCache;
     }
 
+    [NonAction]
     public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1, string? cityCode = null)
     {
         var isAjaxRequest = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
@@ -362,7 +363,7 @@ public class DeliveryController : Controller
 
         await _context.SaveChangesAsync();
         TempData["Success"] = $"{product.Name} agregado al carrito.";
-        return RedirectToAction(nameof(Cart));
+        return Redirect("/Delivery/Cart");
     }
 
     [HttpPost]
@@ -469,68 +470,22 @@ public class DeliveryController : Controller
             : RedirectToAction(nameof(Index));
     }
 
-    [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> Cart()
-    {
-        var email = User.Identity!.Name!;
-        var items = await _context.Set<DeliveryCartItem>()
-            .AsNoTracking()
-            .Include(c => c.Product).ThenInclude(p => p.Store)
-            .Where(c => c.UserEmail == email)
-            .OrderBy(c => c.CreatedAt)
-            .ToListAsync();
-
-        var total = items.Sum(c => c.Product.Price * c.Quantity);
-        ViewBag.CartTotal = total;
-
-        ViewBag.HasAddress = CurrentUserId is string userId &&
-            await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is not null;
-
-        return View(items);
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "Usuario")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateCartItem(long cartItemId, int quantity)
-    {
-        var email = User.Identity!.Name!;
-        var item = await _context.Set<DeliveryCartItem>()
-            .FirstOrDefaultAsync(c => c.DeliveryCartItemId == cartItemId && c.UserEmail == email);
-
-        if (item == null) return RedirectToAction(nameof(Cart));
-
-        if (quantity < 1)
-            _context.Set<DeliveryCartItem>().Remove(item);
-        else
-            item.Quantity = Math.Min(999, quantity);
-
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Cart));
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "Usuario")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RemoveFromCart(long cartItemId)
-    {
-        var email = User.Identity!.Name!;
-        var item = await _context.Set<DeliveryCartItem>()
-            .FirstOrDefaultAsync(c => c.DeliveryCartItemId == cartItemId && c.UserEmail == email);
-
-        if (item != null)
-        {
-            _context.Set<DeliveryCartItem>().Remove(item);
-            await _context.SaveChangesAsync();
-        }
-        return RedirectToAction(nameof(Cart));
-    }
-
-    [HttpPost]
+    [HttpPost("/Delivery/Checkout")]
+    [HttpPost("/api/delivery/checkout")]
     [Authorize(Roles = "Usuario")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Checkout()
     {
+        var isApiRequest = Request.Path.StartsWithSegments("/api/delivery/checkout");
+        IActionResult CheckoutFailure(int statusCode, string code, string message)
+        {
+            if (isApiRequest)
+                return StatusCode(statusCode, new { code, message });
+
+            TempData["Error"] = message;
+            return Redirect("/Delivery/Cart");
+        }
+
         var email = User.Identity!.Name!;
         var userId = CurrentUserId;
 
@@ -541,16 +496,14 @@ public class DeliveryController : Controller
 
         if (!items.Any())
         {
-            TempData["Error"] = "El carrito está vacío.";
-            return RedirectToAction(nameof(Cart));
+            return CheckoutFailure(StatusCodes.Status400BadRequest, "cart_empty", "El carrito está vacío.");
         }
 
         var hasAddress = userId is not null &&
             await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is not null;
         if (!hasAddress)
         {
-            TempData["Error"] = "Agrega una dirección en tu perfil antes de pagar.";
-            return RedirectToAction(nameof(Cart));
+            return CheckoutFailure(StatusCodes.Status409Conflict, "address_required", "Agrega una dirección de entrega antes de pagar.");
         }
 
         var deliveryAddress = await _context.Set<UserAddress>()
@@ -627,8 +580,7 @@ public class DeliveryController : Controller
         {
             _context.Set<DeliveryCartItem>().RemoveRange(items);
             await _context.SaveChangesAsync();
-            TempData["Error"] = "El total mínimo para pagar es $1.00.";
-            return RedirectToAction(nameof(Cart));
+            return CheckoutFailure(StatusCodes.Status400BadRequest, "minimum_total", "El total mínimo para pagar es $1.00.");
         }
 
         var firstOrderId = createdOrderIds.First();
@@ -655,14 +607,13 @@ public class DeliveryController : Controller
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "PayPal order creation failed for the delivery checkout.");
-            TempData["Error"] = "No se pudo iniciar el pago. Inténtalo de nuevo más tarde.";
-            return RedirectToAction(nameof(Cart));
+            return CheckoutFailure(StatusCodes.Status503ServiceUnavailable, "payment_unavailable", "No se pudo iniciar el pago. Inténtalo de nuevo más tarde.");
         }
 
         _context.Set<DeliveryCartItem>().RemoveRange(items);
         await _context.SaveChangesAsync();
 
-        return Redirect(paymentUrl);
+        return isApiRequest ? Ok(new { redirectUrl = paymentUrl }) : Redirect(paymentUrl);
     }
 
     [Authorize(Roles = "Usuario")]
@@ -671,7 +622,7 @@ public class DeliveryController : Controller
         if (string.IsNullOrWhiteSpace(token))
         {
             TempData["Error"] = "PayPal no devolvió un token válido.";
-            return RedirectToAction(nameof(MyOrders));
+            return Redirect("/Delivery/MyOrders");
         }
 
         await using var transaction = await _database.Database.BeginTransactionAsync();
@@ -683,7 +634,7 @@ public class DeliveryController : Controller
         if (paymentId == null)
         {
             TempData["Error"] = "Pago no encontrado o ya procesado.";
-            return RedirectToAction(nameof(MyOrders));
+            return Redirect("/Delivery/MyOrders");
         }
 
         await _database.AcquirePaymentLockAsync("delivery-payment", paymentId.Value);
@@ -698,7 +649,7 @@ public class DeliveryController : Controller
         {
             await transaction.CommitAsync();
             TempData["Success"] = "El pago ya fue procesado.";
-            return RedirectToAction(nameof(MyOrders));
+            return Redirect("/Delivery/MyOrders");
         }
 
         try
@@ -728,58 +679,14 @@ public class DeliveryController : Controller
             TempData["Error"] = "No se pudo confirmar el pago. Inténtalo de nuevo o contacta a soporte.";
         }
 
-        return RedirectToAction(nameof(MyOrders));
+        return Redirect("/Delivery/MyOrders");
     }
 
     [Authorize(Roles = "Usuario")]
     public IActionResult PaymentCancel()
     {
         TempData["Error"] = "El pago con PayPal fue cancelado.";
-        return RedirectToAction(nameof(MyOrders));
-    }
-
-    [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> MyOrders(string? buscar, int page = 1)
-    {
-        var email = User.Identity!.Name!;
-        var query = OrderQuery().Where(order => order.CustomerEmail == email);
-        if (!string.IsNullOrWhiteSpace(buscar))
-        {
-            var term = buscar.Trim();
-            var pattern = $"%{term}%";
-            var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
-            query = query.Where(order => EF.Functions.ILike(order.Store.Name, pattern) ||
-                EF.Functions.ILike(order.Status, pattern) ||
-                order.Items.Any(item => EF.Functions.ILike(item.ProductName, pattern)) ||
-                (hasOrderId && order.DeliveryOrderId == orderId));
-        }
-        var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
-            query, Math.Max(1, page), 5);
-        ViewBag.Buscar = buscar;
-        ViewData["PaginatedList"] = orders;
-        return View("Orders", orders);
-    }
-
-    [Authorize(Roles = "Repartidor")]
-    public async Task<IActionResult> Deliveries(string? buscar, int page = 1)
-    {
-        var email = User.Identity!.Name!;
-        var query = OrderQuery().Where(order => order.DeliveryPersonEmail == email && order.Status != "Cancelado");
-        if (!string.IsNullOrWhiteSpace(buscar))
-        {
-            var term = buscar.Trim();
-            var pattern = $"%{term}%";
-            var hasOrderId = int.TryParse(term.TrimStart('#'), out var orderId);
-            query = query.Where(order => EF.Functions.ILike(order.Store.Name, pattern) ||
-                EF.Functions.ILike(order.Status, pattern) || EF.Functions.ILike(order.CustomerEmail, pattern) ||
-                order.Items.Any(item => EF.Functions.ILike(item.ProductName, pattern)) ||
-                (hasOrderId && order.DeliveryOrderId == orderId));
-        }
-        var orders = await PaginatedList<DeliveryOrder>.CreateAsync(
-            query, Math.Max(1, page), 5);
-        ViewBag.Buscar = buscar;
-        ViewData["PaginatedList"] = orders;
-        return View("Orders", orders);
+        return Redirect("/Delivery/MyOrders");
     }
 
     [Authorize(Roles = "Vendedor")]
@@ -1165,7 +1072,7 @@ public class DeliveryController : Controller
 
         var previousStatus = order.Status;
         if (previousStatus == status)
-            return RedirectToAction(User.IsInRole("Administrador") ? nameof(AdminOrders) : nameof(Deliveries));
+            return Redirect(User.IsInRole("Administrador") ? Url.Action(nameof(AdminOrders))! : "/Delivery/Deliveries");
 
         order.Status = status;
         _context.Set<OrderStatusHistory>().Add(new OrderStatusHistory
@@ -1176,7 +1083,7 @@ public class DeliveryController : Controller
             NewStatus = status
         });
         await _context.SaveChangesAsync();
-        return RedirectToAction(User.IsInRole("Administrador") ? nameof(AdminOrders) : nameof(Deliveries));
+        return Redirect(User.IsInRole("Administrador") ? Url.Action(nameof(AdminOrders))! : "/Delivery/Deliveries");
     }
 
     [HttpPost]
@@ -1286,28 +1193,6 @@ public class DeliveryController : Controller
                 EF.Functions.ILike(p.Status, term) ||
                 EF.Functions.ILike(p.ExternalId, term) ||
                 EF.Functions.ILike(p.Order.CustomerEmail, term));
-        }
-        ViewBag.Buscar = buscar;
-        var payments = await PaginatedList<DeliveryPayment>.CreateAsync(
-            query.OrderByDescending(p => p.CreatedAt), Math.Max(1, page), 12);
-        ViewData["PaginatedList"] = payments;
-        return View(payments);
-    }
-
-    [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> MyPayments(string? buscar, int page = 1)
-    {
-        var email = User.Identity!.Name!;
-        var query = _context.Set<DeliveryPayment>().AsNoTracking()
-            .Include(p => p.Order).ThenInclude(o => o.Store)
-            .Where(p => p.Order.CustomerEmail == email)
-            .AsQueryable();
-        if (!string.IsNullOrWhiteSpace(buscar))
-        {
-            var term = $"%{buscar.Trim()}%";
-            query = query.Where(p => EF.Functions.ILike(p.Provider, term) ||
-                EF.Functions.ILike(p.Status, term) ||
-                EF.Functions.ILike(p.Order.Store.Name, term));
         }
         ViewBag.Buscar = buscar;
         var payments = await PaginatedList<DeliveryPayment>.CreateAsync(

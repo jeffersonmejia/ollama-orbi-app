@@ -14,7 +14,8 @@
 
     protected override void OnInitialized()
     {
-        _locationChangingRegistration = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+        if (OperatingSystem.IsBrowser())
+            _locationChangingRegistration = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
         Navigation.LocationChanged += OnLocationChanged;
     }
 

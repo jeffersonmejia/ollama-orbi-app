@@ -3,6 +3,21 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<MainLayout> Logger
 
+@if (_user.Identity?.IsAuthenticated == true && !IsRegistrationPage)
+{
+    <HeadContent>
+        <link rel="stylesheet" href="/css/features/identity/navigation.css" />
+    </HeadContent>
+}
+@if (IsRegistrationPage)
+{
+    <HeadContent>
+        <link rel="stylesheet" href="/css/features/registration/layout.css" />
+        <link rel="stylesheet" href="/css/features/registration/fields.css" />
+        <link rel="stylesheet" href="/css/features/registration/actions.css" />
+    </HeadContent>
+}
+
 <div class="m3-app-layout @(_navCollapsed ? "nav-collapsed" : string.Empty)" id="m3-app-layout">
     <nav class="m3-nav-rail" aria-label="Navegación principal">
         <div class="m3-nav-rail-header">
@@ -19,18 +34,18 @@
             @if (!IsRegistrationPage)
             {
                 <li>
-                    <LegacyNavigationLink Href="/Delivery/Index" Class="m3-nav-item">
+                    <NavLink href="/Delivery" class="m3-nav-item" Match="NavLinkMatch.Prefix">
                         <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
                         <span>Tiendas</span>
-                    </LegacyNavigationLink>
+                    </NavLink>
                 </li>
                 @if (_user.IsInRole("Usuario"))
                 {
-                    <li><LegacyNavigationLink Href="/Delivery/Cart" Class="@(IsPurchasesPage ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></LegacyNavigationLink></li>
+                    <li><NavLink href="/Delivery/Cart" Match="NavLinkMatch.Prefix" class="@(IsPurchasesPage ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></NavLink></li>
                 }
                 @if (_user.IsInRole("Repartidor"))
                 {
-                    <li><LegacyNavigationLink Href="/Delivery/Deliveries" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></LegacyNavigationLink></li>
+                    <li><NavLink href="/Delivery/Deliveries" class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></NavLink></li>
                 }
                 @if (_user.IsInRole("Administrador"))
                 {
@@ -63,10 +78,10 @@
         @if (_user.Identity?.IsAuthenticated == true && !IsRegistrationPage)
         {
             <div class="m3-nav-rail-footer">
-                <LegacyNavigationLink Href="/Identity/Account/Manage/Index" Class="@ProfileLinkClass" Title="@_user.Identity.Name">
+                <NavLink href="/Identity/Account/Manage" class="@ProfileLinkClass" title="@_user.Identity.Name" Match="NavLinkMatch.All">
                     <span class="material-symbols-outlined" aria-hidden="true">person</span>
                     <span class="orbi-profile-label"><span>@_firstName</span><small>@_primaryRole</small></span>
-                </LegacyNavigationLink>
+                </NavLink>
             </div>
         }
         else if (!IsRegistrationPage)
@@ -79,7 +94,7 @@
     </nav>
 
     <div class="m3-content-area @(IsAssistantPage ? "orbi-assistant-content-area" : string.Empty)">
-        <main class="m3-main @(IsAssistantPage ? "orbi-assistant-main" : string.Empty)">
+        <main class="m3-main @(IsAssistantPage ? "orbi-assistant-main" : string.Empty) @(IsPublicHome ? "orbi-public-home-main" : string.Empty)">
             <ErrorBoundary>
                 <ChildContent>@Body</ChildContent>
                 <ErrorContent>
@@ -107,7 +122,8 @@
     private bool IsAssistantPage => Navigation.ToBaseRelativePath(Navigation.Uri)
         .Split('?', '#')[0].Trim('/').Equals("app/asistente", StringComparison.OrdinalIgnoreCase);
     private string CurrentPath => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Trim('/');
-    private bool IsPurchasesPage => _user.IsInRole("Usuario") && IsDeliveryAction("MyOrders", "MyPayments", "Cart", "UpdateCartItem", "RemoveFromCart", "Checkout", "PaymentSuccess");
+    private bool IsPublicHome => string.IsNullOrEmpty(CurrentPath);
+    private bool IsPurchasesPage => _user.IsInRole("Usuario") && IsDeliveryAction("MyOrders", "MyPayments", "Cart", "Checkout", "PaymentSuccess");
     private bool IsProfilePage => Navigation.ToBaseRelativePath(Navigation.Uri)
         .Split('?', '#')[0].Trim('/').StartsWith("Identity/Account/Manage", StringComparison.OrdinalIgnoreCase);
 

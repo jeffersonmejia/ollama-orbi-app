@@ -1,6 +1,6 @@
 # Dash
 
-Plataforma web de comercio y entregas para Ecuador. Administra tiendas, productos, pedidos, pagos, inventario, entregas, incidencias, auditoría y asistencia con IA. La interfaz usa ASP.NET Core MVC, Razor Pages, JavaScript y CSS; PostgreSQL almacena los datos.
+Plataforma web de comercio y entregas para Ecuador. Administra tiendas, productos, pedidos, pagos, inventario, entregas, incidencias y auditoría. La interfaz combina ASP.NET Core MVC, Razor Pages y Blazor WebAssembly; PostgreSQL almacena los datos.
 
 ## Tabla de contenido
 
@@ -18,12 +18,10 @@ Plataforma web de comercio y entregas para Ecuador. Administra tiendas, producto
 
 ### Requisitos
 
-ollama run qwen2.5:0.5b
 dotnet watch --project src\Core\Presentation\Presentation.csproj run -- --urls "http://localhost:5175"
 
 - Windows, Linux o macOS con el SDK de .NET 10 instalado.
 - PostgreSQL accesible con una base de datos vacía, o Docker Desktop.
-- Ollama es opcional; solo se necesita para las funciones de IA.
 - Configura credenciales de PayPal para pagos; Google OAuth y Gmail SMTP se necesitan si habilitas inicio de sesión externo o envío de correos.
 
 El SDK se puede instalar desde la [guía oficial para Windows](https://learn.microsoft.com/dotnet/core/install/windows). Comprueba la instalación con:
@@ -83,7 +81,6 @@ OrbiApp (host y adaptadores MVC) ──────► OrbiApp.Application ─�
    │                                            ▲
    └────────────────► OrbiApp.Infrastructure ──┘
                        ├── PostgreSQL / EF Core
-                       ├── Ollama
                        ├── PayPal
                        ├── precios de comercios
                        ├── correo SMTP
@@ -92,7 +89,7 @@ OrbiApp (host y adaptadores MVC) ──────► OrbiApp.Application ─�
 
 El código se agrupa primero por funcionalidad en `src/Features/<Feature>` y dentro de cada feature se ubican las capas que necesita (`Domain`, `Application`, `Infrastructure` y `Presentation`). `src/Core` reúne los proyectos compartidos de Dominio y Aplicación, junto con los proyectos globales de Infraestructura y Presentación. Las capas siguen respetando la dirección de dependencias hexagonal.
 
-Los controladores usan el puerto compartido `IApplicationDataSession`; su adaptador EF Core y `EfEntitySet<T>` están en Infrastructure. Los servicios de IA, pagos, respaldos y precios externos se agrupan bajo sus features y exponen sus contratos desde Application.
+Los controladores usan el puerto compartido `IApplicationDataSession`; su adaptador EF Core y `EfEntitySet<T>` están en Infrastructure. Los servicios de pagos, respaldos y precios externos se agrupan bajo sus features y exponen sus contratos desde Application.
 
 `src/Program.cs` es el punto de entrada y composición del backend: registra adaptadores, configura Identity y middleware, y llama al inicializador de base de datos. `src/Core/Presentation/Presentation.csproj` lo incluye como archivo enlazado. La persistencia transversal reside en `Features/Shared/Infrastructure`; la inicialización de Identity está dentro de `Features/Identity`.
 
@@ -110,11 +107,13 @@ Ejemplos: `Features/Delivery` contiene sus capas de dominio, aplicación, infrae
 
 ### Tecnologías
 
-- .NET 10, ASP.NET Core MVC, Razor Pages y C# 14 (predeterminado con el SDK de .NET 10).
+- .NET 10, ASP.NET Core MVC, Razor Pages, Blazor WebAssembly y C# 14 (predeterminado con el SDK de .NET 10).
 - Entity Framework Core 10, ASP.NET Core Identity y Npgsql 10.
 - PostgreSQL 16 mediante Docker Compose.
-- MailKit para SMTP; Ollama para el asistente; PayPal Sandbox para pagos.
+- MailKit para SMTP; PayPal Sandbox para pagos.
 - Docker Compose y Mermaid.
+- `IMemoryCache` para cachear datos de páginas de entrega y ubicación, con expiración deslizante de 30 minutos.
+- `Task.WhenAll` para ejecutar concurrentemente, de forma asíncrona, las consultas a tres fuentes de precios externos.
 
 Los paquetes de EF Core, Npgsql y MailKit están en `OrbiApp.Infrastructure`. El host web conserva las dependencias de presentación, Identity UI, autenticación Google y scaffolding MVC.
 
@@ -127,7 +126,6 @@ ASP.NET Core admite `appsettings.json`, User Secrets y variables de entorno. En 
 | Clave | Uso |
 |---|---|
 | `ConnectionStrings:DefaultConnection` | Conexión PostgreSQL compartida por los contextos. |
-| `Ollama:BaseUrl`, `Ollama:Model` | URL y modelo del servicio de IA. |
 | `PayPal:ClientId`, `PayPal:ClientSecret`, `PayPal:BaseUrl` | Credenciales y API de PayPal; sus opciones tipadas están en la feature `Payments` de Infrastructure. |
 | `Authentication:Google:ClientId`, `Authentication:Google:ClientSecret` | Inicio de sesión con Google. |
 | `EmailSettings:SmtpServer`, `EmailSettings:SmtpPort`, `EmailSettings:SenderEmail`, `EmailSettings:SenderName`, `EmailSettings:Password` | Gmail SMTP: servidor, puerto, cuenta remitente y contraseña de aplicación. |
@@ -161,9 +159,9 @@ dotnet user-secrets set 'EmailSettings:Password' '<CONTRASENA_DE_APLICACION_GMAI
 
 `EmailQueueWorker` procesa mensajes pendientes. No guardes secretos reales en `appsettings.json` ni en Git. Referencias: [crear credenciales OAuth web](https://developers.google.com/identity/protocols/oauth2/web-server), [autenticación y credenciales REST de PayPal](https://developer.paypal.com/api/rest/authentication/), [SMTP de Gmail](https://support.google.com/mail/answer/7104828?hl=es).
 
-### Ollama y comparación de precios
+### Comparación de precios
 
-Ollama se configura con `Ollama:BaseUrl` y `Ollama:Model`; el valor inicial del modelo es `qwen2.5:0.5b`. El host de Ollama debe ser accesible desde el proceso de la aplicación. `ExternalMarketPriceService` consulta comercios ecuatorianos para calcular un rango y precio de referencia. Estas integraciones son opcionales para iniciar la aplicación, aunque sus funciones requieren que el servicio remoto esté disponible.
+`ExternalMarketPriceService` consulta comercios ecuatorianos para calcular un rango y precio de referencia. La consulta a sus tres fuentes se inicia concurrentemente con `Task.WhenAll`; no se crean hilos manualmente. Esta integración es opcional para iniciar la aplicación, aunque la función requiere que los servicios externos estén disponibles.
 
 ## 4. Usuarios de prueba y funciones por rol
 
@@ -246,7 +244,6 @@ flowchart LR
     orders --> db[(PostgreSQL)]
     delivery --> db
     admin --> db
-    web --> ai[Ollama]
     seller --> prices[Fuentes de precio]
     web --> payment[PayPal]
     web --> mail[SMTP]
@@ -265,9 +262,9 @@ Los proyectos de dominio, aplicación e infraestructura se compilan como referen
 
 ### Navegación Blazor progresiva
 
-La interfaz conserva MVC y Razor Pages mientras se migran módulos por etapas. El asistente ya está disponible en `/app/asistente` con **Interactive Auto**: se renderiza primero en el servidor y puede pasar a WebAssembly después de descargar el cliente (`src/Core/Presentation.Client`). Los controladores, Identity, acceso a PostgreSQL y Ollama permanecen en el servidor; el cliente no referencia las capas de dominio, aplicación ni infraestructura. `/Home/Assistant` redirige a la nueva ruta.
+La interfaz conserva MVC y Razor Pages junto con módulos Blazor. `src/Core/Presentation/Components/App.razor` configura el enrutamiento con `InteractiveWebAssembly` y carga el cliente desde `src/Core/Presentation.Client`; los controladores, Identity y el acceso a PostgreSQL permanecen en el servidor. El cliente no referencia directamente las capas de dominio, aplicación ni infraestructura.
 
-Los límites configurables en `src/Core/Presentation/appsettings.json` son `Blazor:RequestTimeoutSeconds`, `Blazor:HttpClientTimeoutSeconds` y `Blazor:AssistantTimeoutSeconds`. El endpoint de chat conserva su respuesta NDJSON en streaming, protección antifalsificación y cancelación cuando el cliente corta la solicitud. Las vistas MVC/Razor Pages existentes siguen atendiendo los módulos aún no migrados.
+Los límites configurables en `src/Core/Presentation/appsettings.json` incluyen `Blazor:RequestTimeoutSeconds` y `Blazor:HttpClientTimeoutSeconds`. Las vistas MVC y Razor Pages siguen atendiendo los módulos que aún no usan Blazor.
 
 Para añadir una integración externa, define el puerto en `Features/<Feature>/Application` e implementa el adaptador en `Features/<Feature>/Infrastructure`; registra la implementación desde `src/Core/Infrastructure`. Para contratos genéricos que usan varias funcionalidades, utiliza `src/Core/Application/Ports`.
 

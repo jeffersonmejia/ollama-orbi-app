@@ -1,84 +1,75 @@
-/* Estructura de la pantalla y pasos de registro. */
-.orbi-register-page {
-    min-height: 100%;
-    display: grid;
-    place-items: center;
-    padding: clamp(1rem, 4vw, 2.5rem);
+/* Diseño común de los pasos y el indicador del formulario de registro. */
+.orbi-register-container {
+    width: min(960px, 100%);
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 .orbi-register-card {
-    width: min(100%, 62rem);
-    padding: clamp(1.25rem, 4vw, 2.5rem);
-    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
-    background: var(--md-sys-color-surface-container-lowest, #fff);
-    color: var(--md-sys-color-on-surface, #191c20);
-    box-shadow: none;
-}
-
-.orbi-register-card h1 {
-    margin: 0 0 1.5rem;
-    text-align: center;
-    font-size: clamp(1.6rem, 4vw, 2rem);
-}
-
-.orbi-register-grid,
-.orbi-register-step.active {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem 1.25rem;
-}
-
-.orbi-register-progress,
-.orbi-register-step h2,
-.orbi-register-full,
-.orbi-register-actions {
-    grid-column: 1 / -1;
+    padding: 2rem;
 }
 
 .orbi-register-progress {
     display: flex;
     justify-content: center;
-    gap: .5rem;
-    margin: 0 0 .25rem;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-.orbi-register-progress span {
-    width: 2.25rem;
-    height: .35rem;
+.orbi-register-progress-dot {
+    width: 36px;
+    height: 6px;
     border-radius: 999px;
-    background: var(--md-sys-color-surface-container-highest, #dfe3eb);
-    transition: background-color .2s ease;
+    background: var(--md-sys-color-surface-container-highest);
 }
 
-.orbi-register-progress span.active,
-.orbi-register-progress span.complete { background: var(--md-sys-color-primary, #d2006e); }
+.orbi-register-progress-dot.active,
+.orbi-register-progress-dot.complete {
+    background: var(--md-sys-color-primary);
+}
 
-.orbi-register-step { display: none; }
-.orbi-register-step.active { animation: register-enter .18s ease-out; }
+.orbi-register-step {
+    display: none;
+    grid-column: 1 / -1;
+}
 
-.orbi-register-step h2 {
+.orbi-register-step.active {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+}
+
+.orbi-register-step-title,
+.orbi-register-full {
+    grid-column: 1 / -1;
+}
+
+.orbi-register-step-title {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    font-size: var(--md-sys-typescale-title-medium-size);
 }
 
-.orbi-register-card h1:focus-visible { outline: none; }
-
-.m3-main:has(.orbi-register-page) {
-    min-width: 0;
+@media (max-width: 768px) {
+.orbi-register-container {
+    margin-block: 1rem;
+  
+}
+.orbi-register-card {
+    padding: 1.25rem;
+  
+}
 }
 
 @media (max-width: 680px) {
-    .orbi-register-page {
-        width: 100%;
-        min-width: 0;
-        padding: 1rem;
-    }
-
-    .orbi-register-card,
-    .orbi-register-grid,
-    .orbi-register-step.active {
-        width: 100%;
-        min-width: 0;
-    }
+.orbi-register-step.active {
+    grid-template-columns: minmax(0, 1fr);
+  
+}
+.orbi-register-step-title,
+.orbi-register-actions,
+.orbi-register-full {
+    grid-column: auto;
+  
+}
 }

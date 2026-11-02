@@ -1,0 +1,603 @@
+@page "/Delivery"
+@page "/Delivery/Index"
+@attribute [Authorize]
+@implements IDisposable
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using OrbiApp.Presentation.Client
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Tiendas | Dash</PageTitle>
+
+<div class="m3-page orbi-store-page">
+    <form class="orbi-store-filters @(_catalog?.IsCustomer == true ? "orbi-store-filters-user" : string.Empty)" @onsubmit="PreventSubmit" @onsubmit:preventDefault>
+        <label class="orbi-store-search">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input type="search" value="@_search" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" @oninput="SearchChangedAsync" />
+        </label>
+
+        @if (_catalog?.IsCustomer == true)
+        {
+            <div class="orbi-location-filter">
+                <button type="button" class="orbi-inline-location" aria-label="Editar ubicación de entrega" @onclick="OpenAddressDialogAsync">
+                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                    <span class="orbi-inline-location-text">@LocationLabel</span>
+                    <span class="material-symbols-outlined orbi-inline-edit" aria-hidden="true">edit</span>
+                </button>
+            </div>
+        }
+
+        <div class="orbi-category-filter">
+            <button type="button" class="orbi-category-trigger" aria-label="Filtrar por categoría" aria-haspopup="listbox" aria-expanded="@_categoryMenuOpen" @onclick="ToggleCategoryMenu">
+                <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                <span class="orbi-category-value">@CategoryLabel</span>
+                <span class="material-symbols-outlined orbi-category-chevron" aria-hidden="true">expand_more</span>
+            </button>
+            @if (_categoryMenuOpen)
+            {
+                <div class="orbi-category-menu" role="listbox" aria-label="Categorías">
+                    @foreach (var category in Categories)
+                    {
+                        <button type="button" role="option" aria-selected="@(_category == category.Value)" @onclick="() => SelectCategoryAsync(category.Value)">@category.Label</button>
+                    }
+                </div>
+            }
+        </div>
+
+        <label class="orbi-price-filter">
+            <span class="material-symbols-outlined" aria-hidden="true">attach_money</span>
+            <input type="number" min="0" step="0.01" value="@_minimumPrice" placeholder="Mín." aria-label="Precio mínimo" @oninput="MinimumPriceChangedAsync" />
+        </label>
+        <label class="orbi-price-filter">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            <input type="number" min="0" step="0.01" value="@_maximumPrice" placeholder="Máx." aria-label="Precio máximo" @oninput="MaximumPriceChangedAsync" />
+        </label>
+        <button type="button" class="m3-text-button" @onclick="ClearFiltersAsync">Limpiar</button>
+    </form>
+
+    @if (_catalog?.IsCustomer == true && !_catalog.HasAddress)
+    {
+        <button type="button" class="m3-card orbi-address-prompt" @onclick="OpenAddressDialogAsync">
+            <span>Agrega una dirección en tu perfil para realizar pedidos.</span>
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+        </button>
+    }
+
+    <section aria-live="polite" aria-busy="@_loading">
+        @if (_loading && _catalog is null)
+        {
+            <div class="orbi-category-empty" role="status">Cargando productos…</div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_error) && _catalog is null)
+        {
+            <div class="orbi-category-empty" role="alert">@_error</div>
+            <button type="button" class="m3-text-button" @onclick="LoadCatalogAsync">Reintentar</button>
+        }
+        else if (_catalog is not null)
+        {
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="orbi-category-empty" role="alert">@_error</div>
+            }
+            <p class="m3-pagination-meta orbi-store-result-count">@_catalog.TotalCount.ToString("N0") resultados</p>
+            @if (_catalog.Products.Count == 0)
+            {
+                <div class="m3-card orbi-category-empty">No hay productos que coincidan con los filtros.</div>
+            }
+            else
+            {
+                <div class="orbi-product-grid">
+                    @foreach (var product in _catalog.Products)
+                    {
+                        <article class="m3-card orbi-product-card" @key="product.Id">
+                            <div class="orbi-product-image">
+                                <img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? DefaultProductImage : product.ImageUrl)" alt="@product.Name" loading="lazy" onerror="this.onerror=null;this.src='/assets/products/producto-default.svg'" />
+                            </div>
+                            <div class="orbi-product-details">
+                                <div class="orbi-product-meta">
+                                    <span class="orbi-product-store"><span class="material-symbols-outlined" aria-hidden="true">storefront</span><span>@product.StoreName</span></span>
+                                    <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
+                                </div>
+                                <h2>@product.Name</h2>
+                                <p class="orbi-store-location"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>@product.StoreAddress</p>
+                                <div class="orbi-product-stock-row">
+                                    <p class="orbi-product-stock"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span><span>Stock: <strong>@product.Stock</strong> und.</span></p>
+                                    @if (_catalog.IsCustomer)
+                                    {
+                                        <div class="orbi-product-quantity-form" aria-busy="@_busyProducts.Contains(product.Id)">
+                                            <button type="button" class="orbi-quantity-button" aria-label="Quitar una unidad de @product.Name" disabled="@(product.CartQuantity == 0 || _busyProducts.Contains(product.Id))" @onclick="() => ChangeQuantityAsync(product, -1)"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
+                                            <output class="orbi-product-cart-quantity" aria-label="Cantidad en el carrito" aria-live="polite">@product.CartQuantity</output>
+                                            <button type="button" class="orbi-quantity-button" aria-label="Agregar una unidad de @product.Name" disabled="@(product.Stock <= product.CartQuantity || _busyProducts.Contains(product.Id))" @onclick="() => ChangeQuantityAsync(product, 1)"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+
+            @if (_catalog.TotalPages > 1)
+            {
+                <nav class="m3-pagination" aria-label="Paginación del catálogo">
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_catalog.HasPreviousPage)" @onclick="() => ChangePageAsync(1)" aria-label="Primera página">«</button>
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_catalog.HasPreviousPage)" @onclick="() => ChangePageAsync(_catalog.PageIndex - 1)" aria-label="Página anterior">‹</button>
+                    @for (var pageNumber = 1; pageNumber <= _catalog.TotalPages; pageNumber++)
+                    {
+                        if (pageNumber == _catalog.PageIndex)
+                        {
+                            <span class="m3-pagination-btn active" aria-current="page">@pageNumber</span>
+                        }
+                        else if (pageNumber == 1 || pageNumber == _catalog.TotalPages || Math.Abs(pageNumber - _catalog.PageIndex) <= 2)
+                        {
+                            var targetPage = pageNumber;
+                            <button type="button" class="m3-pagination-btn" @onclick="() => ChangePageAsync(targetPage)">@pageNumber</button>
+                        }
+                        else if (Math.Abs(pageNumber - _catalog.PageIndex) == 3)
+                        {
+                            <span class="m3-pagination-ellipsis" aria-hidden="true">…</span>
+                        }
+                    }
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_catalog.HasNextPage)" @onclick="() => ChangePageAsync(_catalog.PageIndex + 1)" aria-label="Página siguiente">›</button>
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_catalog.HasNextPage)" @onclick="() => ChangePageAsync(_catalog.TotalPages)" aria-label="Última página">»</button>
+                </nav>
+            }
+        }
+    </section>
+</div>
+
+@if (_addressDialogOpen)
+{
+    <div class="orbi-address-modal-backdrop" @onclick="CloseAddressDialog">
+        <section class="orbi-address-required-dialog" role="dialog" aria-modal="true" aria-labelledby="catalog-address-title" @onclick:stopPropagation="true">
+            <div class="orbi-address-required-heading">
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                <h2 id="catalog-address-title">@(_addressForm.UserAddressId.HasValue ? "Edita tu dirección de entrega" : "Agrega una dirección de entrega")</h2>
+            </div>
+            <p>Completa los datos aquí mismo para guardar tu dirección y continuar con tu compra.</p>
+            <EditForm Model="_addressForm" OnValidSubmit="SaveAddressAsync" class="orbi-address-required-form">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="orbi-address-form-errors" />
+                @if (!string.IsNullOrWhiteSpace(_addressError))
+                {
+                    <div class="orbi-address-form-errors" role="alert">@_addressError</div>
+                }
+                <label class="m3-text-field"><span class="m3-text-field-label">Nombre de la dirección</span><InputText class="m3-text-field-input" @bind-Value="_addressForm.Label" maxlength="40" required /><ValidationMessage For="@(() => _addressForm.Label)" /></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Calle principal</span><InputText class="m3-text-field-input" @bind-Value="_addressForm.AddressLine1" maxlength="160" autocomplete="address-line1" required /><ValidationMessage For="@(() => _addressForm.AddressLine1)" /></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Calle secundaria</span><InputText class="m3-text-field-input" @bind-Value="_addressForm.AddressLine2" maxlength="160" autocomplete="address-line2" required /><ValidationMessage For="@(() => _addressForm.AddressLine2)" /></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Provincia</span><InputSelect class="m3-text-field-input" @bind-Value="_addressForm.ProvinceCode" @bind-Value:after="ProvinceChanged"><option value="">Selecciona una provincia</option>@foreach (var province in _addressOptions?.Provinces ?? Array.Empty<RegistrationProvinceOption>()) { <option value="@province.Code">@province.Name</option> }</InputSelect><ValidationMessage For="@(() => _addressForm.ProvinceCode)" /></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Ciudad</span><InputSelect class="m3-text-field-input" @bind-Value="_addressForm.CityCode"><option value="">Selecciona una ciudad</option>@foreach (var city in AvailableCities) { <option value="@city.Code">@city.Name</option> }</InputSelect><ValidationMessage For="@(() => _addressForm.CityCode)" /></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Referencia</span><InputText class="m3-text-field-input" @bind-Value="_addressForm.Reference" maxlength="240" required /><ValidationMessage For="@(() => _addressForm.Reference)" /></label>
+                <div class="orbi-address-required-actions">
+                    @if (_addressForm.UserAddressId.HasValue)
+                    {
+                        <button type="button" class="orbi-address-cancel" @onclick="CloseAddressDialog">Cancelar</button>
+                    }
+                    <button type="submit" class="m3-filled-button" disabled="@_savingAddress">@(_savingAddress ? "Guardando…" : _addressForm.UserAddressId.HasValue ? "Guardar cambios" : "Guardar")</button>
+                </div>
+            </EditForm>
+        </section>
+    </div>
+}
+
+@code {
+    private const string DefaultProductImage = "/assets/products/producto-default.svg";
+    private static readonly (string Value, string Label)[] Categories =
+    [
+        ("", "Todas"),
+        ("Restaurantes", "Restaurantes"),
+        ("Farmacia", "Farmacias"),
+        ("Supermercado", "Supermercado")
+    ];
+
+    private DeliveryCatalogResponse? _catalog;
+    private RegistrationOptionsResponse? _addressOptions;
+    private CancellationTokenSource? _loadCancellation;
+    private CancellationTokenSource? _filterDebounce;
+    private readonly HashSet<int> _busyProducts = [];
+    private CatalogAddressForm _addressForm = new();
+    private string _search = string.Empty;
+    private string _category = string.Empty;
+    private string _minimumPrice = string.Empty;
+    private string _maximumPrice = string.Empty;
+    private string? _requestToken;
+    private string? _error;
+    private string? _addressError;
+    private (int ProductId, int Delta)? _pendingCartAction;
+    private int _page = 1;
+    private bool _categoryMenuOpen;
+    private bool _loading;
+    private bool _savingAddress;
+    private bool _addressDialogOpen;
+
+    private string CategoryLabel => Categories.FirstOrDefault(item => item.Value == _category).Label ?? "Todas";
+    private string LocationLabel => _catalog?.Location is { } location && !string.IsNullOrWhiteSpace(location.CityName)
+        ? $"{location.CityName} · {location.ProvinceName}"
+        : "Selecciona tu ubicación";
+    private IEnumerable<RegistrationCityOption> AvailableCities => (_addressOptions?.Cities ?? Array.Empty<RegistrationCityOption>())
+        .Where(city => city.ProvinceCode == _addressForm.ProvinceCode);
+
+    protected override Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        ReadQuery();
+        _loading = true;
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LoadCatalogAsync();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            ReadQuery();
+            await LoadCatalogAsync();
+        });
+    }
+
+    private void ReadQuery()
+    {
+        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query.TrimStart('?');
+        var values = query.Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('=', 2))
+            .ToDictionary(part => Uri.UnescapeDataString(part[0]), part => part.Length > 1 ? Uri.UnescapeDataString(part[1].Replace('+', ' ')) : string.Empty, StringComparer.OrdinalIgnoreCase);
+        _search = values.GetValueOrDefault("buscar", string.Empty);
+        _category = values.GetValueOrDefault("categoria", string.Empty);
+        _minimumPrice = values.GetValueOrDefault("precioMinimo", string.Empty);
+        _maximumPrice = values.GetValueOrDefault("precioMaximo", string.Empty);
+        _page = int.TryParse(values.GetValueOrDefault("page"), out var page) ? Math.Max(1, page) : 1;
+    }
+
+    private async Task LoadCatalogAsync()
+    {
+        _loadCancellation?.Cancel();
+        _loadCancellation?.Dispose();
+        _loadCancellation = new CancellationTokenSource();
+        var token = _loadCancellation.Token;
+        _loading = true;
+        _error = null;
+        try
+        {
+            var response = await Api.GetFromJsonAsync<DeliveryCatalogResponse>(BuildApiUrl(), token);
+            if (!token.IsCancellationRequested)
+                _catalog = response;
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException)
+        {
+            _error = "No se pudo cargar el catálogo. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private string BuildApiUrl()
+    {
+        var parameters = new List<string>();
+        AddParameter(parameters, "buscar", _search);
+        AddParameter(parameters, "categoria", _category);
+        AddParameter(parameters, "precioMinimo", _minimumPrice);
+        AddParameter(parameters, "precioMaximo", _maximumPrice);
+        AddParameter(parameters, "page", _page.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return "/api/delivery/catalog" + (parameters.Count == 0 ? string.Empty : "?" + string.Join("&", parameters));
+    }
+
+    private string BuildPageUrl()
+    {
+        var parameters = new List<string>();
+        AddParameter(parameters, "buscar", _search);
+        AddParameter(parameters, "categoria", _category);
+        AddParameter(parameters, "precioMinimo", _minimumPrice);
+        AddParameter(parameters, "precioMaximo", _maximumPrice);
+        if (_page > 1)
+            AddParameter(parameters, "page", _page.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return "/Delivery" + (parameters.Count == 0 ? string.Empty : "?" + string.Join("&", parameters));
+    }
+
+    private static void AddParameter(List<string> parameters, string name, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+            parameters.Add($"{Uri.EscapeDataString(name)}={Uri.EscapeDataString(value.Trim())}");
+    }
+
+    private Task SearchChangedAsync(ChangeEventArgs args)
+    {
+        _search = args.Value?.ToString() ?? string.Empty;
+        return DebounceFiltersAsync();
+    }
+
+    private Task MinimumPriceChangedAsync(ChangeEventArgs args)
+    {
+        _minimumPrice = args.Value?.ToString() ?? string.Empty;
+        return DebounceFiltersAsync();
+    }
+
+    private Task MaximumPriceChangedAsync(ChangeEventArgs args)
+    {
+        _maximumPrice = args.Value?.ToString() ?? string.Empty;
+        return DebounceFiltersAsync();
+    }
+
+    private async Task DebounceFiltersAsync()
+    {
+        _filterDebounce?.Cancel();
+        _filterDebounce?.Dispose();
+        _filterDebounce = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(300, _filterDebounce.Token);
+            _page = 1;
+            NavigateToCurrentFilters();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void ToggleCategoryMenu() => _categoryMenuOpen = !_categoryMenuOpen;
+
+    private Task SelectCategoryAsync(string category)
+    {
+        _categoryMenuOpen = false;
+        _category = category;
+        _page = 1;
+        NavigateToCurrentFilters();
+        return Task.CompletedTask;
+    }
+
+    private Task ClearFiltersAsync()
+    {
+        _search = string.Empty;
+        _category = string.Empty;
+        _minimumPrice = string.Empty;
+        _maximumPrice = string.Empty;
+        _page = 1;
+        NavigateToCurrentFilters();
+        return Task.CompletedTask;
+    }
+
+    private Task ChangePageAsync(int page)
+    {
+        _page = Math.Max(1, page);
+        NavigateToCurrentFilters();
+        return Task.CompletedTask;
+    }
+
+    private void NavigateToCurrentFilters()
+    {
+        var target = BuildPageUrl();
+        var current = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (current != target)
+            Navigation.NavigateTo(target, replace: true);
+        else
+            _ = LoadCatalogAsync();
+    }
+
+    private async Task ChangeQuantityAsync(DeliveryCatalogProduct product, int delta)
+    {
+        if (_catalog is null || !_busyProducts.Add(product.Id))
+            return;
+
+        if (delta > 0 && !_catalog.HasAddress)
+        {
+            _busyProducts.Remove(product.Id);
+            _pendingCartAction = (product.Id, delta);
+            await OpenAddressDialogAsync();
+            return;
+        }
+
+        try
+        {
+            _requestToken ??= (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/Delivery/ChangeCatalogCartQuantity")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["productId"] = product.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["delta"] = delta.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["returnUrl"] = "/Delivery"
+                })
+            };
+            request.Headers.Add("X-Requested-With", "XMLHttpRequest");
+            if (!string.IsNullOrWhiteSpace(_requestToken))
+                request.Headers.Add("RequestVerificationToken", _requestToken);
+
+            using var response = await Api.SendAsync(request);
+            using var body = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            var root = body.RootElement;
+            var code = root.TryGetProperty("code", out var codeElement) ? codeElement.GetString() : null;
+            if (response.StatusCode == HttpStatusCode.Conflict && code == "address_required")
+            {
+                _catalog = _catalog with { HasAddress = false };
+                _pendingCartAction = (product.Id, delta);
+                await OpenAddressDialogAsync();
+                return;
+            }
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = await ReadErrorMessageAsync(response, code == "stock_limit" ? "No hay más unidades disponibles." : "No se pudo actualizar el carrito.");
+                return;
+            }
+
+            var quantity = root.GetProperty("quantity").GetInt32();
+            var stock = root.GetProperty("stock").GetInt32();
+            _catalog = _catalog with
+            {
+                Products = _catalog.Products.Select(item => item.Id == product.Id ? item with { CartQuantity = quantity, Stock = stock } : item).ToArray()
+            };
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException)
+        {
+            _error = "No se pudo actualizar el carrito. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _busyProducts.Remove(product.Id);
+        }
+    }
+
+    private async Task OpenAddressDialogAsync()
+    {
+        _addressError = null;
+        if (_addressOptions is null)
+        {
+            try
+            {
+                _addressOptions = await Api.GetFromJsonAsync<RegistrationOptionsResponse>("/api/identity/registration/options");
+                _requestToken = _addressOptions?.RequestToken;
+            }
+            catch (HttpRequestException)
+            {
+                _addressError = "No se pudieron cargar las provincias y ciudades.";
+                _addressDialogOpen = true;
+                return;
+            }
+        }
+
+        var address = _catalog?.PrimaryAddress;
+        _addressForm = address is null
+            ? new CatalogAddressForm()
+            : new CatalogAddressForm
+            {
+                UserAddressId = address.Id,
+                Label = address.Label,
+                AddressLine1 = address.AddressLine1,
+                AddressLine2 = address.AddressLine2,
+                ProvinceCode = address.ProvinceCode,
+                CityCode = address.CityCode,
+                Reference = address.Reference
+            };
+        _addressDialogOpen = true;
+    }
+
+    private void ProvinceChanged()
+    {
+        if (!AvailableCities.Any(city => city.Code == _addressForm.CityCode))
+            _addressForm.CityCode = string.Empty;
+    }
+
+    private void CloseAddressDialog()
+    {
+        if (_catalog?.HasAddress == true)
+            _addressDialogOpen = false;
+    }
+
+    private async Task SaveAddressAsync()
+    {
+        _savingAddress = true;
+        _addressError = null;
+        try
+        {
+            _requestToken ??= _addressOptions?.RequestToken;
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/Delivery/SaveCatalogAddress")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["UserAddressId"] = _addressForm.UserAddressId?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                    ["Label"] = _addressForm.Label,
+                    ["AddressLine1"] = _addressForm.AddressLine1,
+                    ["AddressLine2"] = _addressForm.AddressLine2,
+                    ["ProvinceCode"] = _addressForm.ProvinceCode,
+                    ["CityCode"] = _addressForm.CityCode,
+                    ["Reference"] = _addressForm.Reference
+                })
+            };
+            if (!string.IsNullOrWhiteSpace(_requestToken))
+                request.Headers.Add("RequestVerificationToken", _requestToken);
+
+            using var response = await Api.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _addressError = await ReadErrorMessageAsync(response, "No se pudo guardar la dirección. Revisa los datos e inténtalo de nuevo.");
+                return;
+            }
+
+            _addressDialogOpen = false;
+            var pendingAction = _pendingCartAction;
+            _pendingCartAction = null;
+            await LoadCatalogAsync();
+            if (pendingAction is { } pending)
+            {
+                if (_catalog?.Products.FirstOrDefault(item => item.Id == pending.ProductId) is { } pendingProduct)
+                    await ChangeQuantityAsync(pendingProduct, pending.Delta);
+                else
+                    _error = "La dirección se guardó, pero este producto ya no está disponible en esa ubicación.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _addressError = "No se pudo guardar la dirección. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _savingAddress = false;
+        }
+    }
+
+    private static Task PreventSubmit() => Task.CompletedTask;
+
+    private static async Task<string> ReadErrorMessageAsync(HttpResponseMessage response, string fallback)
+    {
+        try
+        {
+            using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            var root = document.RootElement;
+            if (root.TryGetProperty("message", out var message) && !string.IsNullOrWhiteSpace(message.GetString()))
+                return message.GetString()!;
+
+            if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Object)
+            {
+                var messages = errors.EnumerateObject()
+                    .SelectMany(property => property.Value.ValueKind == JsonValueKind.Array
+                        ? property.Value.EnumerateArray().Select(value => value.GetString())
+                        : Enumerable.Empty<string?>())
+                    .Where(value => !string.IsNullOrWhiteSpace(value));
+                var combined = string.Join(" ", messages);
+                if (!string.IsNullOrWhiteSpace(combined))
+                    return combined;
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        return fallback;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        _loadCancellation?.Cancel();
+        _loadCancellation?.Dispose();
+        _filterDebounce?.Cancel();
+        _filterDebounce?.Dispose();
+    }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+
+    private sealed class CatalogAddressForm
+    {
+        public long? UserAddressId { get; set; }
+        [Required, StringLength(40)] public string Label { get; set; } = "Casa";
+        [Required, StringLength(160)] public string AddressLine1 { get; set; } = string.Empty;
+        [Required, StringLength(160)] public string AddressLine2 { get; set; } = string.Empty;
+        [Required] public string ProvinceCode { get; set; } = string.Empty;
+        [Required] public string CityCode { get; set; } = string.Empty;
+        [Required, StringLength(240)] public string Reference { get; set; } = string.Empty;
+    }
+}

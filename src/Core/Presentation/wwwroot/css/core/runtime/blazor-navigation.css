@@ -1,0 +1,97 @@
+.orbi-navigation-progress {
+  position: fixed;
+  z-index: 1200;
+  inset: 0 0 auto;
+  height: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+
+}
+html.dash-navigation-pending::before {
+  content: "";
+  position: fixed;
+  z-index: 2000;
+  inset: 0 auto auto 0;
+  width: 38%;
+  height: 3px;
+  border-radius: 0 999px 999px 0;
+  background: var(--md-sys-color-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--md-sys-color-primary) 35%, transparent);
+  animation: dash-navigation-loading 1.15s var(--md-sys-motion-easing-standard) infinite;
+
+}
+@keyframes dash-navigation-loading {
+  from { transform: translateX(-110%) scaleX(.55); }
+  55% { transform: translateX(145%) scaleX(1); }
+  to { transform: translateX(300%) scaleX(.7); }
+}
+.orbi-navigation-progress span {
+  display: block;
+  width: 35%;
+  height: 100%;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-primary);
+  animation: orbi-blazor-progress 1.1s var(--md-sys-motion-easing-standard) infinite;
+
+}
+.orbi-page-loader,
+.orbi-route-error {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: min(60vh, 520px);
+  gap: 14px;
+  padding: 32px;
+  color: var(--md-sys-color-on-surface);
+  text-align: center;
+
+}
+.orbi-page-loader {
+  grid-auto-flow: column;
+  min-height: 100vh;
+  color: var(--md-sys-color-on-surface-variant);
+
+}
+.orbi-loader-ring {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--md-sys-color-secondary-container);
+  border-top-color: var(--md-sys-color-primary);
+  border-radius: 50%;
+  animation: orbi-blazor-spin .8s linear infinite;
+
+}
+.orbi-route-error > .material-symbols-outlined {
+  color: var(--md-sys-color-primary);
+  font-size: 40px;
+
+}
+.orbi-route-error h1,
+.orbi-route-error p { margin: 0; 
+}
+.orbi-route-error > p {
+  max-width: 36rem;
+  color: var(--md-sys-color-on-surface-variant);
+
+}
+.orbi-route-error .m3-filled-button {
+  min-height: 48px;
+
+}
+.orbi-route-error a:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 3px;
+
+}
+@keyframes orbi-blazor-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(310%); }
+}
+@keyframes orbi-blazor-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+html.dash-navigation-pending::before { animation-duration: 2s; 
+}
+.orbi-navigation-progress span,
+.orbi-loader-ring { animation-duration: 2s; 
+}
+}

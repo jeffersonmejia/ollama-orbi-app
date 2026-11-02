@@ -1,0 +1,20 @@
+.orbi-db-card,
+.orbi-monthly-card,
+.orbi-role-chart-card {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  border-color: var(--orbi-card-border);
+  box-shadow: var(--orbi-card-shadow);
+  transition: background-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
+
+}
+.orbi-db-card:hover,
+.orbi-monthly-card:hover,
+.orbi-role-chart-card:hover {
+  border-color: color-mix(in srgb, var(--md-sys-color-primary) 24%, var(--md-sys-color-outline-variant));
+  box-shadow: 0 4px 8px rgba(25, 29, 22, .08), 0 10px 24px rgba(25, 29, 22, .06);
+  transform: translateY(-2px);
+
+}

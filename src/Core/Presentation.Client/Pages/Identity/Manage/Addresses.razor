@@ -1,0 +1,142 @@
+@page "/Identity/Account/Manage/Addresses"
+@attribute [Authorize]
+@using System.Net
+@using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Direcciones - Dash</PageTitle>
+
+<div class="orbi-account-shell">
+    <AccountManageNavigation />
+    <div class="orbi-account-page">
+        <header class="orbi-account-page-title"><h1>Direcciones</h1><p>Lugares que puedes usar para recibir tus pedidos.</p></header>
+        @if (_message is not null) { <p class="m3-success-message" role="status">@_message</p> }
+        @if (_error is not null) { <p class="m3-validation-error" role="alert">@_error</p> }
+        @if (_isLoading)
+        {
+            <p class="m3-loading-message" role="status">Cargando direcciones…</p>
+        }
+        else if (_book is not null)
+        {
+            <section class="orbi-google-card">
+                <div class="orbi-google-card-heading"><div><h2>@(_form.UserAddressId.HasValue ? "Editar dirección" : "Nueva dirección")</h2><p>Identifícala como Casa, Trabajo u otro nombre breve.</p></div>@if (_form.UserAddressId.HasValue){<button type="button" class="m3-text-button" @onclick="CancelEdit">Cancelar</button>}else{<span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span>}</div>
+                <EditForm Model="_form" OnValidSubmit="SaveAsync" class="orbi-address-form">
+                    <DataAnnotationsValidator /><ValidationSummary class="m3-validation-error orbi-field-full" />
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-label">Nombre de la dirección</label><InputText id="address-label" @bind-Value="_form.Label" class="m3-text-field-input" placeholder="Casa" /><ValidationMessage For="() => _form.Label" /></div>
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-line1">Calle principal</label><InputText id="address-line1" @bind-Value="_form.AddressLine1" class="m3-text-field-input" placeholder="Av. principal y número" autocomplete="address-line1" /><ValidationMessage For="() => _form.AddressLine1" /></div>
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-line2">Calle secundaria</label><InputText id="address-line2" @bind-Value="_form.AddressLine2" class="m3-text-field-input" placeholder="Calle secundaria" autocomplete="address-line2" /><ValidationMessage For="() => _form.AddressLine2" /></div>
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-province">Provincia</label><InputSelect id="address-province" @bind-Value="_form.ProvinceCode" @bind-Value:after="ProvinceChanged" class="m3-text-field-input"><option value="">Selecciona una provincia</option>@foreach (var province in _book.Provinces){<option value="@province.Code">@province.Name</option>}</InputSelect><ValidationMessage For="() => _form.ProvinceCode" /></div>
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-city">Ciudad</label><InputSelect id="address-city" @bind-Value="_form.CityCode" class="m3-text-field-input" disabled="@string.IsNullOrWhiteSpace(_form.ProvinceCode)"><option value="">Selecciona una ciudad</option>@foreach (var city in AvailableCities){<option value="@city.Code">@city.Name</option>}</InputSelect><ValidationMessage For="() => _form.CityCode" /></div>
+                    <div class="m3-text-field"><label class="m3-text-field-label" for="address-reference">Referencia</label><InputText id="address-reference" @bind-Value="_form.Reference" class="m3-text-field-input" placeholder="Opcional" /><ValidationMessage For="() => _form.Reference" /></div>
+                    <label class="orbi-address-default orbi-field-full"><InputCheckbox @bind-Value="_form.IsDefault" /> <span>Usar como dirección principal</span></label>
+                    <div class="orbi-form-actions"><button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Guardando…" : _form.UserAddressId.HasValue ? "Guardar cambios" : "Agregar dirección")</button></div>
+                </EditForm>
+            </section>
+            <section class="orbi-address-list" aria-label="Direcciones guardadas">
+                @if (_book.Addresses.Count == 0){<div class="orbi-google-card orbi-empty-state"><p>Aún no tienes direcciones guardadas.</p></div>}
+                @foreach (var address in _book.Addresses)
+                {
+                    <article class="orbi-google-card orbi-saved-address @(address.IsDefault ? "is-default" : string.Empty)">
+                        <span class="material-symbols-outlined" aria-hidden="true">@(address.IsDefault ? "home" : "location_on")</span>
+                        <div><div class="orbi-address-title"><h2>@address.Label</h2>@if(address.IsDefault){<small>Principal</small>}</div><p>@address.FormattedAddress</p></div>
+                        <div class="orbi-address-actions"><button type="button" class="m3-text-button" disabled="@_busy" @onclick="() => EditAddress(address)">Editar</button>@if(!address.IsDefault){<button type="button" class="m3-text-button" disabled="@_busy" @onclick="() => SetDefaultAsync(address)">Principal</button><button type="button" class="m3-text-button orbi-danger-button" disabled="@_busy" @onclick="() => DeleteAsync(address)">Eliminar</button>}</div>
+                    </article>
+                }
+            </section>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "editAddressId")] public long? EditAddressId { get; set; }
+    private IdentityAddressBookResponse? _book;
+    private SaveIdentityAddressRequest _form = new();
+    private bool _isLoading = true, _busy;
+    private string? _error, _message, _requestToken;
+    private long? _appliedEditId;
+    private IEnumerable<IdentityCityOption> AvailableCities => _book?.Cities.Where(city => city.ProvinceCode == _form.ProvinceCode) ?? Array.Empty<IdentityCityOption>();
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (_book is not null && _appliedEditId != EditAddressId) ApplyEditQuery();
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    { if (firstRender) await LoadAddressesAsync(); }
+
+    private async Task LoadAddressesAsync()
+    {
+        _isLoading = true; _error = null;
+        try { _book = await Api.GetFromJsonAsync<IdentityAddressBookResponse>("/api/identity/account/addresses") ?? throw new JsonException(); ApplyEditQuery(); }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        { _book = null; _error = "No se pudieron cargar tus direcciones. Inténtalo de nuevo."; }
+        finally { _isLoading = false; StateHasChanged(); }
+    }
+
+    private void ApplyEditQuery()
+    {
+        _appliedEditId = EditAddressId;
+        if (EditAddressId is null) { _form = new SaveIdentityAddressRequest(); return; }
+        var address = _book?.Addresses.FirstOrDefault(item => item.UserAddressId == EditAddressId.Value);
+        if (address is null) { _error = "No se encontró esa dirección en tu cuenta."; _form = new SaveIdentityAddressRequest(); return; }
+        _form = new SaveIdentityAddressRequest { UserAddressId = address.UserAddressId, Label = address.Label, AddressLine1 = address.AddressLine1, AddressLine2 = address.AddressLine2, ProvinceCode = address.ProvinceCode, CityCode = address.CityCode, Reference = address.Reference, IsDefault = address.IsDefault };
+    }
+
+    private void ProvinceChanged()
+    { if (_book?.Cities.Any(city => city.Code == _form.CityCode && city.ProvinceCode == _form.ProvinceCode) != true) _form.CityCode = string.Empty; }
+
+    private void EditAddress(IdentityAddressSummary address) => Navigation.NavigateTo($"/Identity/Account/Manage/Addresses?editAddressId={address.UserAddressId}");
+    private void CancelEdit() { _form = new SaveIdentityAddressRequest(); _message = null; _error = null; Navigation.NavigateTo("/Identity/Account/Manage/Addresses"); }
+
+    private async Task SaveAsync()
+    {
+        await SendMutationAsync(HttpMethod.Put, "/api/identity/account/addresses", _form);
+        if (_error is null) { _form = new SaveIdentityAddressRequest(); Navigation.NavigateTo("/Identity/Account/Manage/Addresses", replace: true); await LoadAddressesAsync(); }
+    }
+
+    private async Task SetDefaultAsync(IdentityAddressSummary address)
+    { await SendMutationAsync(HttpMethod.Put, $"/api/identity/account/addresses/{address.UserAddressId}/default"); if (_error is null) await LoadAddressesAsync(); }
+
+    private async Task DeleteAsync(IdentityAddressSummary address)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "¿Eliminar esta dirección?")) return;
+        await SendMutationAsync(HttpMethod.Delete, $"/api/identity/account/addresses/{address.UserAddressId}");
+        if (_error is null) await LoadAddressesAsync();
+    }
+
+    private async Task SendMutationAsync(HttpMethod method, string path, object? payload = null)
+    {
+        if (_busy) return;
+        _busy = true; _error = null; _message = null;
+        try
+        {
+            await EnsureRequestTokenAsync();
+            using var request = new HttpRequestMessage(method, path); request.Headers.Add("RequestVerificationToken", _requestToken);
+            if (payload is not null) request.Content = JsonContent.Create(payload);
+            using var response = await Api.SendAsync(request);
+            if (!response.IsSuccessStatusCode) { _error = await ReadErrorAsync(response); return; }
+            _message = (await response.Content.ReadFromJsonAsync<IdentityAccountActionResponse>())?.Message ?? "Cambios guardados.";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException or TaskCanceledException)
+        { _error = "No se pudo completar la solicitud. Inténtalo de nuevo."; }
+        finally { _busy = false; }
+    }
+
+    private async Task EnsureRequestTokenAsync()
+    { _requestToken ??= (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken; if (string.IsNullOrWhiteSpace(_requestToken)) throw new InvalidOperationException(); }
+
+    private static async Task<string> ReadErrorAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode == HttpStatusCode.Unauthorized) return "Tu sesión ya no está activa. Inicia sesión nuevamente.";
+        try { using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync()); if (json.RootElement.TryGetProperty("message", out var message) && !string.IsNullOrWhiteSpace(message.GetString())) return message.GetString()!; }
+        catch (JsonException) { }
+        return "No se pudo guardar la dirección.";
+    }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+}

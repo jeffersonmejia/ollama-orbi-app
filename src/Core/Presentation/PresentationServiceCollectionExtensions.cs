@@ -31,7 +31,6 @@ public static class PresentationServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddSingleton<DeliveryPageCache>();
         services.AddRazorComponents()
-            .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents()
             .AddAuthenticationStateSerialization();
         services.AddCascadingAuthenticationState();
@@ -64,6 +63,8 @@ public static class PresentationServiceCollectionExtensions
         {
             client.Timeout = TimeSpan.FromSeconds(httpClientTimeoutSeconds);
         }).AddHttpMessageHandler<ApiTimeoutHandler>();
+        services.AddScoped<HttpClient>(serviceProvider =>
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("OrbiApi"));
         services.AddRequestTimeouts(options =>
         {
             options.AddPolicy("api", TimeSpan.FromSeconds(apiTimeoutSeconds));

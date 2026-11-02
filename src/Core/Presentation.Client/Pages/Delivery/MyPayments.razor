@@ -1,0 +1,234 @@
+@page "/Delivery/MyPayments"
+@attribute [Authorize(Roles = "Usuario")]
+@using System.Globalization
+@using System.Net
+@using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Mis pagos - Dash</PageTitle>
+
+<main class="m3-page orbi-orders-page">
+    <nav class="orbi-purchases-nav" aria-label="Secciones de compras">
+        <NavLink href="/Delivery/Cart" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+            <span>Carrito</span>
+        </NavLink>
+        <NavLink href="/Delivery/MyOrders" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+            <span>Pedidos</span>
+        </NavLink>
+        <NavLink href="/Delivery/MyPayments" class="orbi-purchases-nav-link">
+            <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+            <span>Pagos</span>
+        </NavLink>
+    </nav>
+
+    <form class="orbi-store-filters" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+        <div class="orbi-store-search">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input type="search" @bind="_searchDraft" placeholder="Buscar por proveedor, estado o tienda…" aria-label="Buscar pagos" />
+        </div>
+        <button type="submit" class="m3-filled-button">Buscar</button>
+        @if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            <button type="button" class="m3-text-button" @onclick="ClearSearch">Limpiar</button>
+        }
+    </form>
+
+    @if (_error is not null)
+    {
+        <div class="orbi-orders-feedback is-error" role="alert">
+            <span>@_error</span>
+            <button type="button" class="m3-text-button" @onclick="LoadPaymentsAsync">Intentar de nuevo</button>
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <section class="m3-card orbi-orders-feedback" role="status" aria-live="polite">
+            <span class="orbi-loader-ring" aria-hidden="true"></span>
+            <span>Cargando pagos…</span>
+        </section>
+    }
+    else if (_payments is { Payments.Count: 0 })
+    {
+        <section class="m3-card orbi-category-empty">No hay pagos registrados para tu cuenta.</section>
+    }
+    else if (_payments is not null)
+    {
+        <section class="m3-card orbi-orders-table-card" aria-label="Mis pagos">
+            <div class="orbi-orders-table-wrap">
+                <table class="m3-data-table orbi-orders-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Pago</th>
+                            <th scope="col">Pedido</th>
+                            <th scope="col">Tienda</th>
+                            <th scope="col">Proveedor</th>
+                            <th scope="col">Monto</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var payment in _payments.Payments)
+                        {
+                            <tr>
+                                <td><strong>#@payment.PaymentId</strong></td>
+                                <td><strong>#@payment.DeliveryOrderId</strong></td>
+                                <td>@payment.StoreName</td>
+                                <td><span class="orbi-order-status is-preparing"><span class="orbi-status-dot"></span>@payment.Provider</span></td>
+                                <td><strong>@payment.Amount.ToString("C2", CultureInfo.GetCultureInfo("es-EC"))</strong></td>
+                                <td><span class="orbi-order-status @PaymentStatusClass(payment.Status)"><span class="orbi-status-dot"></span>@payment.Status</span></td>
+                                <td>@payment.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("es-EC"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (_payments.TotalPages > 1)
+            {
+                <nav class="m3-pagination" aria-label="Paginación de pagos">
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_payments.HasPreviousPage)" @onclick="() => GoToPage(_payments.PageIndex - 1)">Anterior</button>
+                    @foreach (var pageNumber in VisiblePages())
+                    {
+                        if (pageNumber == _payments.PageIndex)
+                        {
+                            <span class="m3-pagination-btn active" aria-current="page">@pageNumber</span>
+                        }
+                        else if (pageNumber == 0)
+                        {
+                            <span class="orbi-pagination-ellipsis" aria-hidden="true">…</span>
+                        }
+                        else
+                        {
+                            <button type="button" class="m3-pagination-btn" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                        }
+                    }
+                    <button type="button" class="m3-pagination-btn" disabled="@(!_payments.HasNextPage)" @onclick="() => GoToPage(_payments.PageIndex + 1)">Siguiente</button>
+                </nav>
+            }
+        </section>
+    }
+</main>
+
+@code {
+    [SupplyParameterFromQuery(Name = "buscar")]
+    public string? SearchTerm { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+
+    private DeliveryPaymentsResponse? _payments;
+    private string _searchDraft = string.Empty;
+    private string? _error;
+    private bool _hasRendered;
+    private bool _isLoading = true;
+    private string? _loadedSearch;
+    private int _loadedPage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _searchDraft = SearchTerm ?? string.Empty;
+        if (_hasRendered && (_loadedSearch != SearchTerm || _loadedPage != Math.Max(1, Page)))
+            await LoadPaymentsAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hasRendered = true;
+            await LoadPaymentsAsync();
+        }
+    }
+
+    private async Task LoadPaymentsAsync()
+    {
+        _isLoading = true;
+        _error = null;
+        StateHasChanged();
+        var page = Math.Max(1, Page);
+        var query = new List<string> { $"page={page}" };
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+            query.Add($"buscar={Uri.EscapeDataString(SearchTerm.Trim())}");
+
+        try
+        {
+            using var response = await Api.GetAsync($"/api/delivery/payments?{string.Join("&", query)}");
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                throw new InvalidOperationException("Tu sesión ya no está activa. Inicia sesión nuevamente.");
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+                throw new InvalidOperationException("No tienes permiso para consultar esta sección.");
+            response.EnsureSuccessStatusCode();
+            _payments = await response.Content.ReadFromJsonAsync<DeliveryPaymentsResponse>()
+                ?? throw new JsonException("La respuesta de pagos estaba vacía.");
+            _loadedSearch = SearchTerm;
+            _loadedPage = page;
+        }
+        catch (InvalidOperationException exception)
+        {
+            _payments = null;
+            _error = exception.Message;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        {
+            _payments = null;
+            _error = "No se pudieron cargar los pagos. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private Task SearchAsync()
+    {
+        NavigateToPage(1, _searchDraft.Trim());
+        return Task.CompletedTask;
+    }
+
+    private void ClearSearch() => NavigateToPage(1, string.Empty);
+    private void GoToPage(int page) => NavigateToPage(page, SearchTerm ?? string.Empty);
+
+    private void NavigateToPage(int page, string search)
+    {
+        var query = new List<string>();
+        if (!string.IsNullOrWhiteSpace(search))
+            query.Add($"buscar={Uri.EscapeDataString(search)}");
+        if (page > 1)
+            query.Add($"page={page}");
+        Navigation.NavigateTo(query.Count == 0 ? "/Delivery/MyPayments" : $"/Delivery/MyPayments?{string.Join("&", query)}");
+    }
+
+    private static string PaymentStatusClass(string status) => status switch
+    {
+        "Aprobado" => "is-delivered",
+        "Rechazado" => "is-cancelled",
+        _ => "is-preparing"
+    };
+
+    private IEnumerable<int> VisiblePages()
+    {
+        if (_payments is null)
+            yield break;
+        var start = Math.Max(1, _payments.PageIndex - 2);
+        var end = Math.Min(_payments.TotalPages, _payments.PageIndex + 2);
+        if (start > 1)
+        {
+            yield return 1;
+            if (start > 2) yield return 0;
+        }
+        for (var current = start; current <= end; current++)
+            yield return current;
+        if (end < _payments.TotalPages)
+        {
+            if (end < _payments.TotalPages - 1) yield return 0;
+            yield return _payments.TotalPages;
+        }
+    }
+}
