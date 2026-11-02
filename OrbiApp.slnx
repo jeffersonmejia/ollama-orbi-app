@@ -1,10 +1,14 @@
 <Solution>
+  <Folder Name="/src/" />
   <Folder Name="/src/Core/">
     <Project Path="src/Core/Domain/Domain.csproj" />
     <Project Path="src/Core/Application/Application.csproj" />
     <Project Path="src/Core/Infrastructure/Infrastructure.csproj" />
     <Project Path="src/Core/Presentation.Client/Presentation.Client.csproj" />
     <Project Path="src/Core/Presentation/Presentation.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OrbiApp.Database.Tests/OrbiApp.Database.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/OrbiApp.DataGenerator/OrbiApp.DataGenerator.csproj" />

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" rx="28" fill="#F9EFF3"/><ellipse cx="240" cy="265" rx="92" ry="13" fill="#EBDCE2"/>
+  <path d="M181 104q0-12 12-12h94q12 0 12 12v137H181z" fill="#fff" stroke="#E8D8DF" stroke-width="4"/><path d="M181 105q0-13 12-13h94q12 0 12 13v30H181z" fill="#D46B91"/><circle cx="240" cy="177" r="31" fill="#FFE3E8"/><circle cx="240" cy="170" r="18" fill="#F3B8C7"/><path d="M236 191h8v23h-8z" rx="4" fill="#DDA85F"/><path d="M211 225h58" stroke="#EAC9D6" stroke-width="5" stroke-linecap="round"/>
+  <text x="240" y="239" text-anchor="middle" fill="#986077" font-family="Arial,sans-serif" font-size="12" font-weight="700">Vitamina C + zinc · x10</text>
+</svg>

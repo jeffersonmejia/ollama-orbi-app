@@ -1,54 +1,75 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<MainLayout> Logger
 
-<div class="m3-app-layout" id="m3-app-layout">
+<div class="m3-app-layout @(_navCollapsed ? "nav-collapsed" : string.Empty)" id="m3-app-layout">
     <nav class="m3-nav-rail" aria-label="Navegación principal">
         <div class="m3-nav-rail-header">
-            <LegacyNavigationLink Href="/" Class="m3-nav-brand" Title="Orbi">
-                <span class="m3-nav-brand-mark material-symbols-outlined" aria-hidden="true">shopping_bag</span>
-                <span class="m3-nav-brand-label">Orbi</span>
-            </LegacyNavigationLink>
+            <span class="m3-nav-brand-label" aria-label="Dash">Dash</span>
+            <button class="m3-icon-btn m3-nav-toggle" type="button"
+                    aria-label="@(_navCollapsed ? "Expandir navegación" : "Contraer navegación")"
+                    aria-expanded="@(!_navCollapsed)"
+                    title="@(_navCollapsed ? "Expandir navegación" : "Contraer navegación")"
+                    @onclick="ToggleNavigation">
+                <span class="material-symbols-outlined" aria-hidden="true">@(_navCollapsed ? "left_panel_open" : "left_panel_close")</span>
+            </button>
         </div>
-
         <ul class="m3-nav-items">
-            <li>
-                <NavLink class="m3-nav-item" href="/app/asistente" Match="NavLinkMatch.All">
-                    <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
-                    <span>Asistente</span>
-                </NavLink>
-            </li>
-            <li>
-                <LegacyNavigationLink Href="/Delivery/Index" Class="m3-nav-item">
-                    <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
-                    <span>Tiendas</span>
-                </LegacyNavigationLink>
-            </li>
-            @if (_user.IsInRole("Usuario"))
+            @if (!IsRegistrationPage)
             {
-                <li><LegacyNavigationLink Href="/Delivery/MyOrders" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span><span>Pedidos</span></LegacyNavigationLink></li>
-                <li><LegacyNavigationLink Href="/Delivery/MyPayments" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">payments</span><span>Pagos</span></LegacyNavigationLink></li>
-                <li><LegacyNavigationLink Href="/Delivery/Cart" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span><span>Carrito</span></LegacyNavigationLink></li>
+                <li>
+                    <LegacyNavigationLink Href="/Delivery/Index" Class="m3-nav-item">
+                        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                        <span>Tiendas</span>
+                    </LegacyNavigationLink>
+                </li>
+                @if (_user.IsInRole("Usuario"))
+                {
+                    <li><LegacyNavigationLink Href="/Delivery/Cart" Class="@(IsPurchasesPage ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></LegacyNavigationLink></li>
+                }
+                @if (_user.IsInRole("Repartidor"))
+                {
+                    <li><LegacyNavigationLink Href="/Delivery/Deliveries" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></LegacyNavigationLink></li>
+                }
+                @if (_user.IsInRole("Administrador"))
+                {
+                    <li><LegacyNavigationLink Href="/Delivery/Admin" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></LegacyNavigationLink></li>
+                }
             }
-            @if (_user.IsInRole("Repartidor"))
+            else
             {
-                <li><LegacyNavigationLink Href="/Delivery/Deliveries" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></LegacyNavigationLink></li>
-            }
-            @if (_user.IsInRole("Administrador"))
-            {
-                <li><LegacyNavigationLink Href="/Delivery/Admin" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></LegacyNavigationLink></li>
+                <li>
+                    <LegacyNavigationLink Href="/" Class="m3-nav-item">
+                        <span class="material-symbols-outlined" aria-hidden="true">home</span>
+                        <span>Inicio</span>
+                    </LegacyNavigationLink>
+                </li>
+                <li>
+                    <NavLink href="/Identity/Account/Login" class="m3-nav-item" Match="NavLinkMatch.All">
+                        <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                        <span>Iniciar sesión</span>
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="/registro" class="m3-nav-item" Match="NavLinkMatch.All">
+                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                        <span>Registro</span>
+                    </NavLink>
+                </li>
             }
         </ul>
 
-        @if (_user.Identity?.IsAuthenticated == true)
+        @if (_user.Identity?.IsAuthenticated == true && !IsRegistrationPage)
         {
             <div class="m3-nav-rail-footer">
-                <LegacyNavigationLink Href="/Identity/Account/Manage/Index" Class="m3-nav-item orbi-profile-nav-item" Title="@_user.Identity.Name">
+                <LegacyNavigationLink Href="/Identity/Account/Manage/Index" Class="@ProfileLinkClass" Title="@_user.Identity.Name">
                     <span class="material-symbols-outlined" aria-hidden="true">person</span>
-                    <span class="orbi-profile-label"><span>Perfil</span><small>@_primaryRole</small></span>
+                    <span class="orbi-profile-label"><span>@_firstName</span><small>@_primaryRole</small></span>
                 </LegacyNavigationLink>
             </div>
         }
-        else
+        else if (!IsRegistrationPage)
         {
             <div class="m3-nav-rail-footer">
                 <LegacyNavigationLink Href="/Identity/Account/Login" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">login</span><span>Iniciar sesión</span></LegacyNavigationLink>
@@ -57,8 +78,8 @@
         }
     </nav>
 
-    <div class="m3-content-area orbi-assistant-content-area">
-        <main class="m3-main orbi-assistant-main">
+    <div class="m3-content-area @(IsAssistantPage ? "orbi-assistant-content-area" : string.Empty)">
+        <main class="m3-main @(IsAssistantPage ? "orbi-assistant-main" : string.Empty)">
             <ErrorBoundary>
                 <ChildContent>@Body</ChildContent>
                 <ErrorContent>
@@ -71,22 +92,63 @@
                 </ErrorContent>
             </ErrorBoundary>
         </main>
-        <footer class="m3-footer orbi-assistant-footer">&copy; 2026 Orbi. Todos los derechos reservados.</footer>
+        <footer class="m3-footer @(IsAssistantPage ? "orbi-assistant-footer" : string.Empty)">&copy; 2026 Dash. Todos los derechos reservados.</footer>
     </div>
 </div>
 
 @code {
     private System.Security.Claims.ClaimsPrincipal _user = new(new System.Security.Claims.ClaimsIdentity());
+    private string _firstName = "Mi cuenta";
     private string _primaryRole = "Sin rol";
+    private bool _navCollapsed;
+    private string ProfileLinkClass => $"m3-nav-item orbi-profile-nav-item {(IsProfilePage ? "active" : string.Empty)}";
+    private bool IsRegistrationPage => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .Split('?', '#')[0].Trim('/').Equals("registro", StringComparison.OrdinalIgnoreCase);
+    private bool IsAssistantPage => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .Split('?', '#')[0].Trim('/').Equals("app/asistente", StringComparison.OrdinalIgnoreCase);
+    private string CurrentPath => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Trim('/');
+    private bool IsPurchasesPage => _user.IsInRole("Usuario") && IsDeliveryAction("MyOrders", "MyPayments", "Cart", "UpdateCartItem", "RemoveFromCart", "Checkout", "PaymentSuccess");
+    private bool IsProfilePage => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .Split('?', '#')[0].Trim('/').StartsWith("Identity/Account/Manage", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsDeliveryAction(params string[] actions) => actions.Any(action =>
+        CurrentPath.Equals($"Delivery/{action}", StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
-        _user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-        _primaryRole = new[] { "Administrador", "Vendedor", "Repartidor", "Usuario" }
-            .FirstOrDefault(_user.IsInRole) ?? "Sin rol";
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        await RefreshUserAsync(await AuthenticationStateProvider.GetAuthenticationStateAsync());
     }
 
+    private async Task RefreshUserAsync(AuthenticationState state)
+    {
+        _user = state.User;
+        var givenName = _user.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
+            ?? _user.FindFirst("given_name")?.Value
+            ?? _user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        if (string.IsNullOrWhiteSpace(givenName) || givenName.Contains('@'))
+        {
+            var identityName = _user.Identity?.Name ?? givenName ?? string.Empty;
+            givenName = identityName.Split('@', 2)[0].Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        }
+        _firstName = givenName?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Mi cuenta";
+        if (_firstName.Length > 0)
+            _firstName = char.ToUpperInvariant(_firstName[0]) + _firstName[1..];
+        _primaryRole = new[] { "Administrador", "Vendedor", "Repartidor", "Usuario" }
+            .FirstOrDefault(_user.IsInRole) ?? "Sin rol";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> stateTask)
+    {
+        try { await RefreshUserAsync(await stateTask); }
+        catch (Exception exception) { Logger.LogWarning(exception, "No se pudo actualizar el perfil de navegación."); }
+    }
+
+    public void Dispose() => AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+
     private void ReloadPage() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    private void ToggleNavigation() => _navCollapsed = !_navCollapsed;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 }

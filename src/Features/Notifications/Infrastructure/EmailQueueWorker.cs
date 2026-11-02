@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using OrbiApp.Data;
+using OrbiApp.Application.Ports;
 
 namespace OrbiApp.Infrastructure.Features.Notifications;
 
@@ -29,7 +29,10 @@ public sealed class EmailQueueWorker : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "No fue posible procesar la cola de correos.");
+                _logger.LogError(
+                    exception,
+                    "Email queue processing failed. FailureType={FailureType}",
+                    exception.GetType().Name);
             }
 
             await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
@@ -66,10 +69,11 @@ public sealed class EmailQueueWorker : BackgroundService
         catch (Exception exception)
         {
             item.Status = "Fallido";
-            item.LastError = exception.Message.Length > 2000
-                ? exception.Message[..2000]
-                : exception.Message;
-            _logger.LogWarning(exception, "Falló el envío del correo en cola {EmailQueueId}.", item.EmailQueueId);
+            item.LastError = "No fue posible enviar el correo.";
+            _logger.LogWarning(
+                exception,
+                "Email delivery failed. FailureType={FailureType}",
+                exception.GetType().Name);
         }
 
         await context.SaveChangesAsync(cancellationToken);

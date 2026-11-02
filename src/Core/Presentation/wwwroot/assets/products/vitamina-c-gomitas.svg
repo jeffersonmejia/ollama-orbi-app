@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" rx="28" fill="#FFF7E5"/><ellipse cx="240" cy="265" rx="93" ry="13" fill="#F1E6C8"/>
+  <path d="M181 104q0-12 12-12h94q12 0 12 12v137H181z" fill="#FFFDF8" stroke="#E9DFC6" stroke-width="4"/><path d="M181 105q0-13 12-13h94q12 0 12 13v30H181z" fill="#F0B93C"/><path d="M209 167q15-20 30 0t30 0" stroke="#F7D773" stroke-width="12" stroke-linecap="round"/><circle cx="217" cy="195" r="10" fill="#F1A44E"/><circle cx="244" cy="201" r="10" fill="#EDCB54"/><circle cx="266" cy="190" r="10" fill="#EF8068"/>
+  <text x="240" y="226" text-anchor="middle" fill="#957738" font-family="Arial,sans-serif" font-size="12" font-weight="700">Vitamina C · 36 g</text>
+</svg>

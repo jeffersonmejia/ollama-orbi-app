@@ -28,8 +28,8 @@ services:
       - DAC_OVERRIDE
       - SETUID
       - SETGID
-    mem_limit: 512m
-    cpus: 1.0
+    mem_limit: 4g
+    cpus: 4.0
     stop_grace_period: 1m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U orbi_audit_admin -d orbi_audit"]

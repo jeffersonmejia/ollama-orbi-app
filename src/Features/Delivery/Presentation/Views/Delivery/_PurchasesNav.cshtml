@@ -1,0 +1,21 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var isCart = currentAction is "Cart" or "UpdateCartItem" or "RemoveFromCart" or "Checkout" or "PaymentSuccess";
+    var isOrders = currentAction == "MyOrders";
+    var isPayments = currentAction == "MyPayments";
+}
+
+<nav class="orbi-purchases-nav" aria-label="Secciones de Mis compras">
+    <a asp-controller="Delivery" asp-action="Cart" class="orbi-purchases-nav-link @(isCart ? "active" : string.Empty)" aria-current="@(isCart ? "page" : null)">
+        <span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>
+        <span>Carrito</span>
+    </a>
+    <a asp-controller="Delivery" asp-action="MyOrders" class="orbi-purchases-nav-link @(isOrders ? "active" : string.Empty)" aria-current="@(isOrders ? "page" : null)">
+        <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+        <span>Pedidos</span>
+    </a>
+    <a asp-controller="Delivery" asp-action="MyPayments" class="orbi-purchases-nav-link @(isPayments ? "active" : string.Empty)" aria-current="@(isPayments ? "page" : null)">
+        <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+        <span>Pagos</span>
+    </a>
+</nav>

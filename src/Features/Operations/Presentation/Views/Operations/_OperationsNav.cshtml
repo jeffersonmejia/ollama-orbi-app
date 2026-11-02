@@ -2,6 +2,9 @@
     @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor") || User.IsInRole("Usuario"))
     {
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="DeliveryIncidents">Incidencias</a>
+    }
+    @if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Vendedor") && !User.IsInRole("Usuario"))
+    {
         <a class="m3-outlined-button" asp-controller="Operations" asp-action="OrderStatusHistory">Historial</a>
     }
 

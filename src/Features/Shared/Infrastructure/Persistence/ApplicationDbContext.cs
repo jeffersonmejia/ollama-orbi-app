@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OrbiApp.Models.Commerce;
 using OrbiApp.Models.Delivery;
@@ -93,6 +94,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.PreferredPaymentMethod).HasColumnName("preferred_payment_method").HasMaxLength(20).HasDefaultValue("PayPal");
             entity.Property(x => x.CreatedAt).HasColumnName("created_at");
             entity.HasIndex(x => x.Cedula).IsUnique();
+            entity.HasIndex(x => x.CityCode).HasDatabaseName("ix_user_profile_city_code");
             entity.HasOne<Microsoft.AspNetCore.Identity.IdentityUser>()
                 .WithOne()
                 .HasForeignKey<UserProfile>(x => x.IdentityUserId)
@@ -131,7 +133,7 @@ public class ApplicationDbContext : IdentityDbContext
                 .HasFilter("is_default")
                 .IsUnique()
                 .HasDatabaseName("ux_user_address_default");
-            entity.HasOne(x => x.Profile).WithMany(x => x.Addresses).HasForeignKey(x => x.IdentityUserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<IdentityUser>().WithMany().HasForeignKey(x => x.IdentityUserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(x => x.Province).WithMany().HasForeignKey(x => x.ProvinceCode).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.City).WithMany().HasForeignKey(x => x.CityCode).OnDelete(DeleteBehavior.Restrict);
         });
@@ -148,6 +150,8 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.IsActive).HasColumnName("is_active");
             entity.Property(x => x.OwnerUserId).HasColumnName("owner_user_id").HasMaxLength(450);
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.HasIndex(x => new { x.CityCode, x.IsActive, x.Name }).HasDatabaseName("ix_delivery_store_city_active_name");
+            entity.HasIndex(x => new { x.ProvinceCode, x.Name }).HasDatabaseName("ix_delivery_store_province_name");
             entity.HasOne(x => x.Province).WithMany().HasForeignKey(x => x.ProvinceCode).OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(x => x.City).WithMany().HasForeignKey(x => x.CityCode).OnDelete(DeleteBehavior.SetNull);
         });
@@ -159,6 +163,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.DeliveryStoreId).HasColumnName("delivery_store_id");
             entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id").HasMaxLength(450);
             entity.Property(x => x.Name).HasColumnName("name");
+            entity.Property(x => x.ImageUrl).HasColumnName("image_url").HasMaxLength(500);
             entity.Property(x => x.Price).HasColumnName("price");
             entity.Property(x => x.UnitCost).HasColumnName("unit_cost").HasColumnType("numeric(10,2)").HasDefaultValue(0m);
             entity.Property(x => x.Stock).HasColumnName("stock").HasDefaultValue(0);
@@ -166,6 +171,8 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.HasIndex(x => x.CreatedByUserId).HasDatabaseName("ix_delivery_product_creator");
+            entity.HasIndex(x => new { x.DeliveryStoreId, x.IsAvailable, x.Name }).HasDatabaseName("ix_delivery_product_store_available_name");
+            entity.HasIndex(x => new { x.DeliveryStoreId, x.CreatedAt }).HasDatabaseName("ix_delivery_product_store_created_at");
         });
 
         builder.Entity<DeliveryOrder>(entity =>
@@ -179,6 +186,9 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.Status).HasColumnName("status");
             entity.Property(x => x.Total).HasColumnName("total");
             entity.Property(x => x.CreatedAt).HasColumnName("created_at");
+            entity.HasIndex(x => new { x.CustomerEmail, x.CreatedAt }).HasDatabaseName("ix_delivery_order_customer_created_at");
+            entity.HasIndex(x => new { x.DeliveryPersonEmail, x.CreatedAt }).HasDatabaseName("ix_delivery_order_driver_created_at");
+            entity.HasIndex(x => new { x.DeliveryStoreId, x.CreatedAt }).HasDatabaseName("ix_delivery_order_store_created_at");
         });
 
         builder.Entity<DeliveryOrderItem>(entity =>
@@ -191,6 +201,8 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.Quantity).HasColumnName("quantity");
             entity.Property(x => x.UnitPrice).HasColumnName("unit_price");
             entity.Property(x => x.Subtotal).HasColumnName("subtotal");
+            entity.HasIndex(x => x.DeliveryOrderId).HasDatabaseName("ix_delivery_order_item_order");
+            entity.HasIndex(x => x.DeliveryProductId).HasDatabaseName("ix_delivery_order_item_product");
         });
 
         builder.Entity<DeliveryPayment>(entity =>
@@ -377,6 +389,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.Quantity).HasColumnName("quantity").HasDefaultValue(1);
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.HasIndex(x => x.UserEmail).HasDatabaseName("ix_delivery_cart_user");
+            entity.HasIndex(x => x.DeliveryProductId).HasDatabaseName("ix_delivery_cart_product");
             entity.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.DeliveryProductId).OnDelete(DeleteBehavior.Cascade);
         });
     }

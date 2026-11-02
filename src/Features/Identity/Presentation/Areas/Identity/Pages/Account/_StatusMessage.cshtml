@@ -2,9 +2,11 @@
 
 @if (!String.IsNullOrEmpty(Model))
 {
-    var statusMessageClass = Model.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    var statusMessageClass = Model.StartsWith("Error") ? "orbi-alert-error" : "orbi-alert-success";
+    <div class="orbi-alert @statusMessageClass" role="alert">
+        <button type="button" class="m3-icon-btn orbi-alert-dismiss" data-orbi-dismiss-alert aria-label="Cerrar mensaje">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
         @Model
     </div>
 }

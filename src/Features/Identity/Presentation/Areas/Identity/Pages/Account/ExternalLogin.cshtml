@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model ExternalLoginModel
 @{
     ViewData["Title"] = "Registro";
@@ -8,23 +8,21 @@
 <h2 id="external-login-title">Asocia tu cuenta de @Model.ProviderDisplayName.</h2>
 <hr />
 
-<p id="external-login-description" class="text-info">
+<p id="external-login-description" class="m3-supporting-text">
     Has iniciado sesión correctamente con <strong>@Model.ProviderDisplayName</strong>.
-    Confirma el correo electrónico que usarás en Orbi y selecciona «Completar registro» para continuar.
+    Confirma el correo electrónico que usarás en Dash y selecciona «Completar registro» para continuar.
 </p>
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="m3-text-field">
-                <input asp-for="Input.Email" class="m3-text-field-input" autocomplete="email" placeholder="Correo electrónico"/>
-                <label asp-for="Input.Email" class="m3-text-field-label">Correo electrónico</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <button type="submit" class="m3-filled-button">Completar registro</button>
-        </form>
-    </div>
+<div class="m3-form-container">
+    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+        <div asp-validation-summary="ModelOnly" class="m3-validation-error" role="alert"></div>
+        <div class="m3-text-field">
+            <input asp-for="Input.Email" class="m3-text-field-input" autocomplete="email" placeholder="Correo electrónico"/>
+            <label asp-for="Input.Email" class="m3-text-field-label">Correo electrónico</label>
+            <span asp-validation-for="Input.Email" class="m3-validation-error"></span>
+        </div>
+        <button type="submit" class="m3-filled-button">Completar registro</button>
+    </form>
 </div>
 
 @section Scripts {

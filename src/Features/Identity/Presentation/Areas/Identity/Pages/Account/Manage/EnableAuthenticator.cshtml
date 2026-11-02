@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model EnableAuthenticatorModel
 @{
     ViewData["Title"] = "Configure authenticator app";
@@ -27,10 +27,10 @@
             <form id="send-code" method="post" style="display:grid;gap:12px;max-width:360px;">
                 <div class="m3-text-field">
                     <input asp-for="Input.Code" class="m3-text-field-input" autocomplete="off" placeholder="Verification Code" />
-                    <span asp-validation-for="Input.Code" class="text-danger"></span>
+                    <span asp-validation-for="Input.Code" class="m3-validation-error"></span>
                 </div>
                 <button type="submit" class="m3-filled-button">Verify</button>
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div asp-validation-summary="ModelOnly" class="m3-validation-error" role="alert"></div>
             </form>
         </li>
     </ol>

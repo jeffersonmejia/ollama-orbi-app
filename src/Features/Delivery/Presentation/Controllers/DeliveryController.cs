@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Security.Claims;
 using OrbiApp.Models.Delivery;
 using OrbiApp.Models.Identity;
@@ -11,6 +12,7 @@ using OrbiApp.Application.Features.Delivery.Ports;
 using OrbiApp.Application.Features.Payments.Ports;
 using OrbiApp.Application.Features.Shared.Ports;
 using OrbiApp.Data;
+using OrbiApp.Presentation.Services;
 
 namespace OrbiApp.Controllers;
 
@@ -24,21 +26,41 @@ public class DeliveryController : Controller
     private readonly IPayPalGateway _payPalService;
     private readonly ISuggestMarketPriceUseCase _suggestMarketPrice;
     private readonly ApplicationDbContext _database;
+    private readonly ILogger<DeliveryController> _logger;
+    private readonly DeliveryPageCache _pageCache;
 
     public DeliveryController(
         IApplicationDataSession context,
         IPayPalGateway payPalService,
         ISuggestMarketPriceUseCase suggestMarketPrice,
-        ApplicationDbContext database)
+        ApplicationDbContext database,
+        ILogger<DeliveryController> logger,
+        DeliveryPageCache pageCache)
     {
         _context = context;
         _payPalService = payPalService;
         _suggestMarketPrice = suggestMarketPrice;
         _database = database;
+        _logger = logger;
+        _pageCache = pageCache;
     }
 
-    public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1)
+    public async Task<IActionResult> Index(string? buscar, decimal? precioMinimo, decimal? precioMaximo, string? categoria, int page = 1, string? cityCode = null)
     {
+        var isAjaxRequest = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+        var totalTimer = Stopwatch.StartNew();
+        var stageTimer = Stopwatch.StartNew();
+        void LogStage(string stage)
+        {
+            _logger.LogInformation(
+                "Delivery.Index timing {TraceId} AJAX={IsAjax}: {Stage} took {ElapsedMs} ms",
+                HttpContext.TraceIdentifier,
+                isAjaxRequest,
+                stage,
+                stageTimer.ElapsedMilliseconds);
+            stageTimer.Restart();
+        }
+
         var productsQuery = _context.Set<DeliveryProduct>()
             .AsNoTracking()
             .Include(product => product.Store).ThenInclude(store => store!.Province)
@@ -46,23 +68,39 @@ public class DeliveryController : Controller
             .Where(product => product.IsAvailable && product.Store.IsActive);
 
         string? userProvinceCode = null;
+        string? userProvinceName = null;
         string? userCityName = null;
         string? userCityCode = null;
-        if (CurrentUserId is string userId)
+        string? userFirstName = null;
+        var hasClientCityCode = Request.Query.ContainsKey("cityCode");
+        if (isAjaxRequest && hasClientCityCode)
         {
-            var profile = await _context.Set<UserProfile>().AsNoTracking()
-                .Where(p => p.IdentityUserId == userId)
-                .Include(p => p.Province)
-                .Include(p => p.City)
-                .FirstOrDefaultAsync();
+            userCityCode = string.IsNullOrWhiteSpace(cityCode) ? null : cityCode;
+            if (userCityCode is not null)
+                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
+        }
+        else if (CurrentUserId is string userId)
+        {
+            var profile = await _pageCache.GetUserProfileAsync(_context, userId, HttpContext.RequestAborted);
             if (profile is not null)
             {
+                userFirstName = profile.FirstName;
                 userProvinceCode = profile.ProvinceCode;
+                userProvinceName = profile.Province?.Name;
                 userCityName = profile.City?.Name;
                 userCityCode = profile.CityCode;
                 productsQuery = productsQuery.Where(p => p.Store.CityCode == userCityCode);
             }
+            else if (await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is { } primaryAddress)
+            {
+                userProvinceCode = primaryAddress.ProvinceCode;
+                userProvinceName = primaryAddress.Province?.Name;
+                userCityName = primaryAddress.City?.Name;
+                userCityCode = primaryAddress.CityCode;
+                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
+            }
         }
+        LogStage("profile/address lookup");
 
         if (!string.IsNullOrWhiteSpace(buscar))
         {
@@ -78,31 +116,208 @@ public class DeliveryController : Controller
         var products = await PaginatedList<DeliveryProduct>.CreateAsync(
             productsQuery.OrderBy(product => product.Store.Name).ThenBy(product => product.Name),
             Math.Max(1, page), 12);
+        LogStage("catalog count and page query");
         ViewBag.Buscar = buscar;
         ViewBag.PrecioMinimo = precioMinimo;
         ViewBag.PrecioMaximo = precioMaximo;
         ViewBag.Categoria = categoria;
-        ViewBag.UserProvinceName = await _context.Set<EcuadorProvince>().AsNoTracking()
-            .Where(p => p.Code == userProvinceCode)
-            .Select(p => p.Name)
-            .FirstOrDefaultAsync();
-        ViewBag.UserCityName = userCityName;
-        ViewData["PaginatedList"] = products;
-
         var addresses = new List<UserAddress>();
+        var provinces = new List<EcuadorProvince>();
+        var cities = new List<EcuadorCity>();
         if (User.IsInRole("Usuario") && CurrentUserId is string userId2)
         {
-            await EnsurePrimaryAddressAsync(userId2);
-            addresses = await _context.Set<UserAddress>().AsNoTracking()
-                .Where(address => address.IdentityUserId == userId2)
-                .Include(address => address.Province)
-                .Include(address => address.City)
-                .OrderByDescending(address => address.IsDefault)
-                .ThenBy(address => address.Label)
-                .ToListAsync();
+            if (!isAjaxRequest)
+            {
+                addresses = await _context.Set<UserAddress>().AsNoTracking()
+                    .Where(address => address.IdentityUserId == userId2)
+                    .Include(address => address.Province)
+                    .Include(address => address.City)
+                    .OrderByDescending(address => address.IsDefault)
+                    .ThenBy(address => address.Label)
+                    .ToListAsync();
+                LogStage("address list");
+                if (addresses.Count == 0)
+                {
+                    await EnsurePrimaryAddressAsync(userId2, addressAlreadyChecked: true);
+                    LogStage("legacy profile address migration");
+                    addresses = await _context.Set<UserAddress>().AsNoTracking()
+                        .Where(address => address.IdentityUserId == userId2)
+                        .Include(address => address.Province)
+                        .Include(address => address.City)
+                        .OrderByDescending(address => address.IsDefault)
+                        .ThenBy(address => address.Label)
+                        .ToListAsync();
+                    LogStage("address list after legacy migration");
+                }
+                provinces = (await _pageCache.GetProvincesAsync(_context, HttpContext.RequestAborted)).ToList();
+                LogStage("province list");
+                cities = (await _pageCache.GetCitiesAsync(_context, HttpContext.RequestAborted)).ToList();
+                LogStage("city list");
+            }
         }
 
-        return View(new DeliveryCatalogViewModel { Products = products, Addresses = addresses });
+        var cartQuantities = new Dictionary<int, int>();
+        if (User.IsInRole("Usuario") && User.Identity?.Name is string userEmail)
+        {
+            var productIds = products.Select(product => product.DeliveryProductId).ToArray();
+            cartQuantities = await _context.Set<DeliveryCartItem>()
+                .AsNoTracking()
+                .Where(item => item.UserEmail == userEmail && productIds.Contains(item.DeliveryProductId))
+                .ToDictionaryAsync(item => item.DeliveryProductId, item => item.Quantity);
+        }
+        LogStage("cart quantities");
+
+        if (!isAjaxRequest)
+        {
+            ViewBag.UserProvinceName = userProvinceName;
+            ViewBag.UserProvinceCode = userProvinceCode;
+            ViewBag.UserCityCode = userCityCode;
+            ViewBag.UserCityName = userCityName;
+            ViewBag.UserFirstName = userFirstName;
+        }
+
+        var viewModel = new DeliveryCatalogViewModel
+        {
+            Products = products,
+            Addresses = addresses,
+            Provinces = provinces,
+            Cities = cities,
+            CartQuantities = cartQuantities
+        };
+
+        _logger.LogInformation(
+            "Delivery.Index controller timing {TraceId} AJAX={IsAjax}: total {ElapsedMs} ms",
+            HttpContext.TraceIdentifier,
+            isAjaxRequest,
+            totalTimer.ElapsedMilliseconds);
+
+        if (isAjaxRequest)
+            return PartialView("_ProductResults", viewModel);
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Usuario")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> SessionContext()
+    {
+        if (CurrentUserId is not string userId)
+            return Unauthorized(new { code = "authentication_required" });
+
+        var profile = await _pageCache.GetUserProfileAsync(_context, userId, HttpContext.RequestAborted);
+        var primaryAddress = await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted);
+
+        return Json(new
+        {
+            displayName = profile?.FirstName,
+            provinceCode = profile?.ProvinceCode ?? primaryAddress?.ProvinceCode,
+            cityCode = profile?.CityCode ?? primaryAddress?.CityCode,
+            hasAddress = primaryAddress is not null
+        });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Usuario")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveCatalogAddress([FromForm] CatalogAddressInput input)
+    {
+        if (CurrentUserId is not string userId)
+            return Unauthorized(new { code = "authentication_required", message = "Inicia sesión para guardar tu dirección." });
+
+        if (!ModelState.IsValid)
+            return BadRequest(new
+            {
+                code = "validation_error",
+                errors = ModelState.Where(entry => entry.Value?.Errors.Count > 0)
+                    .ToDictionary(entry => entry.Key, entry => entry.Value!.Errors.Select(error => error.ErrorMessage).ToArray())
+            });
+
+        var label = input.Label.Trim();
+        UserAddress? address = null;
+        if (input.UserAddressId.HasValue)
+        {
+            address = await _context.Set<UserAddress>().SingleOrDefaultAsync(item =>
+                item.UserAddressId == input.UserAddressId.Value && item.IdentityUserId == userId);
+            if (address is null)
+                return NotFound(new { code = "address_not_found", message = "No encontramos esa dirección." });
+        }
+
+        var duplicateLabel = await _context.Set<UserAddress>().AnyAsync(existingAddress =>
+            existingAddress.IdentityUserId == userId && existingAddress.Label.ToLower() == label.ToLower() &&
+            existingAddress.UserAddressId != (input.UserAddressId ?? 0));
+        if (duplicateLabel)
+            return Conflict(new { code = "validation_error", errors = new { Label = new[] { "Ya tienes una dirección con ese nombre." } } });
+
+        var city = await _context.Set<EcuadorCity>().AsNoTracking()
+            .Where(item => item.Code == input.CityCode && item.ProvinceCode == input.ProvinceCode)
+            .Select(item => new { item.Code, item.Name, item.ProvinceCode, ProvinceName = item.Province.Name })
+            .FirstOrDefaultAsync();
+        if (city is null)
+            return BadRequest(new { code = "validation_error", errors = new { CityCode = new[] { "La ciudad no pertenece a la provincia seleccionada." } } });
+
+        try
+        {
+            await using var transaction = await _database.Database.BeginTransactionAsync();
+            address ??= new UserAddress
+            {
+                IdentityUserId = userId,
+            };
+
+            address.Label = label;
+            address.AddressLine1 = input.AddressLine1.Trim();
+            address.AddressLine2 = input.AddressLine2.Trim();
+            address.ProvinceCode = city.ProvinceCode;
+            address.CityCode = city.Code;
+            address.Reference = input.Reference.Trim();
+            address.IsDefault = true;
+            address.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _context.Set<UserAddress>()
+                .Where(item => item.IdentityUserId == userId && item.IsDefault && item.UserAddressId != address.UserAddressId)
+                .ExecuteUpdateAsync(update => update.SetProperty(item => item.IsDefault, false));
+            if (!input.UserAddressId.HasValue)
+                _context.Set<UserAddress>().Add(address);
+
+            var profile = await _context.Set<UserProfile>().SingleOrDefaultAsync(item => item.IdentityUserId == userId);
+            if (profile is not null)
+            {
+                profile.AddressLine1 = address.AddressLine1;
+                profile.AddressLine2 = address.AddressLine2;
+                profile.ProvinceCode = address.ProvinceCode;
+                profile.CityCode = address.CityCode;
+                profile.Reference = address.Reference;
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            _pageCache.InvalidateUser(userId);
+            return Json(new
+            {
+                code = "address_saved",
+                address = new
+                {
+                    address.UserAddressId,
+                    address.Label,
+                    address.AddressLine1,
+                    address.AddressLine2,
+                    address.Reference,
+                    address.ProvinceCode,
+                    provinceName = city.ProvinceName,
+                    address.CityCode,
+                    cityName = city.Name
+                }
+            });
+        }
+        catch (DbUpdateException exception)
+        {
+            _logger.LogError(exception, "No se pudo guardar la dirección del usuario {UserId}.", userId);
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                code = "address_save_failed",
+                message = "No se pudo guardar la dirección. Inténtalo de nuevo."
+            });
+        }
     }
 
     [HttpPost]
@@ -150,6 +365,110 @@ public class DeliveryController : Controller
         return RedirectToAction(nameof(Cart));
     }
 
+    [HttpPost]
+    [Authorize(Roles = "Usuario")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeCatalogCartQuantity(int productId, int delta, string? returnUrl)
+    {
+        var isAjaxRequest = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+        var userId = CurrentUserId;
+        var userEmail = User.Identity?.Name;
+        if (delta is not (-1 or 1) || userId is null || userEmail is null)
+        {
+            return BadRequest(new { code = "invalid_request" });
+        }
+
+        var product = await _context.Set<DeliveryProduct>()
+            .Include(item => item.Store)
+            .FirstOrDefaultAsync(item => item.DeliveryProductId == productId);
+        if (product is null || !product.IsAvailable || !product.Store.IsActive)
+        {
+            return NotFound(new { code = "product_unavailable" });
+        }
+
+        if (delta > 0)
+        {
+            await EnsurePrimaryAddressAsync(userId);
+            var hasAddress = await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is not null;
+            if (!hasAddress)
+            {
+                if (isAjaxRequest)
+                {
+                    return Conflict(new
+                    {
+                        code = "address_required",
+                        message = "Para agregar productos al carrito, primero registra una dirección de entrega."
+                    });
+                }
+
+                var addressUrl = Url.Page("/Account/Manage/Addresses", new { area = "Identity" });
+                return !string.IsNullOrWhiteSpace(addressUrl)
+                    ? LocalRedirect(addressUrl)
+                    : RedirectToAction(nameof(Index));
+            }
+        }
+
+        var cartItem = await _context.Set<DeliveryCartItem>()
+            .FirstOrDefaultAsync(item => item.UserEmail == userEmail && item.DeliveryProductId == productId);
+        var quantity = cartItem?.Quantity ?? 0;
+
+        if (delta > 0)
+        {
+            if (quantity >= Math.Min(product.Stock, 999))
+            {
+                if (isAjaxRequest)
+                {
+                    return Conflict(new { code = "stock_limit", message = "No hay más unidades disponibles." });
+                }
+
+                TempData["Error"] = "No hay más unidades disponibles.";
+                return !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+                    ? LocalRedirect(returnUrl)
+                    : RedirectToAction(nameof(Index));
+            }
+
+            if (cartItem is null)
+            {
+                _context.Set<DeliveryCartItem>().Add(new DeliveryCartItem
+                {
+                    UserEmail = userEmail,
+                    DeliveryProductId = productId,
+                    Quantity = 1,
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+            }
+            else
+            {
+                cartItem.Quantity++;
+            }
+
+            quantity++;
+        }
+        else if (cartItem is not null)
+        {
+            if (cartItem.Quantity <= 1)
+            {
+                _context.Set<DeliveryCartItem>().Remove(cartItem);
+            }
+            else
+            {
+                cartItem.Quantity--;
+            }
+
+            quantity--;
+        }
+
+        await _context.SaveChangesAsync();
+        if (isAjaxRequest)
+        {
+            return Json(new { quantity, stock = product.Stock });
+        }
+
+        return !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? LocalRedirect(returnUrl)
+            : RedirectToAction(nameof(Index));
+    }
+
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Cart()
     {
@@ -164,8 +483,8 @@ public class DeliveryController : Controller
         var total = items.Sum(c => c.Product.Price * c.Quantity);
         ViewBag.CartTotal = total;
 
-        var hasAddress = await _context.Set<UserAddress>().AnyAsync(a => a.IdentityUserId == CurrentUserId);
-        ViewBag.HasAddress = hasAddress;
+        ViewBag.HasAddress = CurrentUserId is string userId &&
+            await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is not null;
 
         return View(items);
     }
@@ -226,7 +545,8 @@ public class DeliveryController : Controller
             return RedirectToAction(nameof(Cart));
         }
 
-        var hasAddress = await _context.Set<UserAddress>().AnyAsync(a => a.IdentityUserId == userId);
+        var hasAddress = userId is not null &&
+            await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is not null;
         if (!hasAddress)
         {
             TempData["Error"] = "Agrega una dirección en tu perfil antes de pagar.";
@@ -317,7 +637,7 @@ public class DeliveryController : Controller
 
         string paymentUrl;
 
-        string reference = $"Orbi Order #{string.Join(",", createdOrderIds)}";
+        string reference = $"Dash Order #{string.Join(",", createdOrderIds)}";
         try
         {
             var returnUrl = $"{Request.Scheme}://{Request.Host}/Delivery/PaymentSuccess";
@@ -334,7 +654,8 @@ public class DeliveryController : Controller
         }
         catch (Exception ex)
         {
-            TempData["Error"] = $"Error al conectar con PayPal: {ex.Message}";
+            _logger.LogWarning(ex, "PayPal order creation failed for the delivery checkout.");
+            TempData["Error"] = "No se pudo iniciar el pago. Inténtalo de nuevo más tarde.";
             return RedirectToAction(nameof(Cart));
         }
 
@@ -403,7 +724,8 @@ public class DeliveryController : Controller
         }
         catch (Exception ex)
         {
-            TempData["Error"] = $"Error al confirmar PayPal: {ex.Message}";
+            _logger.LogError(ex, "PayPal payment confirmation failed.");
+            TempData["Error"] = "No se pudo confirmar el pago. Inténtalo de nuevo o contacta a soporte.";
         }
 
         return RedirectToAction(nameof(MyOrders));
@@ -563,12 +885,12 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Vendedor")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock)
+    public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock, string? imageUrl)
     {
         var userId = CurrentUserId;
-        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999)
+        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999 || !TryNormalizeProductImageUrl(imageUrl, out imageUrl))
         {
-            TempData["Error"] = "Completa todos los campos correctamente. Stock debe ser 0-999.";
+            TempData["Error"] = "Completa los campos correctamente. El stock debe ser 0-999 y la imagen debe usar una URL HTTPS válida.";
             return RedirectToAction(nameof(SellerInventory));
         }
 
@@ -584,6 +906,7 @@ public class DeliveryController : Controller
             DeliveryStoreId = store.DeliveryStoreId,
             CreatedByUserId = userId,
             Name = name.Trim(),
+            ImageUrl = imageUrl,
             Price = price,
             UnitCost = unitCost,
             Stock = stock,
@@ -599,7 +922,7 @@ public class DeliveryController : Controller
     [HttpPost]
     [Authorize(Roles = "Vendedor")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateProduct(int productId, string name, decimal price, decimal unitCost, int stock)
+    public async Task<IActionResult> UpdateProduct(int productId, string name, decimal price, decimal unitCost, int stock, string? imageUrl)
     {
         var userId = CurrentUserId;
         var product = await _context.Set<DeliveryProduct>().FirstOrDefaultAsync(p =>
@@ -611,13 +934,14 @@ public class DeliveryController : Controller
             return RedirectToAction(nameof(SellerInventory));
         }
 
-        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999)
+        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999 || !TryNormalizeProductImageUrl(imageUrl, out imageUrl))
         {
-            TempData["Error"] = "Completa todos los campos correctamente.";
+            TempData["Error"] = "Completa los campos correctamente. La imagen debe usar una URL HTTPS válida.";
             return RedirectToAction(nameof(SellerInventory));
         }
 
         product.Name = name.Trim();
+        product.ImageUrl = imageUrl;
         product.Price = price;
         product.UnitCost = unitCost;
         product.Stock = stock;
@@ -625,6 +949,13 @@ public class DeliveryController : Controller
         await _context.SaveChangesAsync();
         TempData["Success"] = $"Producto '{name.Trim()}' actualizado.";
         return RedirectToAction(nameof(SellerInventory));
+    }
+
+    private static bool TryNormalizeProductImageUrl(string? value, out string? normalized)
+    {
+        normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        return normalized is null ||
+            (normalized.Length <= 500 && Uri.TryCreate(normalized, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps);
     }
 
     [HttpPost]
@@ -674,7 +1005,8 @@ public class DeliveryController : Controller
         }
         catch (Exception ex)
         {
-            return Json(new { ok = false, message = "Error al conectar con la IA: " + ex.Message });
+            _logger.LogWarning(ex, "Delivery price suggestion request failed.");
+            return Json(new { ok = false, message = "No se pudo obtener una sugerencia de precio en este momento." });
         }
     }
 
@@ -723,10 +1055,10 @@ public class DeliveryController : Controller
         ViewBag.Buscar = buscar;
         ViewBag.Provincia = provincia;
         ViewBag.Ciudad = ciudad;
-        ViewBag.Provincias = await _context.Set<EcuadorProvince>().OrderBy(p => p.Name).ToListAsync();
-        ViewBag.Ciudades = await _context.Set<EcuadorCity>()
-            .Where(c => string.IsNullOrWhiteSpace(provincia) || c.ProvinceCode == provincia)
-            .OrderBy(c => c.Name).ToListAsync();
+        ViewBag.Provincias = (await _pageCache.GetProvincesAsync(_context, HttpContext.RequestAborted)).ToList();
+        ViewBag.Ciudades = (await _pageCache.GetCitiesAsync(_context, HttpContext.RequestAborted))
+            .Where(city => string.IsNullOrWhiteSpace(provincia) || city.ProvinceCode == provincia)
+            .ToList();
 
         var stores = await PaginatedList<DeliveryStore>.CreateAsync(
             query.OrderBy(s => s.Name), Math.Max(1, page), 5);
@@ -1020,6 +1352,7 @@ public class DeliveryController : Controller
         }
         _context.Set<EcuadorCity>().Add(new EcuadorCity { Code = code.Trim(), ProvinceCode = provinceCode.Trim(), Name = name.Trim() });
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateLocations();
         TempData["Success"] = $"Ciudad '{name.Trim()}' creada.";
         return RedirectToAction(nameof(AdminLocations));
     }
@@ -1033,6 +1366,7 @@ public class DeliveryController : Controller
         if (city == null) return NotFound();
         city.Name = name.Trim();
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateLocations();
         TempData["Success"] = $"Ciudad '{name.Trim()}' actualizada.";
         return RedirectToAction(nameof(AdminLocations));
     }
@@ -1046,6 +1380,7 @@ public class DeliveryController : Controller
         if (city == null) return NotFound();
         _context.Set<EcuadorCity>().Remove(city);
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateLocations();
         TempData["Success"] = $"Ciudad '{city.Name}' eliminada.";
         return RedirectToAction(nameof(AdminLocations));
     }
@@ -1067,6 +1402,7 @@ public class DeliveryController : Controller
         }
         _context.Set<EcuadorProvince>().Add(new EcuadorProvince { Code = code.Trim(), Name = name.Trim() });
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateLocations();
         TempData["Success"] = $"Provincia '{name.Trim()}' creada.";
         return RedirectToAction(nameof(AdminLocations));
     }
@@ -1080,6 +1416,7 @@ public class DeliveryController : Controller
         if (province == null) return NotFound();
         province.Name = name.Trim();
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateLocations();
         TempData["Success"] = $"Provincia '{name.Trim()}' actualizada.";
         return RedirectToAction(nameof(AdminLocations));
     }
@@ -1088,11 +1425,7 @@ public class DeliveryController : Controller
     public async Task<IActionResult> Profile()
     {
         var userId = CurrentUserId!;
-        var profile = await _context.Set<UserProfile>()
-            .AsNoTracking()
-            .Include(p => p.Province)
-            .Include(p => p.City)
-            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
+        var profile = await _pageCache.GetUserProfileAsync(_context, userId, HttpContext.RequestAborted);
 
         var addresses = await _context.Set<UserAddress>()
             .AsNoTracking()
@@ -1103,11 +1436,8 @@ public class DeliveryController : Controller
             .ThenByDescending(a => a.UpdatedAt)
             .ToListAsync();
 
-        var provinces = await _context.Set<EcuadorProvince>()
-            .AsNoTracking().OrderBy(p => p.Name).ToListAsync();
-
-        var cities = await _context.Set<EcuadorCity>()
-            .AsNoTracking().OrderBy(c => c.Name).ToListAsync();
+        var provinces = (await _pageCache.GetProvincesAsync(_context, HttpContext.RequestAborted)).ToList();
+        var cities = (await _pageCache.GetCitiesAsync(_context, HttpContext.RequestAborted)).ToList();
 
         ViewBag.Profile = profile;
         ViewBag.Provinces = provinces;
@@ -1134,6 +1464,7 @@ public class DeliveryController : Controller
         profile.CityCode = cityCode;
         profile.Reference = string.IsNullOrWhiteSpace(reference) ? null : reference.Trim();
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
 
         TempData["Success"] = "Perfil actualizado.";
         return RedirectToAction(nameof(Profile));
@@ -1162,6 +1493,7 @@ public class DeliveryController : Controller
             UpdatedAt = DateTimeOffset.UtcNow
         });
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
 
         TempData["Success"] = "Dirección creada.";
         return RedirectToAction(nameof(Profile));
@@ -1180,6 +1512,7 @@ public class DeliveryController : Controller
             addr.IsDefault = addr.UserAddressId == addressId;
 
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
         TempData["Success"] = "Dirección predeterminada actualizada.";
         return RedirectToAction(nameof(Profile));
     }
@@ -1197,6 +1530,7 @@ public class DeliveryController : Controller
         {
             _context.Set<UserAddress>().Remove(address);
             await _context.SaveChangesAsync();
+            _pageCache.InvalidateUser(userId);
             TempData["Success"] = "Dirección eliminada.";
         }
         return RedirectToAction(nameof(Profile));
@@ -1210,9 +1544,9 @@ public class DeliveryController : Controller
 
     private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    private async Task EnsurePrimaryAddressAsync(string userId)
+    private async Task EnsurePrimaryAddressAsync(string userId, bool addressAlreadyChecked = false)
     {
-        if (await _context.Set<UserAddress>().AnyAsync(address => address.IdentityUserId == userId)) return;
+        if (!addressAlreadyChecked && await _context.Set<UserAddress>().AnyAsync(address => address.IdentityUserId == userId)) return;
 
         var profile = await _context.Set<UserProfile>().AsNoTracking().SingleOrDefaultAsync(item => item.IdentityUserId == userId);
         if (profile is null || string.IsNullOrWhiteSpace(profile.AddressLine1)) return;
@@ -1229,5 +1563,6 @@ public class DeliveryController : Controller
             IsDefault = true
         });
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
     }
 }

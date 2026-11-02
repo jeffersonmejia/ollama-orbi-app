@@ -3,9 +3,10 @@
 @{ ViewData["Title"] = "Mis pagos"; ViewData["PaginatedList"] = Model; }
 
 <div class="m3-page orbi-orders-page">
-    <header class="orbi-orders-header">
-        <div><h1>Mis pagos</h1><p>Historial de transacciones asociadas a tus pedidos.</p></div>
-    </header>
+    @if (User.IsInRole("Usuario"))
+    {
+        <partial name="_PurchasesNav" />
+    }
 
     <form asp-action="MyPayments" method="get" class="orbi-store-filters">
         <div class="orbi-store-search">

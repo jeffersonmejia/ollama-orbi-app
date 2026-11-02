@@ -1,4 +1,16 @@
 
 @{
-    Layout = "/Views/Shared/_Layout.cshtml";
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString()?.TrimEnd('/');
+    var isManagePage = string.Equals(currentPage, "/Account/Manage", StringComparison.OrdinalIgnoreCase)
+        || currentPage?.StartsWith("/Account/Manage/", StringComparison.OrdinalIgnoreCase) == true;
+
+    if (isManagePage)
+    {
+        ViewData["ParentLayout"] = "/Views/Shared/_Layout.cshtml";
+        Layout = "/Areas/Identity/Pages/Account/Manage/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "/Views/Shared/_Layout.cshtml";
+    }
 }

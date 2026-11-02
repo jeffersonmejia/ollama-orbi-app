@@ -1,39 +1,76 @@
 :root {
-  --md-sys-color-primary: #0057B8;
+  --orbi-brand: #D2006E;
+  --orbi-brand-dark: color-mix(in srgb, var(--orbi-brand) 72%, #260014);
+  --orbi-brand-soft: color-mix(in srgb, var(--orbi-brand) 8%, transparent);
+  --orbi-brand-soft-strong: color-mix(in srgb, var(--orbi-brand) 14%, transparent);
+  --orbi-brand-container: color-mix(in srgb, var(--orbi-brand) 17%, white);
+  --orbi-brand-container-strong: color-mix(in srgb, var(--orbi-brand) 24%, white);
+
+  --md-sys-color-primary: var(--orbi-brand);
   --md-sys-color-on-primary: #FFFFFF;
-  --md-sys-color-primary-container: #D8E2FF;
-  --md-sys-color-on-primary-container: #001A41;
-  --md-sys-color-secondary: #565F71;
+  --md-sys-color-primary-container: var(--orbi-brand-container);
+  --md-sys-color-on-primary-container: #4B0029;
+  --md-sys-color-secondary: color-mix(in srgb, var(--orbi-brand) 68%, #3B1C32);
   --md-sys-color-on-secondary: #FFFFFF;
-  --md-sys-color-secondary-container: #DAE2F9;
-  --md-sys-color-on-secondary-container: #131C2B;
-  --md-sys-color-tertiary: #3D5F90;
+  --md-sys-color-secondary-container: color-mix(in srgb, var(--md-sys-color-secondary) 12%, white);
+  --md-sys-color-on-secondary-container: #3A152B;
+  --md-sys-color-tertiary: color-mix(in srgb, var(--orbi-brand) 48%, #4C3568);
   --md-sys-color-on-tertiary: #FFFFFF;
-  --md-sys-color-tertiary-container: #D5E3FF;
-  --md-sys-color-on-tertiary-container: #001B3D;
+  --md-sys-color-tertiary-container: color-mix(in srgb, var(--md-sys-color-tertiary) 12%, white);
+  --md-sys-color-on-tertiary-container: #361B39;
   --md-sys-color-error: #BA1A1A;
   --md-sys-color-on-error: #FFFFFF;
   --md-sys-color-error-container: #FFDAD6;
   --md-sys-color-on-error-container: #410002;
-  --md-sys-color-background: #F8F9FF;
+  --md-sys-color-background: #F3F4F6;
   --md-sys-color-on-background: #191B20;
-  --md-sys-color-surface: #F8F9FF;
+  --md-sys-color-surface: #F8F8FA;
   --md-sys-color-on-surface: #191B20;
-  --md-sys-color-surface-variant: #E1E2EC;
-  --md-sys-color-on-surface-variant: #444650;
-  --md-sys-color-outline: #747782;
-  --md-sys-color-outline-variant: #C4C6D0;
+  --md-sys-color-surface-variant: color-mix(in srgb, var(--orbi-brand) 6%, #E1E2EC);
+  --md-sys-color-on-surface-variant: #51434B;
+  --md-sys-color-outline: #80717A;
+  --md-sys-color-outline-variant: color-mix(in srgb, var(--orbi-brand) 8%, #C4C6D0);
   --md-sys-color-shadow: #000000;
   --md-sys-color-scrim: #000000;
   --md-sys-color-inverse-surface: #2E3036;
   --md-sys-color-inverse-on-surface: #F0F0F7;
-  --md-sys-color-inverse-primary: #ADC6FF;
+  --md-sys-color-inverse-primary: #FFB7D6;
 
   --md-sys-color-surface-container-lowest: #FFFFFF;
-  --md-sys-color-surface-container-low: #F2F3FA;
-  --md-sys-color-surface-container: #ECEEF5;
-  --md-sys-color-surface-container-high: #E6E8EF;
-  --md-sys-color-surface-container-highest: #E0E2E9;
+  --md-sys-color-surface-container-low: #FFFFFF;
+  --md-sys-color-surface-container: #F8F8FA;
+  --md-sys-color-surface-container-high: #F1F2F4;
+  --md-sys-color-surface-container-highest: #E8EAED;
+
+  --orbi-nav-active-container: var(--md-sys-color-primary-container);
+  --orbi-nav-active-icon: var(--md-sys-color-primary);
+  --orbi-nav-active-on-icon: #FFFFFF;
+  --orbi-nav-hover-container: color-mix(in srgb, var(--orbi-brand) 5%, #E8E5E7);
+  --orbi-nav-icon-blue-container: var(--orbi-brand-container);
+  --orbi-nav-icon-blue: var(--orbi-brand-dark);
+  --orbi-nav-icon-purple-container: color-mix(in srgb, var(--md-sys-color-tertiary) 12%, white);
+  --orbi-nav-icon-purple: var(--md-sys-color-tertiary);
+  --orbi-nav-icon-green-container: color-mix(in srgb, var(--orbi-brand) 9%, #E8F2EB);
+  --orbi-nav-icon-green: color-mix(in srgb, var(--orbi-brand) 76%, #351D2A);
+  --orbi-nav-icon-sky-container: color-mix(in srgb, var(--orbi-brand) 9%, #E8F0F3);
+  --orbi-nav-icon-sky: color-mix(in srgb, var(--orbi-brand) 74%, #293642);
+  --orbi-nav-icon-orange-container: color-mix(in srgb, var(--orbi-brand) 12%, #F7ECEA);
+  --orbi-nav-icon-orange: color-mix(in srgb, var(--orbi-brand) 73%, #49312E);
+  --orbi-nav-icon-pink-container: var(--orbi-brand-container-strong);
+  --orbi-nav-icon-pink: var(--orbi-brand-dark);
+
+  --orbi-chart-tone-1: var(--md-sys-color-primary);
+  --orbi-chart-tone-2: var(--md-sys-color-secondary);
+  --orbi-chart-tone-3: var(--md-sys-color-tertiary);
+  --orbi-chart-tone-4: color-mix(in srgb, var(--md-sys-color-primary) 72%, white);
+  --orbi-chart-tone-5: color-mix(in srgb, var(--md-sys-color-primary) 48%, white);
+  --orbi-chart-tone-6: color-mix(in srgb, var(--md-sys-color-primary) 28%, white);
+  --orbi-chart-tone-7: color-mix(in srgb, var(--md-sys-color-secondary) 70%, white);
+  --orbi-chart-tone-8: color-mix(in srgb, var(--md-sys-color-tertiary) 70%, white);
+  --orbi-chart-tone-9: color-mix(in srgb, var(--md-sys-color-primary) 78%, #3B1C32);
+  --orbi-chart-tone-10: color-mix(in srgb, var(--md-sys-color-secondary) 75%, #24151F);
+  --orbi-chart-tone-11: color-mix(in srgb, var(--md-sys-color-tertiary) 74%, #201524);
+  --orbi-chart-tone-12: color-mix(in srgb, var(--md-sys-color-primary) 56%, #6D3755);
 
   --md-sys-elevation-level0: 0px 0px 0px 0px rgba(0,0,0,0);
   --md-sys-elevation-level1: 0px 1px 3px 1px rgba(0,0,0,0.15), 0px 1px 2px 0px rgba(0,0,0,0.30);
@@ -50,8 +87,8 @@
   --md-sys-shape-corner-extra-large: 28px;
   --md-sys-shape-corner-full: 9999px;
 
-  --md-ref-typeface-plain: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --md-ref-typeface-brand: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --md-ref-typeface-plain: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --md-ref-typeface-brand: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --md-sys-typescale-display-large-size: 57px;
   --md-sys-typescale-display-large-weight: 400;

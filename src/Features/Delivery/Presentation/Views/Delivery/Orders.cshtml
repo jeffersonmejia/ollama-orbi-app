@@ -17,9 +17,17 @@
 }
 
 <div class="m3-page orbi-orders-page">
-    <header class="orbi-orders-header">
-        <div><h1 class="m3-page-title">@ViewData["Title"]</h1><p>@(isDeliveryPerson ? "Pedidos asignados para entregar." : "Consulta el detalle y estado de tus compras.")</p></div>
-    </header>
+    @if (User.IsInRole("Usuario"))
+    {
+        <partial name="_PurchasesNav" />
+    }
+
+    @if (isDeliveryPerson)
+    {
+        <header class="orbi-orders-header">
+            <div><h1 class="m3-page-title">@ViewData["Title"]</h1><p>Pedidos asignados para entregar.</p></div>
+        </header>
+    }
 
     <form asp-action="@(isDeliveryPerson ? "Deliveries" : "MyOrders")" method="get" class="orbi-order-search">
         <span class="material-symbols-outlined">search</span>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" rx="28" fill="#FFF4E7"/><ellipse cx="240" cy="264" rx="76" ry="13" fill="#F2E0C8"/>
+  <path d="M222 89h36v22l18 18v112q0 9-9 9h-54q-9 0-9-9V129l18-18z" fill="#fff" stroke="#ECDCC7" stroke-width="4"/><path d="M218 88h44v14h-44z" fill="#D87D32"/><path d="M204 160h72v57h-72z" fill="#F5AA53"/><path d="M220 176h40" stroke="#FFF8EB" stroke-width="6" stroke-linecap="round"/><circle cx="240" cy="198" r="9" fill="#F4D46A"/>
+  <text x="240" y="237" text-anchor="middle" fill="#95652F" font-family="Arial,sans-serif" font-size="12" font-weight="700">Zinc · Fresa</text>
+</svg>

@@ -1,0 +1,43 @@
+@using OrbiApp.Models.Delivery
+@model DeliveryCatalogViewModel
+
+<p class="m3-pagination-meta orbi-store-result-count">@Model.Products.TotalCount.ToString("N0") resultados</p>
+
+@if (!Model.Products.Any())
+{
+    <div class="m3-card orbi-category-empty">No hay productos que coincidan con los filtros.</div>
+}
+<div class="orbi-product-grid">
+    @foreach (var product in Model.Products)
+    {
+        <article class="m3-card orbi-product-card">
+            <div class="orbi-product-image">
+                <img src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? Url.Content("~/assets/products/producto-default.svg") : product.ImageUrl)" data-fallback-image="@Url.Content("~/assets/products/producto-default.svg")" alt="@product.Name" loading="lazy" />
+            </div>
+            <div class="orbi-product-details">
+                <div class="orbi-product-meta">
+                    <span class="orbi-product-store"><span class="material-symbols-outlined" aria-hidden="true">storefront</span><span>@product.Store.Name</span></span>
+                    <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
+                </div>
+                <h2>@product.Name</h2>
+                <p class="orbi-store-location"><span class="material-symbols-outlined" aria-hidden="true">location_on</span>@product.Store.Address</p>
+                <div class="orbi-product-stock-row">
+                    <p class="orbi-product-stock"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span><span>Stock: <strong>@product.Stock</strong> und.</span></p>
+                    @if (User.IsInRole("Usuario"))
+                    {
+                        var cartQuantity = Model.CartQuantities.GetValueOrDefault(product.DeliveryProductId);
+                        <form asp-action="ChangeCatalogCartQuantity" method="post" class="orbi-product-quantity-form" data-cart-quantity-form data-stock="@product.Stock">
+                            <input type="hidden" name="productId" value="@product.DeliveryProductId" />
+                            <input type="hidden" name="returnUrl" value="@(Context.Request.Path.Value + Context.Request.QueryString.Value)" />
+                            <button type="submit" name="delta" value="-1" class="orbi-quantity-button" aria-label="Quitar una unidad de @product.Name" disabled="@(cartQuantity == 0)"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
+                            <output class="orbi-product-cart-quantity" aria-label="Cantidad en el carrito" aria-live="polite">@cartQuantity</output>
+                            <button type="submit" name="delta" value="1" class="orbi-quantity-button" aria-label="Agregar una unidad de @product.Name" disabled="@(product.Stock <= cartQuantity)"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </article>
+    }
+</div>
+@{ ViewData["HidePaginationMeta"] = true; }
+<partial name="_Pagination" />

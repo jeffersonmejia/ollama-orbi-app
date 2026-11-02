@@ -39,7 +39,7 @@ public class PaymentController : Controller
             return RedirectToAction("Cart", "Tienda");
         }
 
-        string reference = $"Pedido Orbi #{order.PurchaseOrderId}";
+        string reference = $"Pedido Dash #{order.PurchaseOrderId}";
 
         var returnUrl = $"{Request.Scheme}://{Request.Host}/Payment/Success";
         var cancelUrl = $"{Request.Scheme}://{Request.Host}/Payment/Cancel";

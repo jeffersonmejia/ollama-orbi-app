@@ -1,11 +1,11 @@
 :root {
-  --glass-green: #1769c2;
-  --glass-green-bright: #4d91e8;
-  --glass-green-dark: #124a8a;
-  --color-text: #1d2738;
-  --color-text-muted: #68778e;
-  --color-muted: #8899aa;
-  --color-page: #e8effa;
+  --glass-green: var(--md-sys-color-primary, #d2006e);
+  --glass-green-bright: color-mix(in srgb, var(--md-sys-color-primary, #d2006e) 72%, white);
+  --glass-green-dark: color-mix(in srgb, var(--md-sys-color-primary, #d2006e) 72%, #260014);
+  --color-text: var(--md-sys-color-on-surface, #191b20);
+  --color-text-muted: var(--md-sys-color-on-surface-variant, #51434b);
+  --color-muted: color-mix(in srgb, var(--md-sys-color-on-surface-variant, #51434b) 72%, transparent);
+  --color-page: var(--md-sys-color-background, #fffbfd);
   --color-white: #ffffff;
   --color-danger: #dc2626;
   --color-danger-dark: #b91c1c;
@@ -13,7 +13,7 @@
   --color-danger-border: rgba(220, 38, 38, 0.22);
   --color-table-odd: rgba(255, 255, 255, 0.18);
   --color-table-even: rgba(255, 255, 255, 0.32);
-  --color-table-hover: rgba(23, 105, 194, 0.10);
+  --color-table-hover: color-mix(in srgb, var(--md-sys-color-primary, #d2006e) 10%, transparent);
   --color-overlay-light: rgba(255, 255, 255, 0.45);
   --color-overlay-input: rgba(15, 23, 42, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.28);
@@ -25,7 +25,7 @@
     145deg,
     rgba(255, 255, 255, 0.52) 0%,
     rgba(255, 255, 255, 0.14) 38%,
-    rgba(23, 105, 194, 0.08) 100%
+    color-mix(in srgb, var(--md-sys-color-primary, #d2006e) 8%, transparent) 100%
   );
   --color-border: rgba(255, 255, 255, 0.64);
   --glass-blur: blur(34px) saturate(210%) contrast(1.06);
@@ -39,8 +39,7 @@
   --radius-lg: 1.4rem;
   --radius-xl: 1.6rem;
   --radius-full: 999px;
-  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, sans-serif;
+  --font-family: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
   --transition-fast: 0.18s;
   --transition-normal: 0.25s;
 }

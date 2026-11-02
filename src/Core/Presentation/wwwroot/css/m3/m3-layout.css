@@ -224,25 +224,6 @@ a:hover {
   }
 }
 
-/* Posicionamiento desplegable sin recompilar las vistas Razor publicadas. */
-.orbi-home-video-actions {
-  top: auto !important;
-  right: 64px !important;
-  bottom: 16px !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px !important;
-  min-width: 0 !important;
-  transform: none !important;
-}
-
-.orbi-home-video-action,
-.orbi-home-video-action:hover,
-.orbi-home-video-action:focus,
-.orbi-home-video-action:active {
-  text-decoration: none !important;
-}
-
 .orbi-login-actions {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
@@ -262,18 +243,6 @@ a:hover {
 }
 
 @media (max-width: 560px) {
-  .orbi-home-video-actions {
-    right: 56px !important;
-    bottom: 12px !important;
-    gap: 6px !important;
-  }
-
-  .orbi-home-video-action {
-    min-height: 40px !important;
-    padding: 0 12px !important;
-    font-size: 12px !important;
-  }
-
   .orbi-home-video-mute {
     right: 10px !important;
     bottom: 12px !important;
@@ -408,6 +377,16 @@ a:hover {
   margin: 0 auto;
 }
 
+.orbi-register-container {
+  width: min(960px, 100%);
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.orbi-register-card {
+  padding: 2rem;
+}
+
 .m3-footer {
   text-align: center;
   padding: 12px 24px 24px;
@@ -491,6 +470,14 @@ a:hover {
 
   .m3-main {
     padding: 12px;
+  }
+
+  .orbi-register-container {
+    margin-block: 1rem;
+  }
+
+  .orbi-register-card {
+    padding: 1.25rem;
   }
 }
 

@@ -53,7 +53,7 @@ public sealed class BackupService : BackgroundService, IBackupManager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Backup failed");
+                _logger.LogError(ex, "Backup operation failed. FailureType={FailureType}", ex.GetType().Name);
             }
         }
     }
@@ -88,11 +88,11 @@ public sealed class BackupService : BackgroundService, IBackupManager
 
         if (!result.Success)
         {
-            _logger.LogWarning("pg_dump exited {Code}: {Error}", result.ExitCode, result.Error);
+            _logger.LogWarning("Database backup utility failed. ExitCode={ExitCode}", result.ExitCode);
             return;
         }
 
-        _logger.LogInformation("Backup created: {File}", file);
+        _logger.LogInformation("Database backup created.");
         LastBackupUtc = DateTime.UtcNow;
 
         CleanupOldBackups(backupDir);

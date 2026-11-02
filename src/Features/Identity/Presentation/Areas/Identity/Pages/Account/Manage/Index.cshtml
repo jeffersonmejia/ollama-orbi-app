@@ -21,13 +21,13 @@
         </div>
 
         <form method="post" class="orbi-account-rows">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div asp-validation-summary="ModelOnly" class="m3-validation-error" role="alert"></div>
             <div class="orbi-account-row"><label>Nombre de usuario</label><span>@Model.Username</span></div>
             <div class="orbi-account-row"><label>Rol</label><span>@Model.RoleSummary</span></div>
             <div class="m3-text-field">
                 <label asp-for="Input.PhoneNumber" class="m3-text-field-label"></label>
                 <input asp-for="Input.PhoneNumber" class="m3-text-field-input" autocomplete="tel" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <span asp-validation-for="Input.PhoneNumber" class="m3-validation-error"></span>
             </div>
             <button type="submit" class="m3-filled-button">Guardar perfil</button>
         </form>
@@ -44,28 +44,17 @@
                 </form>
             }
             <form method="post" asp-page-handler="ChangeEmail" class="orbi-account-rows">
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div asp-validation-summary="ModelOnly" class="m3-validation-error" role="alert"></div>
                 <div class="m3-text-field">
                     <label asp-for="EmailInput.NewEmail" class="m3-text-field-label">Nuevo correo</label>
                     <input asp-for="EmailInput.NewEmail" class="m3-text-field-input" autocomplete="email" />
-                    <span asp-validation-for="EmailInput.NewEmail" class="text-danger"></span>
+                    <span asp-validation-for="EmailInput.NewEmail" class="m3-validation-error"></span>
                 </div>
                 <button type="submit" class="m3-filled-button">Cambiar correo</button>
             </form>
         </div>
     </section>
 
-    <a asp-page="./Addresses" class="orbi-google-card orbi-account-link-card">
-        <span class="material-symbols-outlined">location_on</span>
-        <div><h2>Direcciones</h2><p>Administra tus lugares de entrega.</p></div>
-        <span class="material-symbols-outlined">chevron_right</span>
-    </a>
-
-    <a asp-page="./PaymentMethods" class="orbi-google-card orbi-account-link-card">
-        <span class="material-symbols-outlined">payment</span>
-        <div><h2>Pagos</h2><p>Consulta los métodos disponibles para tus pedidos.</p></div>
-        <span class="material-symbols-outlined">chevron_right</span>
-    </a>
 </div>
 
 @section Scripts {

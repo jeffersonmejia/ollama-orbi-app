@@ -12,13 +12,33 @@ secrets.txt
 **/bin/
 **/obj/
 **/publish/
-.sonarqube/
+/.sonarqube/**
+!/.sonarqube/docker-compose.yml
+!/.sonarqube/prometheus.yml
+!/.sonarqube/SonarQube.Analysis.xml
+!/.sonarqube/README.md
+!/.sonarqube/.env.example
+!/.sonarqube/telegraf.conf
+!/.sonarqube/grafana/
+/.sonarqube/grafana/**
+!/.sonarqube/grafana/provisioning/
+/.sonarqube/grafana/provisioning/**
+!/.sonarqube/grafana/provisioning/datasources/
+!/.sonarqube/grafana/provisioning/datasources/datasources.yml
+!/.sonarqube/grafana/provisioning/dashboards/
+!/.sonarqube/grafana/provisioning/dashboards/provider.yml
+!/.sonarqube/grafana/dashboards/
+!/.sonarqube/grafana/dashboards/performance.json
+/.sonarqube/.env
+/.sonarqube/secrets/
 
 # Logs
+.logs/
 *.log
 *.err
 *.out
 cookies.txt
+.logs/
 
 
 # Config - sensitive
@@ -54,7 +74,11 @@ admin.md
 # Instrucciones locales de agentes: se mantienen fuera del repositorio.
 /AGENTS.md
 
+# Local observability documentation and non-secret development metrics config
+!/.sonarqube/README.md
+
 # Local database artifacts and backups
 *.dump
 *.tar
 backups/
+/test.md

@@ -8,7 +8,7 @@
     <header class="orbi-operations-header">
         <div>
             <h1>Centro de operaciones</h1>
-            <p>Herramientas disponibles para tu rol en Orbi.</p>
+            <p>Herramientas disponibles para tu rol en Dash.</p>
         </div>
     </header>
     <partial name="_Alerts" />
@@ -39,10 +39,13 @@
                             <span class="material-symbols-outlined">report</span>
                             <h2>Incidencias</h2>
                         </a>
-                        <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
-                            <span class="material-symbols-outlined">history</span>
-                            <h2>Historial de pedidos</h2>
-                        </a>
+                        @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor"))
+                        {
+                            <a class="m3-card orbi-operation-card" asp-action="OrderStatusHistory">
+                                <span class="material-symbols-outlined">history</span>
+                                <h2>Historial de pedidos</h2>
+                            </a>
+                        }
                     </div>
                 </div>
             }

@@ -6,8 +6,11 @@
     var error = TempData["Error"] as string;
 }
 
-<div class="m3-page">
-    <h1 class="m3-page-title"><span class="material-symbols-outlined" style="font-size:32px;vertical-align:middle;margin-right:8px;">shopping_cart</span>Mi Carrito</h1>
+<div class="m3-page orbi-cart-page">
+    @if (User.IsInRole("Usuario"))
+    {
+        <partial name="_PurchasesNav" />
+    }
 
     @if (!string.IsNullOrEmpty(success))
     {
@@ -64,7 +67,7 @@
                                 <form asp-action="RemoveFromCart" method="post" style="display:inline;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="cartItemId" value="@item.DeliveryCartItemId" />
-                                    <button type="submit" class="orbi-icon-button" style="color:var(--md-sys-color-error);" aria-label="Eliminar del carrito"><span class="material-symbols-outlined">delete</span></button>
+                                    <button type="submit" class="orbi-cart-remove-button" aria-label="Eliminar @item.Product?.Name del carrito" title="Eliminar del carrito"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>
                                 </form>
                             </td>
                         </tr>
@@ -97,9 +100,9 @@
         }
     }
 
-    <div style="margin-top:1rem;">
+    <div class="orbi-cart-continue">
         <a class="m3-text-button" asp-action="Index">
-            <span class="material-symbols-outlined" style="font-size:18px;margin-right:4px;">arrow_back</span>
+            <span class="material-symbols-outlined" style="font-size:18px;margin-right:4px;">storefront</span>
             Seguir comprando
         </a>
     </div>

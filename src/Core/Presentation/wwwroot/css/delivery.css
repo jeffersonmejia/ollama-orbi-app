@@ -4,27 +4,52 @@
 .orbi-store-header p { margin:0; color:var(--md-sys-color-on-surface-variant); }
 .orbi-compact-address { display:flex; align-items:center; gap:6px; max-width:760px; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
 .orbi-compact-address strong { color:var(--md-sys-color-primary); }
-.orbi-category-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
-.orbi-category-card { position:relative; min-height:126px; overflow:hidden; padding:0; border:1px solid var(--md-sys-color-outline-variant); border-radius:18px; background:var(--md-sys-color-surface-container); color:white; cursor:pointer; text-align:left; isolation:isolate; }
-.orbi-category-card:hover { color:white; text-decoration:none; }
-.orbi-category-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.12)); }
-.orbi-category-card img { position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; transition:transform .2s ease; }
-.orbi-category-card>span { display:grid; gap:3px; position:absolute; left:16px; bottom:14px; }
-.orbi-category-card strong { font-size:18px; }
-.orbi-category-card small { color:rgba(255,255,255,.86); }
-.orbi-category-card:hover img,.orbi-category-card.active img { transform:scale(1.05); }
-.orbi-category-card.active { border:3px solid var(--md-sys-color-primary); }
-.orbi-product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
-.orbi-product-card { position:relative; overflow:hidden; padding:16px; border:1px solid var(--md-sys-color-outline-variant); }
+.orbi-product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,390px),1fr)); gap:16px; }
+.m3-card.orbi-product-card { display:grid; grid-template-columns:minmax(150px,.78fr) minmax(0,1fr); min-height:244px; overflow:hidden; padding:10px; border:0; border-radius:22px; background:var(--md-sys-color-surface-container-lowest); box-shadow:none; }
+.m3-card.orbi-product-card:hover { border:0; box-shadow:none; }
 .orbi-product-card[hidden] { display:none; }
-.orbi-product-card::before { content:""; position:absolute; inset:0 0 auto; height:4px; background:var(--md-sys-color-primary); }
-.orbi-product-store { display:flex; align-items:center; gap:7px; color:var(--md-sys-color-primary); font-size:13px; font-weight:700; }
-.orbi-product-store .material-symbols-outlined { font-size:19px; }
-.orbi-product-card h2 { margin:10px 0 3px; font-size:18px; }
-.orbi-store-location { min-height:34px; margin:0 0 8px; font-size:13px; color:var(--md-sys-color-on-surface-variant); }
-.orbi-product-price { display:block; font-size:20px; color:var(--md-sys-color-on-surface); }
-.orbi-product-order-form { display:grid; gap:10px; margin-top:12px; }
-.orbi-product-order-form>.m3-filled-button { min-height:42px; }
+.orbi-product-image { display:grid; place-items:center; min-height:222px; overflow:hidden; border-radius:16px; background:var(--md-sys-color-surface-container-lowest); }
+.orbi-product-image img { display:block; width:100%; height:100%; object-fit:contain; }
+.orbi-product-details { display:flex; min-width:0; flex-direction:column; justify-content:center; gap:8px; padding:8px 12px 8px 16px; }
+.orbi-product-meta { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:8px; }
+.orbi-product-store { display:flex; min-width:0; flex:1 1 auto; align-items:flex-start; gap:5px; color:var(--md-sys-color-on-surface-variant); font-size:12px; font-weight:600; line-height:1.35; }
+.orbi-product-store .material-symbols-outlined { flex:none; color:var(--md-sys-color-primary); font-size:17px; }
+.orbi-product-store>span:last-child { min-width:0; overflow-wrap:anywhere; }
+.orbi-product-price { flex:none; color:var(--md-sys-color-primary); font-size:17px; font-weight:700; }
+.orbi-product-card h2 { display:-webkit-box; overflow:hidden; margin:0; color:var(--md-sys-color-on-surface); font-size:16px; font-weight:700; line-height:1.3; text-overflow:ellipsis; text-transform:uppercase; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.orbi-store-location,.orbi-product-region { display:flex; overflow:hidden; align-items:center; gap:4px; margin:0; color:var(--md-sys-color-on-surface-variant); font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.orbi-store-location .material-symbols-outlined { flex:none; font-size:15px; }
+.orbi-product-region .material-symbols-outlined { flex:none; font-size:16px; }
+.orbi-product-region>span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.orbi-product-stock-row { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:8px; }
+.orbi-product-stock { display:flex; min-width:0; align-items:center; gap:5px; margin:0; color:var(--md-sys-color-on-surface-variant); font-size:12px; white-space:nowrap; }
+.orbi-product-stock .material-symbols-outlined { color:var(--md-sys-color-outline); font-size:16px; }
+.orbi-product-stock strong { color:var(--md-sys-color-on-surface); }
+.orbi-product-quantity-form { display:flex; flex:none; align-items:center; gap:5px; margin:0; }
+.orbi-product-quantity-form .orbi-quantity-button { display:grid; width:28px; height:28px; place-items:center; padding:0; border:1px solid var(--md-sys-color-outline-variant); border-radius:50%; background:var(--md-sys-color-surface-container-lowest); color:var(--md-sys-color-on-surface-variant); cursor:pointer; }
+.orbi-product-quantity-form .orbi-quantity-button:hover:not(:disabled) { border-color:var(--md-sys-color-primary); background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); }
+.orbi-product-quantity-form .orbi-quantity-button:focus-visible { outline:2px solid var(--md-sys-color-primary); outline-offset:2px; }
+.orbi-product-quantity-form .orbi-quantity-button:disabled { cursor:default; opacity:.45; }
+.orbi-product-cart-quantity { display:grid; width:28px; height:28px; place-items:center; border:1px solid var(--md-sys-color-outline-variant); border-radius:50%; color:var(--md-sys-color-on-surface); font-size:12px; font-variant-numeric:tabular-nums; }
+.orbi-store-loading-skeleton { display:grid; gap:18px; padding:8px 0; }
+.orbi-store-skeleton-filters { display:grid; grid-template-columns:minmax(220px,1fr) 118px 118px 140px 90px; gap:8px; }
+.orbi-store-skeleton-filters .m3-skeleton { min-height:48px; border-radius:24px; }
+.orbi-store-skeleton-filters .m3-skeleton:not(:first-child) { border-radius:12px; }
+.orbi-store-skeleton-categories,.orbi-store-skeleton-products { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.orbi-store-skeleton-categories .m3-skeleton { height:126px; border-radius:18px; }
+.orbi-store-skeleton-products .m3-skeleton { min-height:260px; border-radius:28px; }
+.orbi-store-loading-skeleton .m3-skeleton { display:block; }
+.orbi-product-order-form { margin-top:2px; }
+.orbi-product-purchase-row { display:flex; align-items:center; gap:10px; }
+.orbi-quantity-control.orbi-product-quantity { grid-template-columns:24px 36px 24px; flex:0 0 84px; height:40px; overflow:visible; border:0; border-radius:0; background:transparent; }
+.orbi-quantity-control.orbi-product-quantity input { width:36px; height:36px; border:1px solid var(--md-sys-color-outline-variant); border-radius:50%; background:var(--md-sys-color-surface-container-lowest); font-size:13px; }
+.orbi-quantity-control.orbi-product-quantity input:focus-visible { outline:2px solid var(--md-sys-color-primary); outline-offset:2px; }
+.orbi-product-quantity .orbi-quantity-button { width:22px; height:22px; border:1px solid var(--md-sys-color-outline-variant); border-radius:50%; background:var(--md-sys-color-surface-container-lowest); color:var(--md-sys-color-on-surface-variant); }
+.orbi-product-quantity [data-quantity-action="increase"] { border-color:var(--md-sys-color-outline); background:var(--md-sys-color-outline); color:var(--md-sys-color-surface-container-lowest); }
+.orbi-product-quantity .orbi-quantity-button:hover { background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); }
+.orbi-product-quantity .orbi-quantity-button .material-symbols-outlined { font-size:16px; }
+.orbi-product-add { display:inline-flex; min-height:36px; align-items:center; justify-content:center; gap:5px; padding:0 12px; border-radius:18px; font-size:12px; }
+.orbi-product-add .material-symbols-outlined { font-size:17px; }
 .orbi-quantity-field { display:grid; gap:5px; }
 .orbi-quantity-field>span { font-size:12px; color:var(--md-sys-color-on-surface-variant); }
 .orbi-quantity-control { display:grid; grid-template-columns:38px 1fr 38px; height:40px; overflow:hidden; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container-highest); }
@@ -34,18 +59,70 @@
 .orbi-quantity-button:hover { background:var(--md-sys-color-primary-container); }
 .orbi-quantity-button .material-symbols-outlined { font-size:20px; }
 .orbi-category-empty { margin-top:16px; padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant); }
-.orbi-store-filters { display:grid; grid-template-columns:minmax(220px,1fr) 118px 118px auto auto; align-items:center; gap:8px; margin-bottom:14px; }
-.orbi-store-search,.orbi-order-search { display:flex; align-items:center; gap:8px; min-height:48px; padding:0 14px; border:1px solid var(--md-sys-color-outline-variant); border-radius:24px; background:var(--md-sys-color-surface-container-low); }
+.orbi-address-prompt { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; padding:14px 20px; color:var(--md-sys-color-on-primary-container); text-decoration:none; transition:background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard); }
+.orbi-address-prompt:hover { color:var(--md-sys-color-on-primary-container); background:color-mix(in srgb,var(--md-sys-color-primary-container) 88%,var(--md-sys-color-primary)); text-decoration:none; }
+.orbi-address-prompt:focus-visible { outline:3px solid var(--md-sys-color-primary); outline-offset:3px; }
+.orbi-address-prompt>.material-symbols-outlined { flex:none; font-size:22px; }
+.orbi-address-required-dialog { width:min(600px,calc(100vw - 32px)); max-width:600px; max-height:calc(100dvh - 32px); overflow-y:auto; box-sizing:border-box; padding:28px; border:1px solid var(--md-sys-color-outline-variant); border-radius:28px; background:var(--md-sys-color-surface-container-lowest); color:var(--md-sys-color-on-surface); box-shadow:none; }
+.orbi-address-required-dialog::backdrop { background:rgba(20,24,32,.36); backdrop-filter:blur(2px); }
+.orbi-address-required-heading { display:flex; align-items:center; gap:14px; }
+.orbi-address-required-heading>.material-symbols-outlined { display:grid; width:44px; height:44px; flex:none; place-items:center; border-radius:50%; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:23px; }
+.orbi-address-required-heading h2 { margin:0; font-size:22px; font-weight:600; line-height:1.25; }
+.orbi-address-required-dialog>p { margin:12px 0 22px; color:var(--md-sys-color-on-surface-variant); line-height:1.55; }
+.orbi-address-required-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.orbi-address-required-form .m3-text-field { min-width:0; }
+.orbi-address-required-form .m3-text-field-input { width:100%; box-sizing:border-box; background:var(--md-sys-color-surface-container-lowest,#fff); }
+.orbi-address-required-form .m3-text-field-input:focus,
+.orbi-address-required-form .m3-text-field-input:focus-visible { border:2px solid var(--md-sys-color-primary); box-shadow:none; outline:none; }
+.orbi-address-required-form [data-address-form-errors] { grid-column:1/-1; color:var(--md-sys-color-error); }
+.orbi-address-required-form [data-address-form-errors]:empty { display:none; }
+.orbi-address-required-form [data-address-error-for] { color:var(--md-sys-color-error); }
+.orbi-address-required-form [aria-invalid="true"] { border-color:var(--md-sys-color-error)!important; }
+.orbi-address-required-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; grid-column:1/-1; padding-top:6px; }
+.orbi-address-required-actions .m3-filled-button { display:inline-flex; min-height:44px; align-items:center; justify-content:center; padding:0 18px; border-radius:999px; text-decoration:none; }
+.orbi-address-cancel { min-height:44px; padding:0 16px; border:0; border-radius:999px; background:transparent; color:var(--md-sys-color-on-surface-variant); font:inherit; cursor:pointer; }
+.orbi-address-cancel:hover { color:var(--md-sys-color-on-surface); }
+.orbi-address-cancel:focus-visible { outline:2px solid var(--md-sys-color-primary); outline-offset:3px; }
+.orbi-address-required-dialog :focus-visible:not(.m3-text-field-input) { outline:2px solid var(--md-sys-color-primary); outline-offset:3px; }
+@media(max-width:600px){.orbi-address-required-dialog{padding:22px 18px}.orbi-address-required-form{grid-template-columns:1fr}.orbi-address-required-form [data-address-form-errors],.orbi-address-required-actions{grid-column:auto}}
+.orbi-store-filters { display:grid; grid-template-columns:minmax(220px,1fr) minmax(150px,180px) 118px 118px auto; align-items:center; gap:8px; margin-bottom:14px; font-size:var(--md-sys-typescale-body-large-size,16px); }
+.orbi-store-filters-user { grid-template-columns:minmax(220px,1.35fr) minmax(180px,1fr) minmax(150px,180px) 118px 118px auto; }
+.orbi-store-search { display:flex; height:56px; min-height:56px; box-sizing:border-box; align-items:center; gap:8px; padding:0 14px; border:0; border-radius:var(--md-sys-shape-corner-large,16px); background:var(--md-sys-color-surface-container-lowest,#fff); transition:outline-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard); }
+.orbi-location-filter { display:flex; min-width:0; height:56px; min-height:56px; box-sizing:border-box; align-items:center; border:0; border-radius:var(--md-sys-shape-corner-large,16px); background:var(--md-sys-color-surface-container-lowest,#fff); }
+.orbi-store-search>.material-symbols-outlined,.orbi-category-trigger>.material-symbols-outlined,.orbi-price-filter>.material-symbols-outlined,.orbi-price-filter .material-symbols-outlined { color:var(--md-sys-color-on-surface-variant); opacity:1; }
+.orbi-store-search:focus-within,.orbi-location-filter:focus-within,.orbi-category-filter:focus-within,.orbi-price-filter:focus-within { border:0; outline:2px solid var(--md-sys-color-primary); outline-offset:2px; box-shadow:none; }
+.orbi-store-search input,.orbi-category-filter select { flex:1 1 auto; width:0; min-width:0; outline:0; box-shadow:none; }
+.orbi-price-filter input { flex:1 1 auto; width:0; min-width:0; outline:0; box-shadow:none; }
+.orbi-store-search input:focus,.orbi-store-search input:focus-visible,.orbi-category-filter select:focus,.orbi-category-filter select:focus-visible,.orbi-price-filter input:focus,.orbi-price-filter input:focus-visible { border:0!important; outline:none!important; box-shadow:none!important; }
+.orbi-order-search { display:flex; align-items:center; gap:8px; min-height:48px; padding:0 14px; border:1px solid var(--md-sys-color-outline-variant); border-radius:24px; background:var(--md-sys-color-surface-container-low); }
 .orbi-store-search input,.orbi-order-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; }
-.orbi-inline-location { display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--md-sys-color-on-surface-variant); white-space:nowrap; flex-shrink:0; }
-.orbi-inline-location .material-symbols-outlined { font-size:16px; color:var(--md-sys-color-primary); }
-.orbi-inline-edit { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; color:var(--md-sys-color-on-surface-variant); text-decoration:none; transition:background .15s; }
-.orbi-inline-edit:hover { background:var(--md-sys-color-surface-container-highest); }
-.orbi-inline-edit .material-symbols-outlined { font-size:15px; }
-.orbi-price-filter { display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:3px; min-height:38px; padding:0 8px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; background:var(--md-sys-color-surface-container-low); color:var(--md-sys-color-on-surface-variant); font-size:11px; }
-.orbi-price-filter .material-symbols-outlined { color:var(--md-sys-color-primary); font-size:17px; }
-.orbi-price-filter input { width:100%; min-width:0; padding:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; font-size:13px; }
-@media(max-width:700px){.orbi-category-grid{grid-template-columns:1fr}.orbi-category-card{min-height:100px}}
+.orbi-category-filter { position:relative; height:56px; min-width:0; min-height:56px; box-sizing:border-box; border:0; border-radius:var(--md-sys-shape-corner-large,16px); background:var(--md-sys-color-surface-container-lowest,#fff); color:var(--md-sys-color-on-surface-variant); transition:outline-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard); }
+.orbi-category-filter:focus-within { border:0; outline:2px solid var(--md-sys-color-primary); outline-offset:2px; box-shadow:none; }
+.orbi-category-trigger { display:flex; width:100%; height:100%; min-width:0; align-items:center; gap:8px; padding:0 12px; border:0; border-radius:inherit; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; text-align:left; cursor:pointer; }
+.orbi-category-trigger>.material-symbols-outlined { flex:none; font-size:19px; }
+.orbi-category-value { flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.orbi-category-filter .orbi-category-chevron { color:var(--md-sys-color-on-surface-variant); font-size:20px; pointer-events:none; }
+.orbi-category-menu { position:absolute; z-index:20; top:calc(100% + 6px); left:0; display:grid; width:100%; box-sizing:border-box; gap:2px; padding:6px; border:1px solid var(--md-sys-color-outline-variant); border-radius:16px; background:var(--md-sys-color-surface-container-lowest,#fff); }
+.orbi-category-menu[hidden] { display:none; }
+.orbi-category-menu [role="option"] { display:flex; min-height:44px; align-items:center; padding:0 12px; border:0; border-radius:10px; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; text-align:left; cursor:pointer; }
+.orbi-category-menu [role="option"]:hover,.orbi-category-menu [role="option"]:focus-visible { outline:none; background:var(--md-sys-color-surface-container); }
+.orbi-category-menu [role="option"][aria-selected="true"] { background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); }
+.orbi-inline-location { display:flex; width:100%; min-width:0; max-width:none; min-height:100%; flex:1 1 auto; align-items:center; gap:7px; overflow:hidden; padding:0 14px; border:0; border-radius:inherit; background:transparent; color:var(--md-sys-color-on-surface-variant); font:inherit; text-align:left; white-space:nowrap; cursor:pointer; }
+.orbi-inline-location>.material-symbols-outlined { flex:none; font-size:18px; color:var(--md-sys-color-on-surface-variant); }
+.orbi-inline-location-text { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.orbi-inline-edit { display:inline-flex; flex:none; align-items:center; justify-content:center; font-size:17px!important; color:var(--md-sys-color-on-surface-variant)!important; }
+.orbi-inline-location:hover .orbi-inline-edit,.orbi-inline-location:focus-visible .orbi-inline-edit { color:var(--md-sys-color-primary)!important; }
+.orbi-inline-location:focus-visible { outline:none; }
+.orbi-address-select-wrap { position:relative; display:flex; align-items:center; }
+.orbi-address-select-wrap>.m3-icon { position:absolute; z-index:1; left:12px; color:var(--md-sys-color-on-surface-variant); pointer-events:none; }
+.orbi-address-select-wrap>.m3-text-field-input { width:100%; padding-left:40px; }
+.orbi-price-filter { display:flex; height:56px; min-width:0; min-height:56px; box-sizing:border-box; align-items:center; gap:4px; padding:0 10px; border:0; border-radius:var(--md-sys-shape-corner-large,16px); background:var(--md-sys-color-surface-container-lowest,#fff); color:var(--md-sys-color-on-surface-variant); font-size:var(--md-sys-typescale-body-large-size,16px); transition:outline-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard); }
+.orbi-price-filter .material-symbols-outlined { color:var(--md-sys-color-on-surface-variant); font-size:17px; opacity:1; }
+.orbi-price-filter input { padding:0; border:0; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; appearance:textfield; -moz-appearance:textfield; }
+.orbi-price-filter input::-webkit-inner-spin-button,.orbi-price-filter input::-webkit-outer-spin-button { margin:0; -webkit-appearance:none; }
+.orbi-store-filters>.m3-text-button { min-height:56px; font-size:var(--md-sys-typescale-body-large-size,16px); }
+@media(max-width:700px){.orbi-store-skeleton-categories{grid-template-columns:1fr}.orbi-store-skeleton-categories .m3-skeleton{height:100px}}
+@media(max-width:560px){.m3-card.orbi-product-card{grid-template-columns:112px minmax(0,1fr); min-height:196px; padding:8px}.orbi-product-image{min-height:180px}.orbi-product-details{gap:6px; padding:6px 6px 6px 10px}.orbi-product-meta{align-items:flex-start; flex-direction:column; gap:2px}.orbi-product-price{font-size:16px}.orbi-product-stock-row{flex-wrap:wrap;row-gap:4px}.orbi-product-stock{font-size:11px}.orbi-product-quantity-form{margin-left:20px}.orbi-product-quantity-form .orbi-quantity-button,.orbi-product-cart-quantity{width:26px;height:26px}}
 
 .orbi-orders-page { max-width:1180px; margin:0 auto; }
 .orbi-orders-header { margin-bottom:16px; }
@@ -63,7 +140,7 @@
 .orbi-status-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
 .orbi-order-status.is-pending { color:#7a5700; background:#fff0c2; }
 .orbi-order-status.is-preparing { color:#744700; background:#ffe2b8; }
-.orbi-order-status.is-transit { color:#075c9b; background:#d9edff; }
+.orbi-order-status.is-transit { color:var(--md-sys-color-on-primary-container); background:var(--md-sys-color-primary-container); }
 .orbi-order-status.is-delivered { color:#146c2e; background:#d8f5df; }
 .orbi-order-status.is-cancelled { color:var(--md-sys-color-error); background:var(--md-sys-color-error-container); }
 .orbi-delivery-actions { display:flex; gap:2px; }
@@ -91,6 +168,112 @@
 .orbi-switch input:checked+span { border-color:var(--md-sys-color-primary); background:var(--md-sys-color-primary); }
 .orbi-switch input:checked+span::after { left:24px; background:var(--md-sys-color-on-primary); }
 .orbi-switch input:focus-visible+span { outline:3px solid var(--md-sys-color-primary-container); outline-offset:2px; }
-@media(max-width:900px){.orbi-store-filters{grid-template-columns:1fr 1fr}.orbi-store-search{grid-column:1/-1}.orbi-store-filters>.m3-filled-button{grid-column:1/2}}
+@media(max-width:900px){.orbi-store-filters,.orbi-store-filters-user{grid-template-columns:repeat(2,minmax(0,1fr))}.orbi-store-search,.orbi-location-filter,.orbi-category-filter{grid-column:1/-1}}
 @media(max-width:760px){.orbi-admin-account-section{grid-template-columns:1fr;gap:18px}.orbi-admin-section-form{padding:18px 0 0;border-left:0;border-top:1px solid var(--md-sys-color-outline-variant)}}
-@media(max-width:560px){.orbi-store-filters{grid-template-columns:1fr}.orbi-store-search,.orbi-store-filters>.m3-filled-button{grid-column:auto}.orbi-order-search{border-radius:16px;flex-wrap:wrap;padding:10px}.orbi-order-search input{flex-basis:calc(100% - 34px)}}
+@media(max-width:560px){.orbi-store-filters,.orbi-store-filters-user{grid-template-columns:1fr 1fr}.orbi-store-search,.orbi-location-filter,.orbi-category-filter{grid-column:1/-1}.orbi-order-search{border-radius:16px;flex-wrap:wrap;padding:10px}.orbi-order-search input{flex-basis:calc(100% - 34px)}}
+@media(max-width:900px){.orbi-store-skeleton-filters{grid-template-columns:1fr 1fr}.orbi-store-skeleton-filters .m3-skeleton:first-child{grid-column:1/-1}.orbi-store-skeleton-products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.orbi-store-skeleton-filters,.orbi-store-skeleton-products{grid-template-columns:1fr}.orbi-store-skeleton-filters .m3-skeleton:first-child{grid-column:auto}.orbi-store-skeleton-products .m3-skeleton{min-height:210px}}
+.orbi-purchases-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: min(100%, 640px);
+  margin: 0 auto 24px;
+  padding: 5px;
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.orbi-purchases-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 14px;
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-large-size, 14px);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.orbi-purchases-nav-link > .material-symbols-outlined {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.orbi-purchases-nav-link:hover,
+.orbi-purchases-nav-link:focus-visible {
+  color: var(--md-sys-color-on-surface);
+  background: var(--orbi-nav-hover-container);
+  text-decoration: none;
+}
+
+.orbi-purchases-nav-link.active,
+.orbi-purchases-nav-link.active:hover,
+.orbi-purchases-nav-link.active:focus-visible {
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.orbi-purchases-nav-link:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.orbi-cart-continue {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.orbi-cart-page .m3-card,
+.orbi-cart-page .m3-card:hover {
+  box-shadow: none;
+  transition: none;
+}
+
+.orbi-cart-remove-button {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--md-sys-color-error);
+  cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.orbi-cart-remove-button:hover {
+  background: var(--md-sys-color-error-container);
+}
+
+.orbi-cart-remove-button:focus-visible {
+  outline: 2px solid var(--md-sys-color-error);
+  outline-offset: 2px;
+}
+
+.orbi-cart-remove-button .material-symbols-outlined {
+  font-size: 21px;
+  line-height: 1;
+}
+
+@media (max-width: 520px) {
+  .orbi-purchases-nav { gap: 2px; }
+  .orbi-purchases-nav-link {
+    flex-direction: column;
+    gap: 3px;
+    min-height: 56px;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}

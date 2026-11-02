@@ -44,6 +44,10 @@
                     <label class="m3-text-field-label">Stock</label>
                     <input name="stock" type="number" min="0" max="999" class="m3-text-field-input" required placeholder="0" />
                 </div>
+                <div class="m3-text-field">
+                    <label class="m3-text-field-label" for="newProductImageUrl">URL de imagen (HTTPS)</label>
+                    <input id="newProductImageUrl" name="imageUrl" type="url" maxlength="500" class="m3-text-field-input" placeholder="https://..." />
+                </div>
             </div>
             <div id="ai-suggestion-box" style="display:none;margin-top:12px;padding:12px;border-radius:12px;background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -147,6 +151,7 @@
                                 <div class="m3-text-field"><label class="m3-text-field-label">Precio ($)</label><input name="price" type="number" step="0.01" min="0" value="@product.Price" class="m3-text-field-input" required /></div>
                                 <div class="m3-text-field"><label class="m3-text-field-label">Costo ($)</label><input name="unitCost" type="number" step="0.01" min="0" value="@product.UnitCost" class="m3-text-field-input" required /></div>
                                 <div class="m3-text-field"><label class="m3-text-field-label">Stock</label><input name="stock" type="number" min="0" max="999" value="@product.Stock" class="m3-text-field-input" required /></div>
+                                <div class="m3-text-field"><label class="m3-text-field-label" for="image-url-@product.DeliveryProductId">URL de imagen (HTTPS)</label><input id="image-url-@product.DeliveryProductId" name="imageUrl" type="url" maxlength="500" value="@product.ImageUrl" class="m3-text-field-input" placeholder="https://..." /></div>
                             </div>
                             <div class="orbi-form-actions" style="margin-top:8px;">
                                 <button type="button" class="m3-text-button" onclick="toggleEdit(@product.DeliveryProductId)">Cancelar</button>

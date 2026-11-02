@@ -7,32 +7,63 @@
         404 => "No encontramos esta página",
         408 or 504 => "La solicitud tardó demasiado",
         429 => "Demasiadas solicitudes",
+        503 => "Servicio temporalmente no disponible",
         >= 500 => "Ocurrió un error interno",
         _ => "No se pudo completar la solicitud"
     };
     var message = Model switch
     {
-        401 => "Ingresa a tu cuenta de Orbi para acceder a esta sección.",
+        401 => "Ingresa a tu cuenta de Dash para acceder a esta sección.",
         403 => "Tu cuenta no tiene permisos para acceder a este recurso.",
         404 => "La dirección puede haber cambiado o ya no estar disponible.",
         408 or 504 => "Intenta de nuevo. Si el problema continúa, vuelve más tarde.",
-        >= 500 => "Intenta de nuevo más tarde. No se muestran detalles internos por seguridad.",
+        503 => "Estamos teniendo dificultades para atenderte. Inténtalo de nuevo en unos minutos.",
+        >= 500 => "No pudimos completar tu solicitud. Inténtalo de nuevo más tarde.",
         _ => "Revisa la solicitud e inténtalo otra vez."
     };
-    ViewData["Title"] = $"{Model} - Orbi";
+    ViewData["Title"] = heading;
+    Layout = "/Views/Shared/_Layout.cshtml";
 }
 
-<section class="orbi-route-error" role="alert">
-    <span class="material-symbols-outlined" aria-hidden="true">@(Model == 404 ? "search_off" : Model is 401 or 403 ? "lock" : "error")</span>
-    <p class="orbi-error-code">@Model</p>
-    <h1>@heading</h1>
-    <p>@message</p>
-    @if (Model == 401)
-    {
-        <a asp-area="Identity" asp-page="/Account/Login" class="m3-filled-button">Iniciar sesión</a>
-    }
-    else
-    {
-        <a asp-controller="Home" asp-action="Index" class="m3-filled-button">Volver al inicio</a>
-    }
+<section class="orbi-status-page" role="alert" aria-labelledby="orbi-status-heading">
+    <div class="orbi-status-copy">
+        <span class="orbi-status-code">@(Model == 503 ? "VOLVEMOS PRONTO" : $"ERROR {Model}")</span>
+        <h1 id="orbi-status-heading">@heading</h1>
+        <p>@message</p>
+        @if (Model == 401)
+        {
+            <a asp-area="Identity" asp-page="/Account/Login" class="m3-filled-button orbi-status-action">
+                <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                <span>Iniciar sesión</span>
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Home" asp-action="Index" class="m3-filled-button orbi-status-action">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                <span>Volver al inicio</span>
+            </a>
+        }
+    </div>
+
+    <figure class="orbi-status-illustration" aria-hidden="true">
+        <svg viewBox="0 0 520 380" role="presentation" focusable="false">
+            <circle cx="260" cy="176" r="145" fill="var(--md-sys-color-primary-container)" opacity=".58" />
+            <circle cx="260" cy="176" r="113" fill="var(--md-sys-color-surface-container-lowest)" />
+            <ellipse cx="260" cy="329" rx="104" ry="12" fill="var(--md-sys-color-outline-variant)" opacity=".48" />
+            <path d="M150 180a110 110 0 0 1 201-67" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="8" stroke-linecap="round" />
+            <path d="M367 218a110 110 0 0 1-90 66" fill="none" stroke="var(--md-sys-color-secondary)" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 15" />
+            <rect x="190" y="91" width="140" height="174" rx="24" fill="var(--md-sys-color-surface-container-lowest)" stroke="var(--md-sys-color-outline-variant)" stroke-width="2" />
+            <path d="M220 127h80M220 149h60" stroke="var(--md-sys-color-outline-variant)" stroke-width="9" stroke-linecap="round" />
+            <circle cx="260" cy="203" r="29" fill="var(--md-sys-color-error-container)" />
+            <path d="M260 188v18m0 9v.5" stroke="var(--md-sys-color-on-error-container)" stroke-width="6" stroke-linecap="round" />
+            <circle cx="148" cy="134" r="22" fill="var(--md-sys-color-primary-container)" />
+            <path d="M148 125v11m0 7v.5" stroke="var(--md-sys-color-on-primary-container)" stroke-width="3.5" stroke-linecap="round" />
+            <circle cx="365" cy="116" r="15" fill="var(--md-sys-color-secondary-container)" />
+            <path d="m359 116 4 4 8-9" fill="none" stroke="var(--md-sys-color-on-secondary-container)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="m145 263 9 9m0-9-9 9" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="4" stroke-linecap="round" />
+            <path d="m370 251 8 8m0-8-8 8" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <figcaption>Estamos trabajando para volver pronto.</figcaption>
+    </figure>
 </section>

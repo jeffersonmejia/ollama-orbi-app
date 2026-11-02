@@ -6,6 +6,7 @@ public class DeliveryProduct
     public int DeliveryStoreId { get; set; }
     public string? CreatedByUserId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
     public decimal Price { get; set; }
     public decimal UnitCost { get; set; }
     public int Stock { get; set; }

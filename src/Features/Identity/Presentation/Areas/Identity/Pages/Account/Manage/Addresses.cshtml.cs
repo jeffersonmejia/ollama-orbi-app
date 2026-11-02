@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using OrbiApp.Models.Identity;
+using OrbiApp.Presentation.Services;
 
 namespace OrbiApp.Areas.Identity.Pages.Account.Manage;
 
@@ -14,11 +15,13 @@ public class AddressesModel : PageModel
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IApplicationDataSession _context;
+    private readonly DeliveryPageCache _pageCache;
 
-    public AddressesModel(UserManager<IdentityUser> userManager, IApplicationDataSession context)
+    public AddressesModel(UserManager<IdentityUser> userManager, IApplicationDataSession context, DeliveryPageCache pageCache)
     {
         _userManager = userManager;
         _context = context;
+        _pageCache = pageCache;
     }
 
     public IReadOnlyList<UserAddress> Addresses { get; set; } = Array.Empty<UserAddress>();
@@ -135,6 +138,7 @@ public class AddressesModel : PageModel
         }
 
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
         StatusMessage = AddressInput.UserAddressId.HasValue ? "Dirección actualizada." : "Dirección agregada.";
         return RedirectToPage();
     }
@@ -149,6 +153,7 @@ public class AddressesModel : PageModel
         address.UpdatedAt = DateTimeOffset.UtcNow;
         await SyncProfileAddressAsync(userId, address);
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
         StatusMessage = $"{address.Label} ahora es tu dirección principal.";
         return RedirectToPage();
     }
@@ -165,14 +170,15 @@ public class AddressesModel : PageModel
         }
         _context.Set<UserAddress>().Remove(address);
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
         StatusMessage = "Dirección eliminada.";
         return RedirectToPage();
     }
 
     private async Task LoadAsync(string userId)
     {
-        Provinces = await _context.Set<EcuadorProvince>().AsNoTracking().OrderBy(item => item.Name).ToListAsync();
-        Cities = await _context.Set<EcuadorCity>().AsNoTracking().OrderBy(item => item.Name).ToListAsync();
+        Provinces = await _pageCache.GetProvincesAsync(_context, HttpContext.RequestAborted);
+        Cities = await _pageCache.GetCitiesAsync(_context, HttpContext.RequestAborted);
         Addresses = await _context.Set<UserAddress>().AsNoTracking().Where(item => item.IdentityUserId == userId)
             .Include(item => item.Province).Include(item => item.City)
             .OrderByDescending(item => item.IsDefault).ThenBy(item => item.Label).ToListAsync();
@@ -185,6 +191,7 @@ public class AddressesModel : PageModel
         if (profile is null || string.IsNullOrWhiteSpace(profile.AddressLine1)) return;
         _context.Set<UserAddress>().Add(new UserAddress { IdentityUserId = userId, Label = "Casa", AddressLine1 = profile.AddressLine1, AddressLine2 = profile.AddressLine2, ProvinceCode = profile.ProvinceCode, CityCode = profile.CityCode, Reference = profile.Reference, IsDefault = true });
         await _context.SaveChangesAsync();
+        _pageCache.InvalidateUser(userId);
     }
 
     private async Task SyncProfileAddressAsync(string userId, UserAddress address)

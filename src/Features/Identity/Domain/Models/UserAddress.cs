@@ -14,7 +14,6 @@ public class UserAddress
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public UserProfile Profile { get; set; } = null!;
     public EcuadorProvince Province { get; set; } = null!;
     public EcuadorCity City { get; set; } = null!;
 

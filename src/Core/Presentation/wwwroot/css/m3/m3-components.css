@@ -120,7 +120,7 @@
 }
 
 .m3-outlined-button:hover {
-  background: rgba(0, 87, 184, 0.08);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
   text-decoration: none;
   color: var(--md-sys-color-primary);
 }
@@ -160,7 +160,7 @@
 }
 
 .m3-text-button:hover {
-  background: rgba(0, 87, 184, 0.08);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
   text-decoration: none;
   color: var(--md-sys-color-primary);
 }
@@ -238,11 +238,64 @@
 }
 
 .m3-text-field .validation-message,
-.m3-text-field .text-danger {
+.m3-text-field .m3-validation-error,
+.m3-validation-error {
   font-size: var(--md-sys-typescale-body-small-size);
   line-height: var(--md-sys-typescale-body-small-line-height);
   color: var(--md-sys-color-error);
   padding: 0 4px;
+}
+
+.m3-form-container {
+  width: min(100%, 32rem);
+  margin-inline: auto;
+}
+
+.m3-supporting-text {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.orbi-alert {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 12px 48px 12px 16px;
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-on-primary-container);
+  background: var(--md-sys-color-primary-container);
+}
+
+.orbi-alert-error {
+  color: var(--md-sys-color-on-error-container);
+  background: var(--md-sys-color-error-container);
+}
+
+.orbi-alert-warning {
+  color: var(--md-sys-color-on-tertiary-container);
+  background: var(--md-sys-color-tertiary-container);
+}
+
+.orbi-alert-success {
+  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-sys-color-secondary-container);
+}
+
+.orbi-alert-dismiss {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.m3-recovery-codes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, max-content));
+  gap: 8px;
+}
+
+.m3-recovery-codes .recovery-code {
+  padding: 8px 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-surface-container);
 }
 
 .m3-select {
@@ -327,11 +380,11 @@
 }
 
 .m3-data-table tbody tr:hover {
-  background: rgba(0, 87, 184, 0.04);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 4%, transparent);
 }
 
 .m3-data-table tbody tr:active {
-  background: rgba(0, 87, 184, 0.08);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
 }
 
 .m3-pagination {
@@ -464,7 +517,7 @@
 }
 
 .m3-snackbar-action:hover {
-  background: rgba(173, 198, 255, 0.08);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
 }
 
 .m3-dialog-overlay {

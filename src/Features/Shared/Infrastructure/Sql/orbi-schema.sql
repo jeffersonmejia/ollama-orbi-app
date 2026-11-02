@@ -101,6 +101,17 @@ CREATE INDEX IF NOT EXISTS ix_delivery_cart_user ON delivery_cart_item(user_emai
 
 CREATE INDEX IF NOT EXISTS ix_delivery_order_customer ON delivery_order(customer_email);
 CREATE INDEX IF NOT EXISTS ix_delivery_order_driver ON delivery_order(delivery_person_email);
+CREATE INDEX IF NOT EXISTS ix_delivery_store_city_active_name ON delivery_store(city_code, is_active, name);
+CREATE INDEX IF NOT EXISTS ix_delivery_store_province_name ON delivery_store(province_code, name);
+CREATE INDEX IF NOT EXISTS ix_delivery_product_store_available_name ON delivery_product(delivery_store_id, is_available, name);
+CREATE INDEX IF NOT EXISTS ix_delivery_product_store_created_at ON delivery_product(delivery_store_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_delivery_order_customer_created_at ON delivery_order(customer_email, created_at);
+CREATE INDEX IF NOT EXISTS ix_delivery_order_driver_created_at ON delivery_order(delivery_person_email, created_at);
+CREATE INDEX IF NOT EXISTS ix_delivery_order_store_created_at ON delivery_order(delivery_store_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_delivery_order_item_order ON delivery_order_item(delivery_order_id);
+CREATE INDEX IF NOT EXISTS ix_delivery_order_item_product ON delivery_order_item(delivery_product_id);
+CREATE INDEX IF NOT EXISTS ix_user_profile_city_code ON user_profile(city_code);
+CREATE INDEX IF NOT EXISTS ix_delivery_cart_product ON delivery_cart_item(delivery_product_id);
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'delivery_store' AND column_name = 'created_at') THEN
         ALTER TABLE delivery_store ADD COLUMN created_at timestamp with time zone NOT NULL DEFAULT now();
@@ -401,8 +412,8 @@ CREATE TABLE IF NOT EXISTS user_address (
     updated_at timestamp with time zone NOT NULL DEFAULT now(),
     CONSTRAINT "PK_user_address" PRIMARY KEY (user_address_id),
     CONSTRAINT ck_user_address_label CHECK (length(trim(label)) > 0),
-    CONSTRAINT "FK_user_address_user_profile_identity_user_id"
-        FOREIGN KEY (identity_user_id) REFERENCES user_profile(identity_user_id) ON DELETE CASCADE,
+    CONSTRAINT "FK_user_address_AspNetUsers_identity_user_id"
+        FOREIGN KEY (identity_user_id) REFERENCES "AspNetUsers"("Id") ON DELETE CASCADE,
     CONSTRAINT "FK_user_address_ecuador_province_province_code"
         FOREIGN KEY (province_code) REFERENCES ecuador_province(province_code) ON DELETE RESTRICT,
     CONSTRAINT "FK_user_address_ecuador_city_city_code"

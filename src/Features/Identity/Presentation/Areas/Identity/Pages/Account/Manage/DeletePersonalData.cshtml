@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model DeletePersonalDataModel
 @{
     ViewData["Title"] = "Delete Personal Data";
@@ -7,7 +7,7 @@
 
 <h3>@ViewData["Title"]</h3>
 
-<div class="alert alert-warning" role="alert">
+<div class="orbi-alert orbi-alert-warning" role="alert">
     <p>
         <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
     </p>
@@ -15,13 +15,13 @@
 
 <div>
     <form id="delete-user" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+        <div asp-validation-summary="ModelOnly" class="m3-validation-error" role="alert"></div>
         @if (Model.RequirePassword)
         {
             <div class="m3-text-field">
                 <input asp-for="Input.Password" class="m3-text-field-input" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
                 <label asp-for="Input.Password" class="m3-text-field-label"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <span asp-validation-for="Input.Password" class="m3-validation-error"></span>
             </div>
         }
         <button class="m3-filled-button" style="width:100%;background:var(--md-sys-color-error)" type="submit">Delete data and close my account</button>

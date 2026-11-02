@@ -2,121 +2,493 @@
 @model DeliveryCatalogViewModel
 
 @{
-    ViewData["Title"] = "Tiendas Orbi";
-    var defaultAddress = Model.Addresses.FirstOrDefault(address => address.IsDefault) ?? Model.Addresses.FirstOrDefault();
+    ViewData["Title"] = "Tiendas Dash";
 }
 
 <div class="m3-page orbi-store-page">
     @{
         var provinceName = ViewBag.UserProvinceName as string;
         var cityName = ViewBag.UserCityName as string;
+        var primaryAddress = Model.Addresses.OrderByDescending(address => address.IsDefault).ThenBy(address => address.UserAddressId).FirstOrDefault();
     }
 
-    <form asp-action="Index" method="get" class="orbi-store-filters">
+    <form asp-action="Index" method="get" class="orbi-store-filters @(User.IsInRole("Usuario") ? "orbi-store-filters-user" : "")" data-live-store-filters>
         <div class="orbi-store-search">
             <span class="material-symbols-outlined">search</span>
             <input type="search" name="buscar" value="@ViewBag.Buscar" placeholder="Buscar producto o tienda" aria-label="Buscar productos o tiendas" />
-            @if (!string.IsNullOrEmpty(cityName))
+        </div>
+        @if (User.IsInRole("Usuario"))
+        {
+            <div class="orbi-location-filter">
+                <button type="button" class="orbi-inline-location" data-edit-catalog-address
+                        data-address-id="@(primaryAddress?.UserAddressId ?? 0)"
+                        data-label="@(primaryAddress?.Label ?? "")"
+                        data-line1="@(primaryAddress?.AddressLine1 ?? "")"
+                        data-line2="@(primaryAddress?.AddressLine2 ?? "")"
+                        data-province="@(primaryAddress?.ProvinceCode ?? ViewBag.UserProvinceCode as string ?? "")"
+                        data-city="@(primaryAddress?.CityCode ?? ViewBag.UserCityCode as string ?? "")"
+                        data-reference="@(primaryAddress?.Reference ?? "")"
+                        aria-label="Editar ubicación de entrega">
+                    <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                    <span class="orbi-inline-location-text">@(string.IsNullOrEmpty(cityName) ? "Agregar ubicación" : $"{cityName} · {provinceName}")</span>
+                    <span class="material-symbols-outlined orbi-inline-edit" aria-hidden="true">edit</span>
+                </button>
+            </div>
+        }
+        @{
+            var selectedCategory = ViewBag.Categoria as string ?? "";
+            var categoryLabel = selectedCategory switch
             {
-                <span class="orbi-inline-location">
-                    <span class="material-symbols-outlined">location_on</span>@cityName · @provinceName
-                    <a asp-area="Identity" asp-page="/Account/Manage/Addresses" class="orbi-inline-edit" title="Editar ubicación"><span class="material-symbols-outlined">edit</span></a>
-                </span>
-            }
+                "Restaurantes" => "Restaurantes",
+                "Farmacia" => "Farmacias",
+                "Supermercado" => "Supermercado",
+                _ => "Todas"
+            };
+        }
+        <div class="orbi-category-filter" data-category-select>
+            <input type="hidden" name="categoria" value="@selectedCategory" />
+            <button type="button" class="orbi-category-trigger" aria-label="Filtrar por categoría" aria-haspopup="listbox" aria-expanded="false" data-category-trigger>
+                <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                <span class="orbi-category-value" data-category-value>@categoryLabel</span>
+                <span class="material-symbols-outlined orbi-category-chevron" aria-hidden="true">expand_more</span>
+            </button>
+            <div class="orbi-category-menu" role="listbox" aria-label="Categorías" data-category-menu hidden>
+                <button type="button" role="option" aria-selected="@(selectedCategory == "" ? "true" : "false")" data-category-option data-value="">Todas</button>
+                <button type="button" role="option" aria-selected="@(selectedCategory == "Restaurantes" ? "true" : "false")" data-category-option data-value="Restaurantes">Restaurantes</button>
+                <button type="button" role="option" aria-selected="@(selectedCategory == "Farmacia" ? "true" : "false")" data-category-option data-value="Farmacia">Farmacias</button>
+                <button type="button" role="option" aria-selected="@(selectedCategory == "Supermercado" ? "true" : "false")" data-category-option data-value="Supermercado">Supermercado</button>
+            </div>
         </div>
         <label class="orbi-price-filter" for="precioMinimo"><span class="material-symbols-outlined">attach_money</span><span>Mín.</span><input id="precioMinimo" name="precioMinimo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMinimo" aria-label="Precio mínimo" /></label>
         <label class="orbi-price-filter" for="precioMaximo"><span class="material-symbols-outlined">payments</span><span>Máx.</span><input id="precioMaximo" name="precioMaximo" type="number" min="0" step="0.01" value="@ViewBag.PrecioMaximo" aria-label="Precio máximo" /></label>
-        <input type="hidden" name="categoria" value="@ViewBag.Categoria" />
-        <button type="submit" class="m3-filled-button">Aplicar</button>
         <a asp-action="Index" class="m3-text-button">Limpiar</a>
     </form>
 
-    <section class="orbi-category-grid" aria-label="Categorías de tiendas">
-        <a class="orbi-category-card @(ViewBag.Categoria == "Restaurantes" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Restaurantes" ? null : "Restaurantes")" aria-pressed="@(ViewBag.Categoria == "Restaurantes")">
-            <img src="~/assets/categorias/comida_rapida.png" alt="Hamburguesa de comida rápida" />
-            <span><strong>Restaurantes</strong><small>Comida rápida y antojos</small></span>
-        </a>
-        <a class="orbi-category-card @(ViewBag.Categoria == "Farmacia" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Farmacia" ? null : "Farmacia")" aria-pressed="@(ViewBag.Categoria == "Farmacia")">
-            <img src="~/assets/categorias/farmacias.png" alt="Mostrador de farmacia" />
-            <span><strong>Farmacias</strong><small>Salud y cuidado</small></span>
-        </a>
-        <a class="orbi-category-card @(ViewBag.Categoria == "Supermercado" ? "active" : "")" asp-action="Index" asp-route-buscar="@ViewBag.Buscar" asp-route-precioMinimo="@ViewBag.PrecioMinimo" asp-route-precioMaximo="@ViewBag.PrecioMaximo" asp-route-categoria="@(ViewBag.Categoria == "Supermercado" ? null : "Supermercado")" aria-pressed="@(ViewBag.Categoria == "Supermercado")">
-            <img src="~/assets/categorias/supermercado.png" alt="Interior de supermercado" />
-            <span><strong>Supermercado</strong><small>Compras para el hogar</small></span>
-        </a>
+    <section data-store-results aria-live="polite" aria-busy="false">
+        <partial name="_ProductResults" model="Model" />
     </section>
 
-    @if (TempData["Error"] is string error)
+    @if (User.IsInRole("Usuario"))
     {
-        <div class="orbi-alert orbi-alert-error">@error</div>
+        <dialog class="orbi-address-required-dialog" aria-labelledby="orbi-address-required-title" aria-describedby="orbi-address-required-description" data-address-required-dialog>
+            <div class="orbi-address-required-heading">
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                <h2 id="orbi-address-required-title" data-address-required-title>Agrega una dirección de entrega</h2>
+            </div>
+            <p id="orbi-address-required-description">Completa los datos aquí mismo para guardar tu dirección y continuar con tu compra.</p>
+            <form asp-controller="Delivery" asp-action="SaveCatalogAddress" method="post" class="orbi-address-required-form" data-address-required-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserAddressId" data-address-id-input />
+                <div class="orbi-address-form-errors" data-address-form-errors role="alert" aria-live="polite"></div>
+                <label class="m3-text-field"><span class="m3-text-field-label">Nombre de la dirección</span><input class="m3-text-field-input" name="Label" value="Casa" maxlength="40" autocomplete="off" required /><span class="m3-validation-error" data-address-error-for="Label"></span></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Calle principal</span><input class="m3-text-field-input" name="AddressLine1" maxlength="160" autocomplete="address-line1" required /><span class="m3-validation-error" data-address-error-for="AddressLine1"></span></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Calle secundaria</span><input class="m3-text-field-input" name="AddressLine2" maxlength="160" autocomplete="address-line2" required /><span class="m3-validation-error" data-address-error-for="AddressLine2"></span></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Provincia</span><span class="orbi-address-select-wrap"><span class="m3-icon" aria-hidden="true">map</span><select class="m3-text-field-input" name="ProvinceCode" data-address-province required><option value="">Selecciona una provincia</option>@foreach(var province in Model.Provinces){<option value="@province.Code">@province.Name</option>}</select></span><span class="m3-validation-error" data-address-error-for="ProvinceCode"></span></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Ciudad</span><span class="orbi-address-select-wrap"><span class="m3-icon" aria-hidden="true">location_city</span><select class="m3-text-field-input" name="CityCode" data-address-city required><option value="">Selecciona una ciudad</option>@foreach(var city in Model.Cities){<option value="@city.Code" data-province="@city.ProvinceCode">@city.Name</option>}</select></span><span class="m3-validation-error" data-address-error-for="CityCode"></span></label>
+                <label class="m3-text-field"><span class="m3-text-field-label">Referencia</span><input class="m3-text-field-input" name="Reference" maxlength="240" autocomplete="off" required /><span class="m3-validation-error" data-address-error-for="Reference"></span></label>
+                <div class="orbi-address-required-actions"><button type="button" class="orbi-address-cancel" data-cancel-address hidden>Cancelar</button><button type="submit" class="m3-filled-button" data-address-submit>Guardar</button></div>
+            </form>
+        </dialog>
     }
-
-    @if (User.IsInRole("Usuario") && defaultAddress is null)
-    {
-        <div class="orbi-alert">Agrega una dirección en tu perfil para realizar pedidos.</div>
-    }
-
-    @if (!Model.Products.Any())
-    {
-        <div class="m3-card orbi-category-empty">No hay productos que coincidan con los filtros.</div>
-    }
-    <div class="orbi-product-grid">
-        @foreach (var product in Model.Products)
-        {
-            <article class="m3-card orbi-product-card">
-                <div class="orbi-product-store"><span class="material-symbols-outlined">storefront</span>@product.Store.Name · @product.Store.Category</div>
-                <h2>@product.Name</h2>
-                <p class="orbi-store-location"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">location_on</span>@product.Store.Address</p>
-                @if (product.Store.City is not null || product.Store.Province is not null)
-                {
-                    <p class="orbi-store-location" style="margin-top:2px;"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">map</span>@(product.Store.City?.Name ?? "")@(product.Store.City is not null && product.Store.Province is not null ? ", " : "")@(product.Store.Province?.Name ?? "")</p>
-                }
-                <strong class="orbi-product-price">@product.Price.ToString("C")</strong>
-
-                @if (User.IsInRole("Usuario"))
-                {
-                    <form asp-action="AddToCart" method="post" class="orbi-product-order-form">
-                        <input type="hidden" name="productId" value="@product.DeliveryProductId" />
-                        <div class="orbi-quantity-field">
-                            <span>Cantidad</span>
-                            <div class="orbi-quantity-control">
-                                <button type="button" class="orbi-quantity-button" data-quantity-action="decrease" aria-label="Disminuir cantidad"><span class="material-symbols-outlined">remove</span></button>
-                                <input id="quantity-@product.DeliveryProductId" type="number" name="quantity" value="1" min="1" max="999" inputmode="numeric" aria-label="Cantidad personalizada, entre 1 y 999" required />
-                                <button type="button" class="orbi-quantity-button" data-quantity-action="increase" aria-label="Aumentar cantidad"><span class="material-symbols-outlined">add</span></button>
-                            </div>
-                        </div>
-                        <button type="submit" class="m3-filled-button"><span class="material-symbols-outlined" style="font-size:18px;">add_shopping_cart</span> Agregar al carrito</button>
-                    </form>
-                }
-            </article>
-        }
-    </div>
-    <partial name="_Pagination" />
 </div>
+
+@if (User.IsInRole("Usuario"))
+{
+    <script>
+        window.orbiSessionCache?.update({
+            hasAddress: @System.Text.Json.JsonSerializer.Serialize(Model.Addresses.Count > 0),
+            displayName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.UserFirstName as string)),
+            provinceCode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.UserProvinceCode as string)),
+            cityCode: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.UserCityCode as string))
+        });
+        const catalogDisplayName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.UserFirstName as string));
+        const displayNameTarget = document.querySelector('[data-user-display-name]');
+        if (catalogDisplayName && displayNameTarget) displayNameTarget.textContent = catalogDisplayName;
+    </script>
+}
 
 <script>
     (() => {
-        document.querySelectorAll('.orbi-quantity-control').forEach(control => {
-            const input = control.querySelector('input');
-            control.querySelectorAll('[data-quantity-action]').forEach(button => button.addEventListener('click', () => {
-                const minimum = Number(input.min) || 1;
-                const maximum = Number(input.max) || 999;
-                const current = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
-                input.value = button.dataset.quantityAction === 'increase'
-                    ? Math.min(maximum, current + 1)
-                    : Math.max(minimum, current - 1);
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-            }));
-            const normalizeQuantity = () => {
-                const minimum = Number(input.min) || 1;
-                const maximum = Number(input.max) || 999;
-                input.value = Math.min(maximum, Math.max(minimum, Number(input.value) || minimum));
-            };
-            input.addEventListener('keydown', event => {
-                if (['-', '+', 'e', 'E', '.', ','].includes(event.key)) event.preventDefault();
-            });
-            input.addEventListener('input', normalizeQuantity);
-            input.addEventListener('change', normalizeQuantity);
+        document.querySelectorAll('.orbi-product-image img[data-fallback-image]').forEach(image => {
+            image.addEventListener('error', () => {
+                const fallback = image.dataset.fallbackImage;
+                if (fallback && image.src !== new URL(fallback, document.baseURI).href) image.src = fallback;
+            }, { once: true });
         });
+
+        const filterForm = document.querySelector('[data-live-store-filters]');
+        const results = document.querySelector('[data-store-results]');
+        let refreshStoreResults = null;
+        if (filterForm && results) {
+            const searchInput = filterForm.querySelector('[name="buscar"]');
+            const filterInputs = [...filterForm.querySelectorAll('input[name="categoria"], input[type="number"]')];
+            const categorySelect = filterForm.querySelector('[data-category-select]');
+            const categoryInput = categorySelect?.querySelector('[name="categoria"]');
+            const categoryTrigger = categorySelect?.querySelector('[data-category-trigger]');
+            const categoryMenu = categorySelect?.querySelector('[data-category-menu]');
+            const categoryOptions = [...(categorySelect?.querySelectorAll('[data-category-option]') || [])];
+            let debounceTimer;
+            let requestController;
+
+            const closeCategoryMenu = (returnFocus = false) => {
+                if (!categoryMenu || !categoryTrigger) return;
+                categoryMenu.hidden = true;
+                categoryTrigger.setAttribute('aria-expanded', 'false');
+                if (returnFocus) categoryTrigger.focus();
+            };
+            const openCategoryMenu = () => {
+                if (!categoryMenu || !categoryTrigger) return;
+                categoryMenu.hidden = false;
+                categoryTrigger.setAttribute('aria-expanded', 'true');
+                (categoryOptions.find(option => option.dataset.value === categoryInput.value) || categoryOptions[0])?.focus();
+            };
+            categoryTrigger?.addEventListener('click', () => {
+                if (categoryMenu.hidden) openCategoryMenu();
+                else closeCategoryMenu();
+            });
+            categoryTrigger?.addEventListener('keydown', event => {
+                if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+                    event.preventDefault();
+                    openCategoryMenu();
+                }
+            });
+            categoryOptions.forEach((option, index) => {
+                option.tabIndex = -1;
+                option.addEventListener('click', () => {
+                    categoryInput.value = option.dataset.value;
+                    categorySelect.querySelector('[data-category-value]').textContent = option.textContent.trim();
+                    categoryOptions.forEach(item => item.setAttribute('aria-selected', String(item === option)));
+                    closeCategoryMenu(true);
+                    categoryInput.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                option.addEventListener('keydown', event => {
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        const offset = event.key === 'ArrowDown' ? 1 : -1;
+                        categoryOptions[(index + offset + categoryOptions.length) % categoryOptions.length].focus();
+                    } else if (event.key === 'Escape') {
+                        event.preventDefault();
+                        closeCategoryMenu(true);
+                    } else if (event.key === 'Tab') {
+                        closeCategoryMenu();
+                    }
+                });
+            });
+            document.addEventListener('pointerdown', event => {
+                if (categorySelect && !categorySelect.contains(event.target)) closeCategoryMenu();
+            });
+
+            const updateResults = async (resetPage = true) => {
+                if (resetPage) filterForm.querySelector('[name="page"]')?.remove();
+                const params = new URLSearchParams(new FormData(filterForm));
+                const sessionSnapshot = window.orbiSessionCache?.read();
+                if (sessionSnapshot?.userId) params.set('cityCode', sessionSnapshot.cityCode || '');
+                const query = params.toString();
+                const url = `${filterForm.action}${query ? `?${query}` : ''}`;
+                requestController?.abort();
+                const currentRequest = new AbortController();
+                requestController = currentRequest;
+                results.setAttribute('aria-busy', 'true');
+                filterForm.setAttribute('aria-busy', 'true');
+                try {
+                    const response = await fetch(url, {
+                        credentials: 'same-origin',
+                        signal: currentRequest.signal,
+                        headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!response.ok) throw new Error('No se pudieron actualizar los productos.');
+                    results.innerHTML = await response.text();
+                    history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}`);
+                    results.querySelectorAll('.orbi-product-image img[data-fallback-image]').forEach(image => {
+                        image.addEventListener('error', () => {
+                            const fallback = image.dataset.fallbackImage;
+                            if (fallback && image.src !== new URL(fallback, document.baseURI).href) image.src = fallback;
+                        }, { once: true });
+                    });
+                    initializeCartQuantityForms(results);
+                } catch (error) {
+                    if (error.name !== 'AbortError' && window.showM3Snackbar)
+                        window.showM3Snackbar('No se pudieron actualizar los productos. Inténtalo de nuevo.');
+                } finally {
+                    if (!currentRequest.signal.aborted && requestController === currentRequest) {
+                        results.setAttribute('aria-busy', 'false');
+                        filterForm.removeAttribute('aria-busy');
+                    }
+                }
+            };
+            refreshStoreResults = updateResults;
+
+            searchInput?.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => updateResults(), 300);
+            });
+            filterInputs.forEach(input => {
+                if (input.name === 'categoria') {
+                    input.addEventListener('change', () => updateResults());
+                } else {
+                    input.addEventListener('input', () => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => updateResults(), 300);
+                    });
+                }
+            });
+            filterForm.addEventListener('submit', event => { event.preventDefault(); updateResults(); });
+            filterForm.querySelector('a.m3-text-button')?.addEventListener('click', event => {
+                event.preventDefault();
+                filterForm.querySelector('[name="buscar"]').value = '';
+                filterForm.querySelector('[name="categoria"]').value = '';
+                categorySelect.querySelector('[data-category-value]').textContent = 'Todas';
+                categoryOptions.forEach((option, index) => option.setAttribute('aria-selected', String(index === 0)));
+                filterForm.querySelector('[name="precioMinimo"]').value = '';
+                filterForm.querySelector('[name="precioMaximo"]').value = '';
+                updateResults();
+            });
+            results.addEventListener('click', event => {
+                const button = event.target.closest('.m3-pagination button[onclick]');
+                if (!button) return;
+                const match = button.getAttribute('onclick')?.match(/location\.href='([^']+)'/);
+                if (!match) return;
+                event.preventDefault();
+                const destination = new URL(match[1], location.origin);
+                const page = destination.searchParams.get('page');
+                filterForm.querySelector('[name="page"]')?.remove();
+                if (page) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden'; hidden.name = 'page'; hidden.value = page;
+                    filterForm.append(hidden);
+                }
+                updateResults(false);
+            }, true);
+        }
+
+        const addressDialog = document.querySelector('[data-address-required-dialog]');
+        const addressForm = addressDialog?.querySelector('[data-address-required-form]');
+        const addressErrors = addressForm?.querySelector('[data-address-form-errors]');
+        let pendingCartAction = null;
+        let cartOperationPromise = Promise.resolve();
+
+        addressDialog?.querySelector('[data-cancel-address]')?.addEventListener('click', () => addressDialog.close());
+
+        addressDialog?.addEventListener('cancel', event => {
+            if (window.orbiSessionCache?.read()?.hasAddress === false) event.preventDefault();
+        });
+
+        const openAddressDialog = (address = null) => {
+            if (addressForm) {
+                addressForm.querySelectorAll('[data-address-error-for]').forEach(item => {
+                    item.textContent = '';
+                    item.closest('.m3-text-field')?.querySelector('input,select')?.removeAttribute('aria-invalid');
+                });
+                addressForm.elements.namedItem('UserAddressId').value = address?.id || '';
+                addressForm.elements.namedItem('Label').value = address?.label || 'Casa';
+                addressForm.elements.namedItem('AddressLine1').value = address?.line1 || '';
+                addressForm.elements.namedItem('AddressLine2').value = address?.line2 || '';
+                addressForm.elements.namedItem('Reference').value = address?.reference || '';
+                addressProvince.value = address?.province || '';
+                filterAddressCities(false);
+                addressCity.value = address?.city || '';
+                addressDialog.querySelector('[data-address-required-title]').textContent = address?.id ? 'Edita tu dirección de entrega' : 'Agrega una dirección de entrega';
+                addressForm.querySelector('[data-address-submit]').textContent = address?.id ? 'Guardar cambios' : 'Guardar';
+                addressForm.querySelector('[data-cancel-address]').hidden = !address?.id;
+            }
+            if (addressErrors) addressErrors.textContent = '';
+            if (addressDialog && !addressDialog.open) addressDialog.showModal();
+            addressForm?.querySelector('input[name="AddressLine1"]')?.focus();
+        };
+
+        const addressProvince = addressForm?.querySelector('[data-address-province]');
+        const addressCity = addressForm?.querySelector('[data-address-city]');
+        const filterAddressCities = reset => {
+            if (!addressProvince || !addressCity) return;
+            if (reset) addressCity.value = '';
+            [...addressCity.options].slice(1).forEach(option => {
+                option.hidden = !addressProvince.value || option.dataset.province !== addressProvince.value;
+            });
+            if (addressCity.selectedOptions[0]?.hidden) addressCity.value = '';
+        };
+        addressProvince?.addEventListener('change', () => filterAddressCities(true));
+        filterAddressCities(false);
+
+        document.querySelector('[data-edit-catalog-address]')?.addEventListener('click', event => {
+            const button = event.currentTarget;
+            const addressId = Number(button.dataset.addressId) || 0;
+            openAddressDialog({
+                id: addressId,
+                label: button.dataset.label,
+                line1: button.dataset.line1,
+                line2: button.dataset.line2,
+                province: button.dataset.province,
+                city: button.dataset.city,
+                reference: button.dataset.reference
+            });
+        });
+
+        addressForm?.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (!addressForm.reportValidity()) return;
+
+            addressForm.querySelectorAll('[data-address-error-for]').forEach(item => {
+                item.textContent = '';
+                item.closest('.m3-text-field')?.querySelector('input,select')?.removeAttribute('aria-invalid');
+            });
+            if (addressErrors) addressErrors.textContent = '';
+            const submitButton = addressForm.querySelector('button[type="submit"]');
+            const submitLabel = submitButton.textContent;
+            submitButton.textContent = 'Guardando…';
+            submitButton.disabled = true;
+            addressForm.setAttribute('aria-busy', 'true');
+            try {
+                const response = await fetch(addressForm.action, {
+                    method: 'POST',
+                    body: new FormData(addressForm),
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                let result;
+                try {
+                    result = await response.json();
+                } catch {
+                    throw new Error('No se pudo guardar la dirección. Inténtalo de nuevo.');
+                }
+                if (!response.ok) {
+                    if (result.errors) {
+                        Object.entries(result.errors).forEach(([key, messages]) => {
+                            const name = key.split('.').at(-1);
+                            const errorTarget = [...addressForm.querySelectorAll('[data-address-error-for]')]
+                                .find(target => target.dataset.addressErrorFor.toLowerCase() === name.toLowerCase());
+                            if (errorTarget) {
+                                errorTarget.textContent = messages[0];
+                                errorTarget.closest('.m3-text-field')?.querySelector('input,select')?.setAttribute('aria-invalid', 'true');
+                            }
+                        });
+                        if (addressErrors && !addressForm.querySelector('[data-address-error-for]:not(:empty)'))
+                            addressErrors.textContent = 'Revisa los datos de la dirección.';
+                        addressForm.querySelector('[aria-invalid="true"]')?.focus();
+                        return;
+                    }
+                    throw new Error(result.message || 'No se pudo guardar la dirección.');
+                }
+
+                window.orbiSessionCache?.update({
+                    hasAddress: true,
+                    provinceCode: result.address.provinceCode,
+                    cityCode: result.address.cityCode
+                });
+                const locationButton = document.querySelector('[data-edit-catalog-address]');
+                if (locationButton) {
+                    locationButton.dataset.addressId = result.address.userAddressId;
+                    locationButton.dataset.label = result.address.label;
+                    locationButton.dataset.line1 = result.address.addressLine1;
+                    locationButton.dataset.line2 = result.address.addressLine2;
+                    locationButton.dataset.province = result.address.provinceCode;
+                    locationButton.dataset.city = result.address.cityCode;
+                    locationButton.dataset.reference = result.address.reference;
+                    locationButton.querySelector('.orbi-inline-location-text').textContent = `${result.address.cityName} · ${result.address.provinceName}`;
+                }
+                addressDialog.close();
+                if (window.showM3Snackbar) window.showM3Snackbar('Dirección guardada.');
+                if (pendingCartAction) {
+                    const pending = pendingCartAction;
+                    pendingCartAction = null;
+                    pending.form.requestSubmit(pending.submitter);
+                    await cartOperationPromise;
+                }
+                await refreshStoreResults?.();
+            } catch (error) {
+                if (addressErrors) addressErrors.textContent = error.message || 'No se pudo guardar la dirección. Inténtalo de nuevo.';
+            } finally {
+                submitButton.textContent = submitLabel;
+                submitButton.disabled = false;
+                addressForm.removeAttribute('aria-busy');
+            }
+        });
+
+        addressForm?.addEventListener('input', event => {
+            event.target.removeAttribute('aria-invalid');
+            const errorTarget = [...addressForm.querySelectorAll('[data-address-error-for]')]
+                .find(target => target.dataset.addressErrorFor.toLowerCase() === event.target.name.toLowerCase());
+            if (errorTarget) errorTarget.textContent = '';
+        });
+
+        function initializeCartQuantityForms(root = document) {
+        root.querySelectorAll('[data-cart-quantity-form]').forEach(form => {
+            if (form.dataset.initialized === 'true') return;
+            form.dataset.initialized = 'true';
+            const buttons = [...form.querySelectorAll('button[name="delta"]')];
+            const output = form.querySelector('.orbi-product-cart-quantity');
+            const minusButton = form.querySelector('button[value="-1"]');
+            const plusButton = form.querySelector('button[value="1"]');
+            let stock = Number(form.dataset.stock) || 0;
+
+            form.addEventListener('submit', event => {
+                event.preventDefault();
+                const submitter = event.submitter;
+                if (!submitter || !output) return;
+
+                const cachedAddressState = window.orbiSessionCache?.read();
+                if (submitter.value === '1' && cachedAddressState?.hasAddress === false) {
+                    pendingCartAction = { form, submitter };
+                    openAddressDialog();
+                    return;
+                }
+
+                cartOperationPromise = updateCartQuantity(form, submitter, buttons, output, minusButton, plusButton, () => stock, value => stock = value);
+            });
+        });
+        }
+
+        async function updateCartQuantity(form, submitter, buttons, output, minusButton, plusButton, getStock, setStock) {
+                let stock = getStock();
+
+                const formData = new FormData(form);
+                formData.set(submitter.name, submitter.value);
+                buttons.forEach(button => button.disabled = true);
+                form.setAttribute('aria-busy', 'true');
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (response.status === 409 && result.code === 'address_required') {
+                        window.orbiSessionCache?.update({ hasAddress: false });
+                        pendingCartAction = { form, submitter };
+                        openAddressDialog();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        if (result.code === 'stock_limit' && window.showM3Snackbar) {
+                            window.showM3Snackbar(result.message);
+                            return;
+                        }
+                        throw new Error(result.message || 'No se pudo actualizar el carrito.');
+                    }
+
+                    const quantity = Number(result.quantity) || 0;
+                    stock = Number(result.stock) || 0;
+                    setStock(stock);
+                    output.value = String(quantity);
+                    output.textContent = String(quantity);
+                    if (submitter.value === '1') window.orbiSessionCache?.update({ hasAddress: true });
+                } catch {
+                    if (window.showM3Snackbar) window.showM3Snackbar('No se pudo actualizar el carrito. Inténtalo de nuevo.');
+                } finally {
+                    form.removeAttribute('aria-busy');
+                    const quantity = Number(output?.value || output?.textContent) || 0;
+                    if (minusButton) minusButton.disabled = quantity === 0;
+                    if (plusButton) plusButton.disabled = quantity >= Math.min(stock, 999);
+                }
+        }
+
+        initializeCartQuantityForms();
+
     })();
 </script>

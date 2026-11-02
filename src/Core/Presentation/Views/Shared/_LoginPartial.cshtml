@@ -3,20 +3,20 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav">
+<ul class="orbi-auth-links">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <span class="nav-link text-dark">@UserManager.GetUserName(User)</span>
+    <li>
+        <span class="orbi-auth-link">@UserManager.GetUserName(User)</span>
     </li>
 }
 else
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="register" href="/registro">Sign Up</a>
+    <li>
+        <a class="orbi-auth-link" id="register" href="/registro">Sign Up</a>
     </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
+    <li>
+        <a class="orbi-auth-link" id="login" asp-area="Identity" asp-page="/Account/Login">Sign In</a>
     </li>
 }
 </ul>

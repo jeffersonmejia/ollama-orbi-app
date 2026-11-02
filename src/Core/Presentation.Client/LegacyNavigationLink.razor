@@ -1,6 +1,6 @@
 @inject NavigationManager Navigation
 
-<a href="@Href" class="@Class" title="@Title" @onclick="Navigate" @onclick:preventDefault>
+<a href="@Href" class="@Class" title="@Title" data-nav-progress="true" @onclick="Navigate" @onclick:preventDefault>
     @ChildContent
 </a>
 

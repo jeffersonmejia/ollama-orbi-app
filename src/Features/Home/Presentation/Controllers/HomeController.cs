@@ -24,17 +24,28 @@ public class HomeController : Controller
     private readonly IApplicationDataSession _identityContext;
     private readonly IProductAssistant _ollama;
     private readonly IBackupManager _backups;
+    private readonly ILogger<HomeController> _logger;
 
-    public HomeController(IApplicationDataSession identityContext, IProductAssistant ollama, IBackupManager backups)
+    public HomeController(
+        IApplicationDataSession identityContext,
+        IProductAssistant ollama,
+        IBackupManager backups,
+        ILogger<HomeController> logger)
     {
         _identityContext = identityContext;
         _ollama = ollama;
         _backups = backups;
+        _logger = logger;
     }
 
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
+        if (User.IsInRole("Usuario"))
+        {
+            return RedirectToAction("Index", "Delivery");
+        }
+
         if (User.Identity?.IsAuthenticated == true)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -142,11 +153,11 @@ public class HomeController : Controller
             return Json(new
             {
                 Chart1Title = "Usuarios registrados",
-                Chart1Color = "#C2185B",
+                Chart1Color = "#D2006E",
                 Chart1 = users.Select(u => new { Label = fmt(u.Hour, u.Month), Count = u.Count }),
                 Chart1Total = users.Sum(u => u.Count),
                 Chart2Title = "Tiendas registradas",
-                Chart2Color = "#075c9b",
+                Chart2Color = "#7A2852",
                 Chart2 = stores.Select(s => new { Label = fmt(s.Hour, s.Month), Count = s.Count }),
                 Chart2Total = stores.Sum(s => s.Count)
             });
@@ -185,7 +196,7 @@ public class HomeController : Controller
             return Json(new
             {
                 Chart1Title = "Pedidos recibidos",
-                Chart1Color = "#B85700",
+                Chart1Color = "#7A2852",
                 Chart1 = pedidos.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = pedidos.Sum(o => o.Count),
                 Chart2Title = "Productos en catálogo",
@@ -232,7 +243,7 @@ public class HomeController : Controller
                 Chart1 = asignados.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = asignados.Sum(o => o.Count),
                 Chart2Title = "Completadas",
-                Chart2Color = "#075c9b",
+                Chart2Color = "#D2006E",
                 Chart2 = completadas.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart2Total = completadas.Sum(o => o.Count)
             });
@@ -271,11 +282,11 @@ public class HomeController : Controller
             return Json(new
             {
                 Chart1Title = "Mis pedidos",
-                Chart1Color = "#C2185B",
+                Chart1Color = "#D2006E",
                 Chart1 = misPedidos.Select(o => new { Label = fmt(o.Hour, o.Month), Count = o.Count }),
                 Chart1Total = misPedidos.Sum(o => o.Count),
                 Chart2Title = "Gasto acumulado",
-                Chart2Color = "#B85700",
+                Chart2Color = "#7A2852",
                 Chart2 = gasto.Select(o => new { Label = fmt(o.Hour, o.Month), Count = (int)o.Total }),
                 Chart2Total = (decimal)gasto.Sum(o => o.Total)
             });
@@ -284,11 +295,11 @@ public class HomeController : Controller
         return Json(new
         {
             Chart1Title = "Sin datos",
-            Chart1Color = "#C2185B",
+            Chart1Color = "#D2006E",
             Chart1 = Array.Empty<object>(),
             Chart1Total = 0,
             Chart2Title = "Sin datos",
-            Chart2Color = "#075c9b",
+            Chart2Color = "#7A2852",
             Chart2 = Array.Empty<object>(),
             Chart2Total = 0
         });
@@ -300,6 +311,11 @@ public class HomeController : Controller
     [RequestTimeout("assistant")]
     public async Task ProductChat(string message, string? context, CancellationToken cancellationToken)
     {
+        Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        await Response.WriteAsync("El asistente está temporalmente deshabilitado.", cancellationToken);
+        return;
+
+#pragma warning disable CS0162
         message = message?.Trim() ?? string.Empty;
         Response.ContentType = "application/x-ndjson; charset=utf-8";
         Response.Headers.CacheControl = "no-cache, no-transform";
@@ -388,6 +404,7 @@ public class HomeController : Controller
         }
         catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
         {
+            _logger.LogWarning(exception, "Assistant chat request failed.");
             Response.StatusCode = Response.HasStarted
                 ? StatusCodes.Status200OK
                 : StatusCodes.Status503ServiceUnavailable;
@@ -398,6 +415,7 @@ public class HomeController : Controller
                     : "No pude completar la consulta en este momento.",
                 cancellationToken);
         }
+#pragma warning restore CS0162
     }
 
     private async Task<string> BuildDatabaseContextAsync(
@@ -569,7 +587,7 @@ public class HomeController : Controller
         "vendedor" => "La persona tiene rol Vendedor. Prioriza consultas sobre tiendas, catálogo, productos y operación comercial.",
         "repartidor" => "La persona tiene rol Repartidor. Ayuda a consultar entregas asignadas y actualizar estados de entrega.",
         "usuario" => "La persona tiene rol Usuario. Ayuda a explorar tiendas y productos, crear pedidos y revisar su estado.",
-        _ => "La persona está en la página pública de Orbi. Explica brevemente qué ofrece la aplicación, cómo ingresar o registrarse y qué tiendas o productos están disponibles."
+        _ => "La persona está en la página pública de Dash. Explica brevemente qué ofrece la aplicación, cómo ingresar o registrarse y qué tiendas o productos están disponibles."
     };
 
     [Authorize(Roles = "Administrador")]
@@ -745,7 +763,9 @@ public class HomeController : Controller
         }
         catch (Exception exception)
         {
-            return BadRequest(new { success = false, message = exception.Message });
+            _logger.LogError(exception, "Database backup restore failed.");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { success = false, message = "No se pudo recuperar la copia de seguridad." });
         }
     }
 
@@ -877,7 +897,7 @@ public class HomeController : Controller
     {
         var metrics = new List<(string Label, string Detail, int Value)>
         {
-            ("Tiendas", "Tiendas registradas en Orbi", await _identityContext.Set<DeliveryStore>().CountAsync()),
+            ("Tiendas", "Tiendas registradas en Dash", await _identityContext.Set<DeliveryStore>().CountAsync()),
             ("Tiendas activas", "Tiendas disponibles para pedidos", await _identityContext.Set<DeliveryStore>().CountAsync(x => x.IsActive)),
             ("Productos", "Productos disponibles", await _identityContext.Set<DeliveryProduct>().CountAsync(x => x.IsAvailable)),
             ("Pedidos", "Pedidos creados", await _identityContext.Set<DeliveryOrder>().CountAsync()),
@@ -887,7 +907,7 @@ public class HomeController : Controller
             ("Incidencias", "Incidencias abiertas", await _identityContext.Set<DeliveryIncident>().CountAsync(x => x.Status == "Abierto" || x.Status == "En revisión")),
             ("Correos", "Mensajes pendientes en cola", await _identityContext.Set<EmailQueueItem>().CountAsync(x => x.Status == "Pendiente")),
             ("Usuarios", "Cuentas de acceso", await _identityContext.Set<Microsoft.AspNetCore.Identity.IdentityUser>().CountAsync()),
-            ("Roles", "Perfiles de Orbi", await _identityContext.Set<Microsoft.AspNetCore.Identity.IdentityRole>().CountAsync())
+            ("Roles", "Perfiles de Dash", await _identityContext.Set<Microsoft.AspNetCore.Identity.IdentityRole>().CountAsync())
         };
 
         var maxValue = metrics.Max(metric => metric.Value);

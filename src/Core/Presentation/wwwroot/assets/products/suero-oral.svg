@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" rx="28" fill="#EEF4FA"/><ellipse cx="240" cy="264" rx="76" ry="13" fill="#D8E4F0"/>
+  <path d="M222 89h36v22l18 18v112q0 9-9 9h-54q-9 0-9-9V129l18-18z" fill="#fff" stroke="#D4E1EC" stroke-width="4"/><path d="M218 88h44v14h-44z" fill="#2F77B9"/><path d="M204 163h72v52h-72z" fill="#62A7D8"/><path d="M219 177q10-10 20 0t20 0" stroke="#EAF6FF" stroke-width="5" stroke-linecap="round"/><circle cx="239" cy="196" r="8" fill="#F6C85F"/>
+  <text x="240" y="235" text-anchor="middle" fill="#476E91" font-family="Arial,sans-serif" font-size="12" font-weight="700">Coco · 500 ml</text>
+</svg>

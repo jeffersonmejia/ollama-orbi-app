@@ -1,4 +1,4 @@
-# Orbi App
+# Dash
 
 Plataforma web de comercio y entregas para Ecuador. Administra tiendas, productos, pedidos, pagos, inventario, entregas, incidencias, auditoría y asistencia con IA. La interfaz usa ASP.NET Core MVC, Razor Pages, JavaScript y CSS; PostgreSQL almacena los datos.
 
@@ -155,7 +155,7 @@ dotnet user-secrets set 'Authentication:Google:ClientSecret' '<GOOGLE_OAUTH_CLIE
 dotnet user-secrets set 'EmailSettings:SmtpServer' 'smtp.gmail.com' --project $project
 dotnet user-secrets set 'EmailSettings:SmtpPort' '587' --project $project
 dotnet user-secrets set 'EmailSettings:SenderEmail' '<CUENTA_GMAIL>' --project $project
-dotnet user-secrets set 'EmailSettings:SenderName' 'Orbi' --project $project
+dotnet user-secrets set 'EmailSettings:SenderName' 'Dash' --project $project
 dotnet user-secrets set 'EmailSettings:Password' '<CONTRASENA_DE_APLICACION_GMAIL>' --project $project
 ```
 

@@ -25,14 +25,12 @@ public static class DependencyInjection
     public static IServiceCollection AddOrbiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<ApplicationDbContext>(options => options
-            .UseNpgsql(connectionString, postgres => postgres
-                .EnableRetryOnFailure(
-                    maxRetryCount: 3,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
-                    errorCodesToAdd: null)
-                .CommandTimeout(60))
-            .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        services.AddDbContextPool<ApplicationDbContext>(options => options
+            // Do not replay arbitrary SaveChanges/transactions after an ambiguous connection failure.
+            // Safe startup work and external GET requests have their own bounded retry policies.
+            .UseNpgsql(connectionString, postgres => postgres.CommandTimeout(5))
+            .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)),
+            poolSize: 128);
         services.AddScoped<IApplicationDataSession, ApplicationDataSession>();
 
         services.AddHttpClient<OllamaProductService>(client =>
@@ -47,21 +45,23 @@ public static class DependencyInjection
         {
             client.Timeout = TimeSpan.FromSeconds(20);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("OrbiApp-MarketComparison/1.0");
-        });
+        }).AddHttpMessageHandler<ExternalMarketResilienceHandler>();
+        services.AddSingleton<ExternalMarketCircuitState>();
+        services.AddTransient<ExternalMarketResilienceHandler>();
         services.AddTransient<IMarketPriceProvider>(provider => provider.GetRequiredService<ExternalMarketPriceService>());
         services.AddScoped<ISuggestMarketPriceUseCase, SuggestMarketPriceUseCase>();
 
         services.Configure<PayPalSettings>(configuration.GetSection("PayPal"));
-        services.AddHttpClient<PayPalService>();
+        services.AddHttpClient<PayPalService>(client => client.Timeout = TimeSpan.FromSeconds(30));
         services.AddTransient<IPayPalGateway>(provider => provider.GetRequiredService<PayPalService>());
 
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
-        services.AddTransient<IEmailSender<IdentityUser>, GmailEmailSender>();
-        services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, GmailEmailSender>();
+        services.AddTransient<OrbiApp.Application.Ports.IEmailSender, GmailEmailSender>();
         services.AddHostedService<EmailQueueWorker>();
         services.AddSingleton<BackupService>();
         services.AddSingleton<IBackupManager>(provider => provider.GetRequiredService<BackupService>());
         services.AddHostedService(provider => provider.GetRequiredService<BackupService>());
+        services.AddHostedService<DatabaseInitializationHostedService>();
         return services;
     }
 }

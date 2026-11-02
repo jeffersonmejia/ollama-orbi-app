@@ -3,8 +3,8 @@
     var isAssistantPage = ViewContext.RouteData.Values["controller"]?.ToString() == "Home"
         && ViewContext.RouteData.Values["action"]?.ToString() == "Assistant";
     var contextKey = "public_home";
-    var welcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
-    string[] suggestions = { "¿Qué puedo hacer en Orbi?", "¿Qué productos hay?" };
+    var welcome = "Hola, soy el asistente de Dash. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
+    string[] suggestions = { "¿Qué puedo hacer en Dash?", "¿Qué productos hay?" };
 
     if (page.EndsWith("/Login", StringComparison.OrdinalIgnoreCase))
     {
@@ -29,7 +29,7 @@
         if (User.IsInRole("Administrador"))
         {
             contextKey = "administrador";
-            welcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
+            welcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Dash.";
             suggestions = new[] { "¿Cómo reviso los pedidos?", "¿Cuántos roles existen?" };
         }
         else if (User.IsInRole("Vendedor"))
@@ -95,12 +95,12 @@
     }
 </style>
 
-<aside id="orbi-chat-panel" class="orbi-chat-panel @(isAssistantPage ? "open orbi-chat-page-panel" : "")" data-welcome="@welcome" data-fullscreen="@isAssistantPage.ToString().ToLowerInvariant()" aria-label="Asistente Orbi">
+<aside id="orbi-chat-panel" class="orbi-chat-panel @(isAssistantPage ? "open orbi-chat-page-panel" : "")" data-welcome="@welcome" data-fullscreen="@isAssistantPage.ToString().ToLowerInvariant()" aria-label="Asistente Dash">
     <div class="orbi-chat-header" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
         @if (!isAssistantPage)
         {
             <span class="orbi-chat-brand material-symbols-outlined" style="color:var(--md-sys-color-primary);">smart_toy</span>
-            <strong class="orbi-chat-brand" style="flex:1;">Asistente Orbi</strong>
+            <strong class="orbi-chat-brand" style="flex:1;">Asistente Dash</strong>
         }
         else
         {

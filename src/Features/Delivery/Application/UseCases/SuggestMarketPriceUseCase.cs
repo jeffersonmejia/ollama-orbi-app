@@ -2,7 +2,7 @@ using OrbiApp.Application.Features.Delivery.Ports;
 
 namespace OrbiApp.Application.Features.Delivery.UseCases;
 
-/// <summary>Applies Orbi's pricing rule to prices returned by the external commerce adapter.</summary>
+/// <summary>Applies Dash's pricing rule to prices returned by the external commerce adapter.</summary>
 public sealed class SuggestMarketPriceUseCase(IMarketPriceProvider priceProvider) : ISuggestMarketPriceUseCase
 {
     public async Task<MarketPriceAnalysis?> ExecuteAsync(string productName, CancellationToken cancellationToken)

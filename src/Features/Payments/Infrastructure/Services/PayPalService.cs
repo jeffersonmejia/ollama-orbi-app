@@ -67,7 +67,7 @@ public class PayPalService : IPayPalGateway
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"PayPal respondio con error: {content}");
+            throw new HttpRequestException("Payment provider returned an unsuccessful response.");
         }
 
         using var document = JsonDocument.Parse(content);
@@ -110,7 +110,7 @@ public class PayPalService : IPayPalGateway
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"PayPal respondio con error al capturar: {content}");
+            throw new HttpRequestException("Payment provider returned an unsuccessful response.");
         }
 
         using var document = JsonDocument.Parse(content);
@@ -168,11 +168,11 @@ public class PayPalService : IPayPalGateway
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"No se pudo obtener token PayPal: {content}");
+            throw new HttpRequestException("Payment provider authentication is temporarily unavailable.");
         }
 
         using var document = JsonDocument.Parse(content);
         return document.RootElement.GetProperty("access_token").GetString()
-            ?? throw new InvalidOperationException("PayPal no devolvio access_token.");
+            ?? throw new HttpRequestException("Payment provider authentication is temporarily unavailable.");
     }
 }

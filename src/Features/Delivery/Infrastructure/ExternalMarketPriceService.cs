@@ -55,7 +55,7 @@ public sealed class ExternalMarketPriceService : IMarketPriceProvider
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException)
         {
-            _logger.LogWarning(exception, "No se pudo consultar Fybeca para {Query}", query);
+            _logger.LogWarning(exception, "External market lookup failed. Dependency={Dependency} FailureType={FailureType}", "Fybeca", exception.GetType().Name);
             return null;
         }
     }
@@ -96,7 +96,7 @@ public sealed class ExternalMarketPriceService : IMarketPriceProvider
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException)
         {
-            _logger.LogWarning(exception, "No se pudo consultar {Store} para {Query}", store, query);
+            _logger.LogWarning(exception, "External market lookup failed. Dependency={Dependency} FailureType={FailureType}", store, exception.GetType().Name);
             return null;
         }
     }

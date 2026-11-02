@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
@@ -101,9 +101,8 @@
     }
 </style>
 
-<div style="display:flex;align-items:center;justify-content:center;max-width:960px;margin:2rem auto;padding:0 1rem;">
-    <div style="flex:1;width:100%;">
-        <div class="m3-card" style="padding:2rem;">
+<div class="orbi-register-container">
+    <div class="m3-card orbi-register-card">
         <h1 style="font-size:var(--md-sys-typescale-headline-small-size);font-weight:var(--md-sys-typescale-headline-small-weight);color:var(--md-sys-color-on-surface);margin:0 0 1.5rem;text-align:center;">@ViewData["Title"]</h1>
 
         @if (TempData["ErrorMessage"] is string externalRegistrationError)
@@ -114,7 +113,7 @@
         }
 
         <form id="registerForm" class="orbi-register-grid" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger orbi-register-summary" role="alert"></div>
+            <div asp-validation-summary="ModelOnly" class="m3-validation-error orbi-register-summary" role="alert"></div>
 
             <div class="orbi-register-progress" aria-label="Progreso del registro">
                 <span class="orbi-register-progress-dot active" aria-hidden="true"></span>
@@ -131,7 +130,7 @@
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">person</span>
                     <input asp-for="Input.FirstName" class="m3-text-field-input" style="padding-left:40px;" autocomplete="given-name" aria-required="true" placeholder="Nombres" />
                 </div>
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                <span asp-validation-for="Input.FirstName" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -140,7 +139,7 @@
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">person</span>
                     <input asp-for="Input.LastName" class="m3-text-field-input" style="padding-left:40px;" autocomplete="family-name" aria-required="true" placeholder="Apellidos" />
                 </div>
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                <span asp-validation-for="Input.LastName" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -149,7 +148,7 @@
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">id_card</span>
                     <input asp-for="Input.Cedula" class="m3-text-field-input" style="padding-left:40px;" inputmode="numeric" maxlength="10" autocomplete="off" aria-required="true" placeholder="10 dígitos" />
                 </div>
-                <span asp-validation-for="Input.Cedula" class="text-danger"></span>
+                <span asp-validation-for="Input.Cedula" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -160,12 +159,11 @@
                         <option value="">Selecciona un rol</option>
                     </select>
                 </div>
-                <span asp-validation-for="Input.Role" class="text-danger"></span>
+                <span asp-validation-for="Input.Role" class="m3-validation-error"></span>
                 <small id="roleSummary" style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);"></small>
             </div>
 
             <div class="orbi-register-full">
-                <p class="m3-text-field-label" style="margin:0;">Los pagos de pedidos se procesan con PayPal.</p>
             </div>
 
             <div class="orbi-register-actions">
@@ -184,7 +182,7 @@
                         <option value="">Selecciona una provincia</option>
                     </select>
                 </div>
-                <span asp-validation-for="Input.ProvinceCode" class="text-danger"></span>
+                <span asp-validation-for="Input.ProvinceCode" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -195,25 +193,25 @@
                         <option value="">Selecciona primero una provincia</option>
                     </select>
                 </div>
-                <span asp-validation-for="Input.CityCode" class="text-danger"></span>
+                <span asp-validation-for="Input.CityCode" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
                 <label class="m3-text-field-label" asp-for="Input.AddressLine1"></label>
                 <input asp-for="Input.AddressLine1" class="m3-text-field-input" autocomplete="address-line1" aria-required="true" placeholder="Ej. Av. Principal" />
-                <span asp-validation-for="Input.AddressLine1" class="text-danger"></span>
+                <span asp-validation-for="Input.AddressLine1" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
                 <label class="m3-text-field-label" asp-for="Input.AddressLine2"></label>
                 <input asp-for="Input.AddressLine2" class="m3-text-field-input" autocomplete="address-line2" aria-required="true" placeholder="Ej. Calle secundaria" />
-                <span asp-validation-for="Input.AddressLine2" class="text-danger"></span>
+                <span asp-validation-for="Input.AddressLine2" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field orbi-register-full">
                 <label class="m3-text-field-label" asp-for="Input.Reference"></label>
                 <input asp-for="Input.Reference" class="m3-text-field-input" placeholder="Ej. Frente al parque, casa azul" />
-                <span asp-validation-for="Input.Reference" class="text-danger"></span>
+                <span asp-validation-for="Input.Reference" class="m3-validation-error"></span>
             </div>
 
             <div class="orbi-register-actions">
@@ -231,7 +229,7 @@
                     <span class="m3-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--md-sys-color-on-surface-variant);pointer-events:none;font-size:20px;">mail</span>
                     <input asp-for="Input.Email" class="m3-text-field-input" style="padding-left:40px;" autocomplete="username" aria-required="true" placeholder="correo@ejemplo.com" />
                 </div>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                <span asp-validation-for="Input.Email" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -244,7 +242,7 @@
                         <svg class="m3-eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     </button>
                 </div>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <span asp-validation-for="Input.Password" class="m3-validation-error"></span>
             </div>
 
             <div class="m3-text-field">
@@ -257,7 +255,7 @@
                         <svg class="m3-eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     </button>
                 </div>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                <span asp-validation-for="Input.ConfirmPassword" class="m3-validation-error"></span>
             </div>
 
             <div class="orbi-register-google orbi-register-full">
@@ -279,7 +277,6 @@
             </div>
             </section>
         </form>
-    </div>
     </div>
 </div>
 

@@ -1,14 +1,14 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using OrbiApp.Application.Ports;
 using OrbiApp.Infrastructure.Features.Notifications.Settings;
 
 namespace OrbiApp.Infrastructure.Features.Notifications;
 
-public class GmailEmailSender : IEmailSender<IdentityUser>, IEmailSender
+public class GmailEmailSender : IEmailSender
 {
     private readonly EmailSettings _settings;
     private readonly ILogger<GmailEmailSender> _logger;
@@ -53,7 +53,10 @@ public class GmailEmailSender : IEmailSender<IdentityUser>, IEmailSender
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "No se pudo enviar correo a {Email} con asunto '{Subject}'.", email, subject);
+            _logger.LogWarning(
+                ex,
+                "Email provider request failed. FailureType={FailureType}",
+                ex.GetType().Name);
         }
     }
 

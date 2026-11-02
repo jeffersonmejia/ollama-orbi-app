@@ -1,0 +1,95 @@
+name: dash-observability
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: dash-sonarqube
+    restart: unless-stopped
+    cpus: 3.5
+    mem_limit: 5g
+    ports:
+      - "127.0.0.1:9001:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  prometheus:
+    image: prom/prometheus:v3.10.0
+    container_name: dash-prometheus
+    restart: unless-stopped
+    cpus: 0.75
+    mem_limit: 768m
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=14d
+      - --web.enable-otlp-receiver
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:12.2.1
+    container_name: dash-grafana
+    restart: unless-stopped
+    cpus: 0.75
+    mem_limit: 512m
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Define GRAFANA_ADMIN_PASSWORD en .sonarqube/.env}
+      GF_AUTH_BASIC_ENABLED: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_LIVE_MAX_CONNECTIONS: "100"
+      GF_LIVE_ALLOWED_ORIGINS: http://localhost:3000
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/dash-performance.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  telegraf:
+    image: telegraf:1.37-alpine
+    container_name: dash-telegraf
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 384m
+    depends_on:
+      prometheus:
+        condition: service_started
+      grafana:
+        condition: service_healthy
+    environment:
+      GRAFANA_BASIC_AUTH: ${GRAFANA_BASIC_AUTH:?Define GRAFANA_BASIC_AUTH en .sonarqube/.env}
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+volumes:
+  sonarqube_data:
+    external: true
+    name: orbi-sonarqube-audit-data
+  sonarqube_extensions:
+    external: true
+    name: orbi-sonarqube-audit-extensions
+  sonarqube_logs:
+    external: true
+    name: orbi-sonarqube-audit-logs
+  prometheus_data:
+    name: dash-prometheus-data
+  grafana_data:
+    name: dash-grafana-data
+

@@ -1,108 +1,11 @@
 @page "/app/asistente"
-@implements IAsyncDisposable
-@inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IConfiguration Configuration
 
-<PageTitle>Asistente - Orbi</PageTitle>
+<PageTitle>Asistente - Dash</PageTitle>
 
-<section class="orbi-assistant-screen" aria-label="Asistente Orbi">
-    <aside id="orbi-chat-panel" class="orbi-chat-panel open orbi-chat-page-panel"
-           data-welcome="@_welcome" data-context="@_context" data-timeout-ms="@_timeoutMilliseconds"
-           aria-label="Asistente Orbi">
-        <header class="orbi-chat-header">
-            <span class="orbi-chat-page-header-spacer" aria-hidden="true"></span>
-            <button id="orbi-chat-new" type="button" class="m3-filled-button orbi-chat-new-button">
-                <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                <span>Nuevo chat</span>
-            </button>
-        </header>
-
-        <div class="orbi-chat-body">
-            <div id="orbi-chat-messages" aria-live="polite" aria-relevant="additions text">
-                <div class="orbi-chat-empty-state" id="orbi-chat-empty-state">
-                    <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
-                    <h1>¿En qué te ayudo hoy?</h1>
-                    <p>@_welcome</p>
-                </div>
-            </div>
-
-            <div class="orbi-chat-suggestions" aria-label="Preguntas sugeridas">
-                @foreach (var suggestion in _suggestions)
-                {
-                    <button type="button" class="orbi-chat-suggestion" data-question="@suggestion">@suggestion</button>
-                }
-            </div>
-
-            <form id="orbi-chat-form" class="orbi-chat-composer" autocomplete="off">
-                <textarea id="orbi-chat-input" class="orbi-chat-input" name="message" rows="1" maxlength="500"
-                          required placeholder="Escribe tu pregunta..." aria-label="Mensaje para el asistente"></textarea>
-                <button id="orbi-chat-send" class="m3-filled-button" type="submit" aria-label="Enviar mensaje" title="Enviar">
-                    <svg class="orbi-chat-send-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 19V5m-7 7 7-7 7 7" /></svg>
-                    <svg class="orbi-chat-send-stop" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M7 7h10v10H7z" /></svg>
-                </button>
-            </form>
-            <p class="orbi-chat-disclaimer">Orbi puede cometer errores. Verifica la información importante.</p>
-        </div>
-    </aside>
+<section class="orbi-assistant-screen" aria-label="Asistente Dash">
+    <div class="m3-card orbi-assistant-disabled" role="status">
+        <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+        <h1>Asistente temporalmente deshabilitado</h1>
+        <p>Este módulo volverá a estar disponible más adelante.</p>
+    </div>
 </section>
-
-@code {
-    private IJSObjectReference? _module;
-    private string _context = "public_home";
-    private string _welcome = "Hola, soy el asistente de Orbi. Puedo ayudarte a conocer la aplicación, sus tiendas y productos.";
-    private string[] _suggestions = ["¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Qué métodos de pago aceptan?"];
-    private int _timeoutMilliseconds;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-        if (principal.IsInRole("Administrador"))
-        {
-            _context = "administrador";
-            _welcome = "Hola. Puedo ayudarte con tiendas, pedidos, usuarios y la administración de Orbi.";
-            _suggestions = ["¿Cómo reviso los pedidos?", "¿Cómo administro las tiendas?", "¿Cómo gestiono los usuarios?"];
-        }
-        else if (principal.IsInRole("Vendedor"))
-        {
-            _context = "vendedor";
-            _welcome = "Hola. Puedo orientarte con el catálogo, las tiendas y la operación comercial.";
-            _suggestions = ["¿Qué productos están disponibles?", "¿Cómo actualizo el inventario?", "¿Cómo reviso mis ventas?"];
-        }
-        else if (principal.IsInRole("Repartidor"))
-        {
-            _context = "repartidor";
-            _welcome = "Hola. Puedo ayudarte a consultar tus entregas y actualizar su estado.";
-            _suggestions = ["¿Dónde veo mis entregas?", "¿Cómo actualizo una entrega?", "¿Qué estados puede tener un pedido?"];
-        }
-        else if (principal.IsInRole("Usuario"))
-        {
-            _context = "usuario";
-            _welcome = "Hola. Puedo ayudarte a encontrar productos, hacer pedidos y revisar su estado.";
-            _suggestions = ["¿Qué productos hay?", "¿Cómo hago un pedido?", "¿Dónde reviso el estado de mi pedido?"];
-        }
-
-        _timeoutMilliseconds = Math.Clamp(Configuration.GetValue("Blazor:AssistantTimeoutSeconds", 120), 1, 600) * 1000;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-        _module = await JS.InvokeAsync<IJSObjectReference>("import", "/Pages/Assistant.razor.js");
-        await _module.InvokeVoidAsync("initialize");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_module is null) return;
-        try
-        {
-            await _module.InvokeVoidAsync("dispose");
-            await _module.DisposeAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            // The browser circuit or document is already gone.
-        }
-    }
-}

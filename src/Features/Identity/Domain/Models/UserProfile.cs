@@ -16,5 +16,4 @@ public class UserProfile
 
     public EcuadorProvince Province { get; set; } = null!;
     public EcuadorCity City { get; set; } = null!;
-    public ICollection<UserAddress> Addresses { get; set; } = new List<UserAddress>();
 }

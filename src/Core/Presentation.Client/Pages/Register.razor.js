@@ -40,7 +40,7 @@ export function populateOptions(options) {
     if (token) token.value = options.requestToken ?? '';
 
     const roleSelect = form.querySelector('#Input_Role');
-    replaceOptions(roleSelect, 'Selecciona un rol', options.roles.map(role => [role, role]));
+    roleSelect.replaceChildren(...options.roles.map(role => new Option(role, role)));
     if (options.roles.includes('Usuario')) roleSelect.value = 'Usuario';
     roleSelect.disabled = false;
 

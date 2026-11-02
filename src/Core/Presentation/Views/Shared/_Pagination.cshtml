@@ -19,7 +19,16 @@
     };
 }
 
-<p class="m3-pagination-meta">Página @paginatedList.PageIndex.ToString("N0") de @Math.Max(1, paginatedList.TotalPages).ToString("N0") · @paginatedList.TotalCount.ToString("N0") registros totales · máximo @paginatedList.PageSize.ToString("N0") por página</p>
+@if (ViewData["HidePaginationMeta"] as bool? != true)
+{
+    <p class="m3-pagination-meta">
+        @if (paginatedList.TotalPages > 1)
+        {
+            <span>Página @paginatedList.PageIndex.ToString("N0") de @paginatedList.TotalPages.ToString("N0") · </span>
+        }
+        @paginatedList.TotalCount.ToString("N0") resultados
+    </p>
+}
 
 @if (paginatedList.TotalPages > 1)
 {

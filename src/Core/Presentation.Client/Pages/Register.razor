@@ -3,7 +3,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
-<PageTitle>Crear cuenta - Orbi</PageTitle>
+<PageTitle>Crear cuenta - Dash</PageTitle>
 
 <main class="orbi-register-page">
     <section class="orbi-register-card" aria-labelledby="register-title">
@@ -26,34 +26,27 @@
 
             <section class="orbi-register-step active" data-step="0">
                 <h2>1. Datos personales</h2>
-                <label>Nombres<input name="Input.FirstName" autocomplete="given-name" maxlength="80" required /></label>
-                <label>Apellidos<input name="Input.LastName" autocomplete="family-name" maxlength="80" required /></label>
-                <label>Cédula<input name="Input.Cedula" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" required /></label>
-                <label>Rol
-                    <select name="Input.Role" id="Input_Role" required disabled>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">person</span><input name="Input.FirstName" autocomplete="given-name" maxlength="80" placeholder=" " required /><span class="orbi-register-floating-label">Nombres</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">person</span><input name="Input.LastName" autocomplete="family-name" maxlength="80" placeholder=" " required /><span class="orbi-register-floating-label">Apellidos</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">badge</span><input name="Input.Cedula" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" placeholder=" " required /><span class="orbi-register-floating-label">Cédula</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">manage_accounts</span><select name="Input.Role" id="Input_Role" required disabled>
                         <option value="">@_rolesLoading</option>
-                    </select>
-                </label>
+                    </select><span class="orbi-register-floating-label">Rol</span></span></label>
                 <p id="roleSummary" class="orbi-register-hint"></p>
-                <p class="orbi-register-hint orbi-register-full">Los pagos de pedidos se procesan con PayPal.</p>
                 <div class="orbi-register-actions"><button type="button" class="orbi-register-next">Siguiente</button></div>
             </section>
 
             <section class="orbi-register-step" data-step="1">
                 <h2>2. Ubicación y dirección</h2>
-                <label>Provincia
-                    <select name="Input.ProvinceCode" id="Input_ProvinceCode" required disabled>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">map</span><select name="Input.ProvinceCode" id="Input_ProvinceCode" required disabled>
                         <option value="">@_locationsLoading</option>
-                    </select>
-                </label>
-                <label>Ciudad
-                    <select name="Input.CityCode" id="Input_CityCode" required disabled>
+                    </select><span class="orbi-register-floating-label">Provincia</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">location_city</span><select name="Input.CityCode" id="Input_CityCode" required disabled>
                         <option value="">@_locationsLoading</option>
-                    </select>
-                </label>
-                <label>Calle principal<input name="Input.AddressLine1" autocomplete="address-line1" maxlength="160" required /></label>
-                <label>Calle secundaria<input name="Input.AddressLine2" autocomplete="address-line2" maxlength="160" required /></label>
-                <label class="orbi-register-full">Referencia (opcional)<input name="Input.Reference" maxlength="240" /></label>
+                    </select><span class="orbi-register-floating-label">Ciudad</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">signpost</span><input name="Input.AddressLine1" autocomplete="address-line1" maxlength="160" placeholder=" " required /><span class="orbi-register-floating-label">Calle principal</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">alt_route</span><input name="Input.AddressLine2" autocomplete="address-line2" maxlength="160" placeholder=" " required /><span class="orbi-register-floating-label">Calle secundaria</span></span></label>
+                <label class="orbi-register-field orbi-register-full"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">location_on</span><input name="Input.Reference" maxlength="240" placeholder=" " /><span class="orbi-register-floating-label">Referencia (opcional)</span></span></label>
                 <div class="orbi-register-actions">
                     <button type="button" class="orbi-register-previous">Anterior</button>
                     <button type="button" class="orbi-register-next">Siguiente</button>
@@ -62,11 +55,11 @@
 
             <section class="orbi-register-step" data-step="2">
                 <h2>3. Datos de acceso</h2>
-                <label class="orbi-register-full">Correo electrónico<input name="Input.Email" type="email" autocomplete="username" required /></label>
-                <label>Contraseña<input name="Input.Password" type="password" autocomplete="new-password" minlength="6" maxlength="100" required /></label>
-                <label>Confirmar contraseña<input name="Input.ConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="100" required /></label>
+                <label class="orbi-register-field orbi-register-full"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">mail</span><input name="Input.Email" type="email" autocomplete="username" placeholder=" " required /><span class="orbi-register-floating-label">Correo electrónico</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">lock</span><input name="Input.Password" type="password" autocomplete="new-password" minlength="6" maxlength="100" placeholder=" " required /><span class="orbi-register-floating-label">Contraseña</span></span></label>
+                <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">lock</span><input name="Input.ConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="100" placeholder=" " required /><span class="orbi-register-floating-label">Confirmar contraseña</span></span></label>
                 <div class="orbi-register-google orbi-register-full">
-                    <span>O regístrate con Google</span>
+                    <span class="orbi-register-divider">O</span>
                     <button type="submit" name="provider" value="Google" formnovalidate formaction="@_googleUrl">
                         <img src="/assets/icons/google.png" alt="" aria-hidden="true" /> Registrarse con Google
                     </button>
@@ -132,7 +125,7 @@
         {
             var options = await _module!.InvokeAsync<RegistrationOptionsResponse>("loadOptions");
             _requestToken = options.RequestToken;
-            _rolesLoading = "Selecciona un rol";
+            _rolesLoading = "Usuario";
             _locationsLoading = "Selecciona una provincia";
             await _module!.InvokeVoidAsync("populateOptions", options);
         }

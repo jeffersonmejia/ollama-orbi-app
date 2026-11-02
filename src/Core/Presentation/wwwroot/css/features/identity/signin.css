@@ -1,0 +1,108 @@
+/* Campos y acciones del inicio de sesión. */
+.orbi-login-card {
+    background: var(--md-sys-color-surface-container-lowest, #fff);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    box-shadow: none;
+    transition: none;
+}
+
+.orbi-login-card:hover { box-shadow: none; }
+.orbi-auth-control {
+        --orbi-auth-field-background: var(--md-sys-color-surface-container-lowest, #fff);
+        position: relative;
+        display: flex;
+        align-items: center;
+        border-radius: var(--md-sys-shape-corner-small);
+        background-color: var(--orbi-auth-field-background);
+    }
+
+    .orbi-auth-control .m3-text-field-input {
+        width: 100%;
+        min-height: 3.25rem;
+        padding: .75rem 2.9rem .75rem 3.1rem;
+        background-color: var(--orbi-auth-field-background) !important;
+    }
+
+    .orbi-auth-control .m3-text-field-input:not([type="checkbox"]):not([type="radio"]):focus,
+    .orbi-auth-control .m3-text-field-input:not([type="checkbox"]):not([type="radio"]):focus-visible {
+        border: 2px solid var(--md-sys-color-primary);
+        box-shadow: none;
+        outline: none;
+    }
+
+    .orbi-auth-field-icon {
+        position: absolute;
+        z-index: 1;
+        left: 1rem;
+        top: 50%;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 1.25rem;
+        line-height: 1;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .orbi-auth-floating-label {
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        left: 3.1rem;
+        padding: 0 .2rem;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 1rem;
+        line-height: 1.2;
+        transform: translateY(-50%);
+        transform-origin: left center;
+        transition: top .16s ease, transform .16s ease, color .16s ease;
+        pointer-events: none;
+    }
+
+    .orbi-auth-control:focus-within .orbi-auth-floating-label,
+    .orbi-auth-control input:not(:placeholder-shown) + .orbi-auth-floating-label {
+        top: 0;
+        color: var(--md-sys-color-primary);
+        background-color: var(--orbi-auth-field-background) !important;
+        transform: translateY(-50%) scale(.82);
+    }
+
+    .orbi-auth-control .m3-password-toggle {
+        position: absolute;
+        right: .25rem;
+        z-index: 2;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .orbi-auth-floating-label { transition: none; }
+    }
+
+    .orbi-login-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+        gap: .75rem;
+    }
+
+    .orbi-login-actions > button {
+        width: 100%;
+        white-space: nowrap;
+    }
+
+    .orbi-google-mark {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        border-radius: 2px;
+    }
+
+    @media (max-width: 420px) {
+        .orbi-login-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
+.orbi-auth-control input:user-invalid {
+    border-color: var(--md-sys-color-error);
+}
+
+.orbi-auth-control input:user-invalid + .orbi-auth-floating-label {
+    color: var(--md-sys-color-error);
+}

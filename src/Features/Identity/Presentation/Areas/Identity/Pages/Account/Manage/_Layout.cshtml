@@ -5,12 +5,10 @@
 }
 
 <div class="orbi-account-shell">
-    <header class="orbi-account-shell-header">
-        <h1>Cuenta</h1>
-        <p>Administra tu información y seguridad.</p>
-    </header>
     <div class="orbi-account-layout">
-        <aside><partial name="_ManageNav" /></aside>
+        <nav class="orbi-account-navigation" aria-label="Navegación de la cuenta">
+            <partial name="_ManageNav" />
+        </nav>
         <main>@RenderBody()</main>
     </div>
 </div>

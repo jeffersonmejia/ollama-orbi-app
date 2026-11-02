@@ -1,0 +1,110 @@
+/* Campos, labels flotantes y estados de validación. */
+.orbi-register-field { display: block; min-width: 0; }
+.orbi-register-control {
+    --orbi-register-field-background: var(--md-sys-color-surface-container-lowest, #fff);
+    position: relative;
+    display: block;
+    border-radius: 1rem;
+    background-color: var(--orbi-register-field-background);
+}
+
+.orbi-register-field-icon {
+    position: absolute;
+    z-index: 1;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+    font-size: 1.25rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.orbi-register-floating-label {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 3.1rem;
+    padding: 0 .2rem;
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+    font-size: .98rem;
+    line-height: 1.2;
+    transform: translateY(-50%);
+    transform-origin: left center;
+    transition: top .16s ease, transform .16s ease, color .16s ease;
+    pointer-events: none;
+}
+
+.orbi-register-step input,
+.orbi-register-step select {
+    width: 100%;
+    min-width: 0;
+    min-height: 3.25rem;
+    padding: .75rem 1rem .75rem 3.1rem;
+    border: 0;
+    border-radius: 1rem;
+    outline: 1px solid var(--md-sys-color-outline-variant, #c4c7cf);
+    background-color: var(--orbi-register-field-background) !important;
+    color: var(--md-sys-color-on-surface, #191c20);
+    font: inherit;
+    font-size: 1rem;
+    transition: outline-color .16s ease, box-shadow .16s ease;
+}
+
+.orbi-register-step select {
+    appearance: auto;
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+}
+
+/* Los selects conservan una etiqueta visible aunque muestren una opción guía. */
+.orbi-register-control select + .orbi-register-floating-label {
+    top: 0;
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+    background-color: var(--orbi-register-field-background) !important;
+    transform: translateY(-50%) scale(.82);
+}
+
+.orbi-register-control:focus-within .orbi-register-floating-label,
+.orbi-register-control input:not(:placeholder-shown) + .orbi-register-floating-label,
+.orbi-register-control select:valid + .orbi-register-floating-label {
+    top: 0;
+    color: var(--md-sys-color-primary, #d2006e);
+    background-color: var(--orbi-register-field-background) !important;
+    transform: translateY(-50%) scale(.82);
+}
+
+.orbi-register-step input:not([type="checkbox"]):not([type="radio"]):focus,
+.orbi-register-step select:focus {
+    outline: 2px solid var(--md-sys-color-primary, #d2006e);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+.orbi-register-step input:disabled,
+.orbi-register-step select:disabled { opacity: .72; }
+.orbi-register-step input:focus-visible,
+.orbi-register-step select:focus-visible { outline: 2px solid var(--md-sys-color-primary, #d2006e); }
+.orbi-register-hint { grid-column: 1 / -1; margin: -.35rem 0 0; color: var(--md-sys-color-on-surface-variant, #44474e); }
+
+.orbi-register-step input:user-invalid,
+.orbi-register-step select:user-invalid {
+    outline: 2px solid var(--md-sys-color-error, #ba1a1a);
+}
+
+.orbi-register-control input:user-invalid + .orbi-register-floating-label,
+.orbi-register-control select:user-invalid + .orbi-register-floating-label {
+    color: var(--md-sys-color-error, #ba1a1a);
+}
+
+.orbi-register-control select:focus + .orbi-register-floating-label {
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+}
+
+.orbi-register-control select:user-invalid + .orbi-register-floating-label {
+    color: var(--md-sys-color-error, #ba1a1a);
+}
+
+.orbi-register-control:focus-within select + .orbi-register-floating-label,
+.orbi-register-control select:valid + .orbi-register-floating-label {
+    color: var(--md-sys-color-on-surface-variant, #44474e);
+}

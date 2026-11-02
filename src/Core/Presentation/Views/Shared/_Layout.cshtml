@@ -1,9 +1,14 @@
 <!DOCTYPE html>
+@using System.Security.Claims
 <html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Orbi App</title>
+    <link rel="icon" type="image/png" href="~/assets/icons/favicon.png" asp-append-version="true" />
+    <title>@ViewData["Title"] - Dash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="~/css/m3/m3-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/m3/m3-layout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/m3/m3-components.css" asp-append-version="true" />
@@ -14,7 +19,80 @@
     <link rel="stylesheet" href="~/css/components/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components/pagination.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/m3/m3-experience.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/assistant/assistant.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/errors/errors.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/m3/m3-navigation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/m3/m3-blazor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/features/identity/signin.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script>
+        try {
+            if (sessionStorage.getItem('dash-nav-progress') === '1') {
+                document.documentElement.classList.add('dash-navigation-pending');
+            }
+        } catch { }
+    </script>
+    <script>
+        (() => {
+            const key = 'orbi-session-context';
+            const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            const displayName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(User.FindFirstValue(ClaimTypes.GivenName) ?? User.FindFirstValue("given_name")));
+            const role = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(User.FindFirstValue(ClaimTypes.Role)));
+            const sessionContextUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("SessionContext", "Delivery")));
+            let snapshot = null;
+
+            try {
+                snapshot = JSON.parse(localStorage.getItem(key) || 'null');
+                if (!userId) {
+                    localStorage.removeItem(key);
+                    snapshot = null;
+                } else {
+                    if (!snapshot || snapshot.userId !== userId) snapshot = { userId };
+                    snapshot = { ...snapshot, userId, displayName: displayName || snapshot?.displayName || null, role: role || snapshot?.role || null };
+                    localStorage.setItem(key, JSON.stringify(snapshot));
+                }
+            } catch {
+                snapshot = userId ? { userId, displayName, role } : null;
+            }
+
+            window.orbiSessionCache = {
+                read: () => snapshot,
+                update: values => {
+                    if (!snapshot?.userId) return null;
+                    snapshot = { ...snapshot, ...values, userId };
+                    try { localStorage.setItem(key, JSON.stringify(snapshot)); } catch { }
+                    return snapshot;
+                },
+                clear: () => {
+                    snapshot = null;
+                    try { localStorage.removeItem(key); } catch { }
+                }
+            };
+
+            document.addEventListener('submit', event => {
+                const action = event.target?.action;
+                if (action && new URL(action, location.href).pathname.toLowerCase().includes('/account/logout'))
+                    window.orbiSessionCache.clear();
+            }, true);
+            document.addEventListener('DOMContentLoaded', () => {
+                const displayNameTarget = document.querySelector('[data-user-display-name]');
+                if (snapshot?.displayName && displayNameTarget) displayNameTarget.textContent = snapshot.displayName;
+
+                if (!userId || role !== 'Usuario' || snapshot?.hasAddress !== undefined || document.querySelector('[data-store-results]')) return;
+                fetch(sessionContextUrl, {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-store'
+                }).then(response => {
+                    if (!response.ok) throw new Error('No se pudo cargar el contexto de usuario.');
+                    return response.json();
+                }).then(context => {
+                    window.orbiSessionCache.update(context);
+                    if (context.displayName && displayNameTarget) displayNameTarget.textContent = context.displayName;
+                }).catch(() => { });
+            });
+        })();
+    </script>
 </head>
 <body>
 
@@ -22,23 +100,46 @@
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     var currentPage = ViewContext.RouteData.Values["page"]?.ToString();
+    var isPublicIdentityPage = currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true
+        || currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true;
+    var isUserPurchasesPage = currentController == "Delivery"
+        && currentAction is "MyOrders" or "MyPayments" or "Cart" or "UpdateCartItem" or "RemoveFromCart" or "Checkout" or "PaymentSuccess";
 }
 
 @inject SignInManager<IdentityUser> SignInManager
-@using System.Security.Claims
 @{
     var currentUserRole = User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Role)?.Value ?? string.Empty;
     var navPreferenceKey = SignInManager.IsSignedIn(User)
         ? User.FindFirstValue(ClaimTypes.NameIdentifier)
         : "anonymous";
+    var currentUserFirstName = User.FindFirstValue(ClaimTypes.GivenName)
+        ?? User.FindFirstValue("given_name");
+
+    if (string.IsNullOrWhiteSpace(currentUserFirstName))
+    {
+        var localName = (User.Identity?.Name ?? string.Empty).Split('@')[0];
+        var firstNamePart = localName.Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        currentUserFirstName = string.IsNullOrWhiteSpace(firstNamePart)
+            ? "Mi cuenta"
+            : char.ToUpperInvariant(firstNamePart[0]) + firstNamePart[1..];
+    }
+
+    currentUserFirstName = currentUserFirstName
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .FirstOrDefault() ?? "Mi cuenta";
+    currentUserRole = string.IsNullOrWhiteSpace(currentUserRole) ? "Sin rol asignado" : currentUserRole;
 }
+<script>
+    const cachedDisplayName = window.orbiSessionCache?.read()?.displayName;
+    window.orbiSessionCache?.update({
+        displayName: cachedDisplayName || @Html.Raw(System.Text.Json.JsonSerializer.Serialize(currentUserFirstName)),
+        role: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(currentUserRole))
+    });
+</script>
 <div class="m3-app-layout" id="m3-app-layout" data-nav-preference-key="@navPreferenceKey">
     <nav class="m3-nav-rail" id="m3-nav-rail" aria-label="Navegación principal">
         <div class="m3-nav-rail-header">
-            <a class="m3-nav-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="Orbi" title="Orbi">
-                <span class="m3-nav-brand-mark material-symbols-outlined" aria-hidden="true">shopping_bag</span>
-                <span class="m3-nav-brand-label">Orbi</span>
-            </a>
+            <span class="m3-nav-brand-label" aria-label="Dash">Dash</span>
             <button class="m3-icon-btn m3-nav-toggle" id="m3-nav-toggle" type="button"
                     aria-label="Contraer navegación" aria-controls="m3-nav-rail" aria-expanded="true"
                     title="Contraer navegación">
@@ -47,17 +148,10 @@
         </div>
 
         <ul class="m3-nav-items">
-            @if (User.Identity?.IsAuthenticated == true)
+            @if (User.Identity?.IsAuthenticated == true && !isPublicIdentityPage)
             {
                 <li>
-                    <a class="m3-nav-item @(currentController == "Home" && currentAction == "Assistant" ? "active" : "")"
-                       href="/app/asistente">
-                        <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
-                        <span>Asistente</span>
-                    </a>
-                </li>
-                <li>
-                <a class="m3-nav-item @(currentController == "Delivery" && currentAction == "Index" ? "active" : "")"
+                <a data-nav-progress="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "Index" ? "active" : "")"
                        asp-controller="Delivery" asp-action="Index">
                         <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
                         <span>Tiendas</span>
@@ -65,36 +159,43 @@
                 </li>
                 @if (User.IsInRole("Usuario"))
                 {
-                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="MyOrders"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span><span>Pedidos</span></a></li>
-                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="MyPayments"><span class="material-symbols-outlined" aria-hidden="true">payments</span><span>Pagos</span></a></li>
-                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="Cart"><span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span><span>Carrito</span></a></li>
+                    <li><a data-nav-progress="true" class="m3-nav-item @(isUserPurchasesPage ? "active" : string.Empty)" asp-controller="Delivery" asp-action="Cart"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></a></li>
                 }
                 @if (User.IsInRole("Repartidor"))
                 {
-                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="Deliveries"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></a></li>
+                    <li><a data-nav-progress="true" class="m3-nav-item" asp-controller="Delivery" asp-action="Deliveries"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></a></li>
                 }
                 @if (User.IsInRole("Administrador"))
                 {
-                    <li><a class="m3-nav-item" asp-controller="Delivery" asp-action="Admin"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></a></li>
+                    <li><a data-nav-progress="true" class="m3-nav-item" asp-controller="Delivery" asp-action="Admin"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></a></li>
                 }
-                <li>
-                <a class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" ? "active" : "")"
-                       asp-controller="@(User.IsInRole("Vendedor") ? "Delivery" : "Operations")" asp-action="@(User.IsInRole("Vendedor") ? "SellerInventory" : User.IsInRole("Administrador") ? "DeliveryIncidents" : "Index")">
-                        <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
-                        <span>@(User.IsInRole("Administrador") ? "Operación" : User.IsInRole("Vendedor") ? "Inventario" : "Seguimiento")</span>
-                    </a>
-                </li>
+                @if (User.IsInRole("Administrador") || User.IsInRole("Vendedor") || User.IsInRole("Repartidor"))
+                {
+                    <li>
+                        <a data-nav-progress="true" class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" && (currentAction == "OrderStatusHistory" || currentAction == "DeliveryIncidents") || currentController == "Delivery" && (currentAction == "Deliveries" || currentAction == "SellerInventory") ? "active" : "")"
+                           asp-controller="@(User.IsInRole("Vendedor") ? "Delivery" : "Operations")" asp-action="@(User.IsInRole("Vendedor") ? "SellerInventory" : User.IsInRole("Administrador") ? "DeliveryIncidents" : "OrderStatusHistory")">
+                            <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
+                            <span>@(User.IsInRole("Administrador") ? "Operación" : User.IsInRole("Vendedor") ? "Inventario" : "Seguimiento")</span>
+                        </a>
+                    </li>
+                }
             }
             else
             {
                 <li>
-                    <a class="m3-nav-item @(currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Login">
+                    <a data-nav-progress="true" class="m3-nav-item @(Context.Request.Path == "/" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
+                        <span class="material-symbols-outlined" aria-hidden="true">home</span>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li>
+                    <a data-nav-progress="true" class="m3-nav-item @(currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Login">
                         <span class="material-symbols-outlined" aria-hidden="true">login</span>
                         <span>Iniciar sesión</span>
                     </a>
                 </li>
                 <li>
-                    <a class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/registro">
+                    <a data-nav-progress="true" class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/registro">
                         <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
                         <span>Registro</span>
                     </a>
@@ -102,14 +203,14 @@
             }
         </ul>
 
-        @if (SignInManager.IsSignedIn(User))
+        @if (SignInManager.IsSignedIn(User) && !isPublicIdentityPage)
         {
             <div class="m3-nav-rail-footer">
-                <a class="m3-nav-item orbi-profile-nav-item" asp-area="Identity" asp-page="/Account/Manage/Index"
+                <a data-nav-progress="true" class="m3-nav-item orbi-profile-nav-item @(currentPage?.StartsWith("/Account/Manage", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Manage/Index"
                    title="@User.Identity?.Name">
                     <span class="material-symbols-outlined" aria-hidden="true">person</span>
                     <span class="orbi-profile-label">
-                        <span>Perfil</span>
+                        <span data-user-display-name>@currentUserFirstName</span>
                         <small>@currentUserRole</small>
                     </span>
                 </a>
@@ -117,13 +218,13 @@
         }
     </nav>
 
-    <div class="m3-content-area @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-content-area" : string.Empty)">
-        <main class="m3-main @(currentController == "Home" && User.Identity?.IsAuthenticated != true ? "orbi-public-home-main" : string.Empty) @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-main" : string.Empty)">
+    <div class="m3-content-area @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-content-area" : string.Empty) @(currentController == "Errors" ? "orbi-status-content-area" : string.Empty)">
+        <main class="m3-main @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "orbi-register-main" : string.Empty) @(currentController == "Home" && User.Identity?.IsAuthenticated != true ? "orbi-public-home-main" : string.Empty) @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-main" : string.Empty) @(currentController == "Errors" ? "orbi-status-main" : string.Empty)">
             @RenderBody()
         </main>
 
-        <footer class="m3-footer @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-footer" : string.Empty)">
-            &copy; 2026 Orbi. Todos los derechos reservados.
+        <footer class="m3-footer @(currentController == "Home" && currentAction == "Assistant" ? "orbi-assistant-footer" : string.Empty) @(currentController == "Errors" ? "orbi-status-footer" : string.Empty)">
+            &copy; 2026 Dash. Todos los derechos reservados.
         </footer>
     </div>
 </div>

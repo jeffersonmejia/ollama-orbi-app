@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model EmailModel
 @{
     ViewData["Title"] = "Correo";
@@ -13,7 +13,7 @@
         </div>
         <partial name="_StatusMessage" for="StatusMessage" />
         <form id="email-form" method="post" class="orbi-account-rows">
-            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+            <div asp-validation-summary="All" class="m3-validation-error" role="alert"></div>
             <div class="orbi-account-row">
                 <label>Correo actual</label>
                 <span>@Model.Email @if (Model.IsEmailConfirmed) { <span style="color:var(--md-sys-color-primary);">✓ Verificado</span> }</span>
@@ -26,7 +26,7 @@
                 <label asp-for="Input.NewEmail"></label>
                 <input asp-for="Input.NewEmail" autocomplete="email" aria-required="true" placeholder="Ingresa el nuevo correo" />
             </div>
-            <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            <span asp-validation-for="Input.NewEmail" class="m3-validation-error"></span>
             <div><button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="m3-text-button">Guardar</button></div>
         </form>
     </section>

@@ -11,7 +11,7 @@ using OrbiApp.Models;
 
 namespace OrbiApp.Controllers;
 
-[Authorize(Roles = "Administrador,Vendedor,Repartidor,Usuario")]
+[Authorize]
 public class OperationsController : Controller
 {
     private static readonly string[] MovementTypes =
@@ -295,7 +295,7 @@ public class OperationsController : Controller
         return RedirectToAction(nameof(DeliveryIncidents));
     }
 
-    [Authorize(Roles = "Administrador,Repartidor,Usuario")]
+    [Authorize(Roles = "Administrador,Repartidor")]
     public async Task<IActionResult> OrderStatusHistory(int? orderId, string? status, int page = 1)
     {
         IQueryable<OrderStatusHistory> query;
@@ -407,7 +407,7 @@ public class OperationsController : Controller
         var email = User.Identity?.Name ?? string.Empty;
         if (User.IsInRole("Repartidor")) return query.Where(order => order.DeliveryPersonEmail == email);
         if (User.IsInRole("Usuario")) return query.Where(order => order.CustomerEmail == email);
-        return query.Where(_ => false);
+        return query.Where(order => order.CustomerEmail == email);
     }
 
     private Task<bool> CanAccessOrderAsync(int orderId) =>

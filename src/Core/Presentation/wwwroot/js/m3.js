@@ -7,9 +7,68 @@
     initNavRailActive();
     initNavToggle();
     initDialogs();
+    initDismissibleAlerts();
     initPasswordToggles();
     initRoleSummary();
+    initNavigationProgress();
   });
+
+  function initNavigationProgress() {
+    const storageKey = 'dash-nav-progress';
+    const root = document.documentElement;
+
+    function finish() {
+      root.classList.remove('dash-navigation-pending');
+      try { window.sessionStorage.removeItem(storageKey); } catch (error) { }
+    }
+
+    document.addEventListener('click', function (event) {
+      const link = event.target.closest('a[data-nav-progress="true"]');
+      if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
+
+      let destination;
+      try { destination = new URL(link.href, window.location.href); } catch (error) { return; }
+      if (destination.origin !== window.location.origin || (destination.pathname === window.location.pathname && destination.search === window.location.search && destination.hash === window.location.hash)) return;
+
+      root.classList.add('dash-navigation-pending');
+      try { window.sessionStorage.setItem(storageKey, '1'); } catch (error) { }
+      if (destination.pathname.replace(/\/$/, '').toLowerCase().endsWith('/delivery/index')) showStoreLoadingSkeleton();
+    }, true);
+
+    document.addEventListener('submit', function (event) {
+      if (event.target.matches('.orbi-store-filters')) showStoreLoadingSkeleton();
+    }, true);
+
+    function showStoreLoadingSkeleton() {
+      const main = document.querySelector('.m3-main');
+      if (!main) return;
+      main.setAttribute('aria-busy', 'true');
+      main.replaceChildren();
+      const skeleton = document.createElement('section');
+      skeleton.className = 'orbi-store-loading-skeleton';
+      skeleton.setAttribute('role', 'status');
+      skeleton.setAttribute('aria-label', 'Cargando tiendas y productos');
+      skeleton.innerHTML = `
+        <div class="orbi-store-skeleton-filters" aria-hidden="true">
+          <span class="m3-skeleton"></span><span class="m3-skeleton"></span><span class="m3-skeleton"></span><span class="m3-skeleton"></span><span class="m3-skeleton"></span>
+        </div>
+        <div class="orbi-store-skeleton-categories" aria-hidden="true">
+          <span class="m3-skeleton"></span><span class="m3-skeleton"></span><span class="m3-skeleton"></span>
+        </div>
+        <div class="orbi-store-skeleton-products" aria-hidden="true">
+          ${Array.from({ length: 9 }, () => '<span class="m3-skeleton"></span>').join('')}
+        </div>`;
+      main.appendChild(skeleton);
+    }
+
+    try {
+      if (window.sessionStorage.getItem(storageKey) === '1') {
+        root.classList.add('dash-navigation-pending');
+        window.addEventListener('load', function () { window.setTimeout(finish, 180); }, { once: true });
+        window.addEventListener('pageshow', function (event) { if (event.persisted) finish(); }, { once: true });
+      }
+    } catch (error) { }
+  }
 
   function initRipple() {
     document.querySelectorAll(
@@ -63,10 +122,29 @@
   }
 
   function initNavRailActive() {
+    const normalizePath = function (path) {
+      const normalized = path.replace(/\/+$/, '');
+      return normalized || '/';
+    };
+    const currentPath = normalizePath(window.location.pathname);
+
     document.querySelectorAll('.m3-nav-item').forEach(function (item) {
-      if (item.getAttribute('href') && window.location.pathname.includes(item.getAttribute('href'))) {
+      const href = item.getAttribute('href');
+      if (!href) return;
+
+      const targetPath = normalizePath(new URL(href, window.location.origin).pathname);
+      if (targetPath === currentPath) {
         item.classList.add('active');
       }
+    });
+  }
+
+  function initDismissibleAlerts() {
+    document.querySelectorAll('[data-orbi-dismiss-alert]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const alert = button.closest('.orbi-alert');
+        if (alert) alert.remove();
+      });
     });
   }
 
@@ -84,26 +162,6 @@
       navHeader = document.createElement('div');
       navHeader.className = 'm3-nav-rail-header';
       nav.prepend(navHeader);
-    }
-
-    if (!navHeader.querySelector('.m3-nav-brand')) {
-      const brand = document.createElement('a');
-      brand.className = 'm3-nav-brand';
-      brand.href = '/';
-      brand.setAttribute('aria-label', 'Orbi');
-      brand.setAttribute('title', 'Orbi');
-
-      const mark = document.createElement('span');
-      mark.className = 'm3-nav-brand-mark material-symbols-outlined';
-      mark.setAttribute('aria-hidden', 'true');
-      mark.textContent = 'shopping_bag';
-
-      const label = document.createElement('span');
-      label.className = 'm3-nav-brand-label';
-      label.textContent = 'Orbi';
-
-      brand.append(mark, label);
-      navHeader.prepend(brand);
     }
 
     if (!navHeader.contains(toggle)) navHeader.appendChild(toggle);
