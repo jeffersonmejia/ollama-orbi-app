@@ -24,11 +24,12 @@
     text-align: center;
 }
 .orbi-login-form { display: grid; gap: 1rem; }
-.orbi-login-google-form { margin-top: .75rem; }
+.orbi-login-google-form { width: 100%; min-width: 0; margin: 0; }
 .orbi-login-google-form > button { width: 100%; }
-.orbi-login-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: .75rem; }
-.orbi-login-links a { color: var(--md-sys-color-primary); text-decoration: none; }
-.orbi-login-links a:hover { text-decoration: underline; }
+.orbi-login-links { display: flex; flex-direction: column; align-items: center; gap: .75rem; margin-top: .75rem; }
+.orbi-login-links a { color: var(--md-sys-color-on-surface-variant); text-decoration: none; }
+.orbi-login-links a:hover,
+.orbi-login-links a:focus-visible { color: var(--md-sys-color-primary); text-decoration: none; }
 .orbi-auth-message { margin: 0 0 1rem; padding: .75rem; border-radius: var(--md-sys-shape-corner-small); background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
 .orbi-auth-message.error { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
 .orbi-auth-control {
@@ -117,12 +118,6 @@
         border-radius: 2px;
     }
 
-    @media (max-width: 420px) {
-        .orbi-login-actions {
-            grid-template-columns: 1fr;
-        }
-    }
-
 .orbi-auth-control input:user-invalid {
     border-color: var(--md-sys-color-error);
 }
@@ -135,12 +130,31 @@
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
   gap: 12px;
+  margin-top: 1rem;
 
 }
+.orbi-login-google-form { grid-column: 1; grid-row: 1; }
+.orbi-login-actions > button { grid-column: 2; grid-row: 1; }
 .orbi-login-actions > button {
   width: 100%;
   white-space: nowrap;
 
+}
+.orbi-google-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  border-color: transparent;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+.orbi-google-login:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
 }
 .orbi-google-mark {
   width: 20px;
@@ -148,10 +162,4 @@
   object-fit: contain;
   border-radius: 2px;
 
-}
-@media (max-width: 420px) {
-.orbi-login-actions {
-    grid-template-columns: 1fr;
-  
-}
 }

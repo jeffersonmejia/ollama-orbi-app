@@ -15,6 +15,7 @@ using OrbiApp.Models;
 using OrbiApp.Models.Identity;
 using OrbiApp.Models.Delivery;
 using OrbiApp.Models.Operations;
+using OrbiApp.Presentation.Features.Home;
 
 namespace OrbiApp.Controllers;
 
@@ -41,6 +42,11 @@ public class HomeController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> Index()
     {
+        if (User.IsInRole("Vendedor"))
+        {
+            return RedirectToAction("SellerStore", "Delivery");
+        }
+
         if (User.IsInRole("Usuario"))
         {
             return RedirectToAction("Index", "Delivery");
@@ -88,12 +94,6 @@ public class HomeController : Controller
         }
 
         return View();
-    }
-
-    [AllowAnonymous]
-    public IActionResult Assistant()
-    {
-        return Redirect("/app/asistente");
     }
 
     [Authorize]
@@ -884,38 +884,6 @@ public class HomeController : Controller
             chart2 = Array.Empty<object>(),
             chart2Total = 0
         });
-    }
-
-    [Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> PanelAdministrador()
-    {
-        var metrics = new List<(string Label, string Detail, int Value)>
-        {
-            ("Tiendas", "Tiendas registradas en Dash", await _identityContext.Set<DeliveryStore>().CountAsync()),
-            ("Tiendas activas", "Tiendas disponibles para pedidos", await _identityContext.Set<DeliveryStore>().CountAsync(x => x.IsActive)),
-            ("Productos", "Productos disponibles", await _identityContext.Set<DeliveryProduct>().CountAsync(x => x.IsAvailable)),
-            ("Pedidos", "Pedidos creados", await _identityContext.Set<DeliveryOrder>().CountAsync()),
-            ("En camino", "Entregas en curso", await _identityContext.Set<DeliveryOrder>().CountAsync(x => x.Status == "En camino")),
-            ("Entregados", "Pedidos completados", await _identityContext.Set<DeliveryOrder>().CountAsync(x => x.Status == "Entregado")),
-            ("Reservas", "Reservas de stock activas", await _identityContext.Set<StockReservation>().CountAsync(x => x.Status == "Activa")),
-            ("Incidencias", "Incidencias abiertas", await _identityContext.Set<DeliveryIncident>().CountAsync(x => x.Status == "Abierto" || x.Status == "En revisión")),
-            ("Correos", "Mensajes pendientes en cola", await _identityContext.Set<EmailQueueItem>().CountAsync(x => x.Status == "Pendiente")),
-            ("Usuarios", "Cuentas de acceso", await _identityContext.Set<Microsoft.AspNetCore.Identity.IdentityUser>().CountAsync()),
-            ("Roles", "Perfiles de Dash", await _identityContext.Set<Microsoft.AspNetCore.Identity.IdentityRole>().CountAsync())
-        };
-
-        var maxValue = metrics.Max(metric => metric.Value);
-        var model = metrics
-            .Select(metric => new AdminPanelMetric
-            {
-                Label = metric.Label,
-                Detail = metric.Detail,
-                Value = metric.Value,
-                Percent = maxValue == 0 ? 0 : Math.Max(6, (int)Math.Round(metric.Value * 100.0 / maxValue))
-            })
-            .ToList();
-
-        return View(model);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

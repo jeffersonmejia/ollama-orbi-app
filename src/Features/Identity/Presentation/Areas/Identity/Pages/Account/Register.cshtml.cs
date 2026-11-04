@@ -189,11 +189,6 @@ namespace OrbiApp.Areas.Identity.Pages.Account
                 ModelState.AddModelError("Input.Role", "El rol seleccionado no está permitido para el registro público.");
             }
 
-            if (!string.IsNullOrWhiteSpace(Input?.Cedula) && !IsValidEcuadorianCedula(Input.Cedula))
-            {
-                ModelState.AddModelError("Input.Cedula", "La cédula ecuatoriana no es válida.");
-            }
-
             if (!string.IsNullOrWhiteSpace(Input?.Cedula) &&
                 await _context.Set<UserProfile>().AnyAsync(profile => profile.Cedula == Input.Cedula))
             {
@@ -335,24 +330,6 @@ namespace OrbiApp.Areas.Identity.Pages.Account
                     .ToDictionary(
                         group => group.Key,
                         group => group.Select(city => new CityOption(city.Code, city.Name)).ToArray()));
-        }
-
-        private static bool IsValidEcuadorianCedula(string cedula)
-        {
-            if (cedula.Length != 10 || !cedula.All(char.IsDigit)) return false;
-
-            var province = int.Parse(cedula[..2]);
-            if (province is < 1 or > 24 || cedula[2] > '5') return false;
-
-            var sum = 0;
-            for (var index = 0; index < 9; index++)
-            {
-                var value = (cedula[index] - '0') * (index % 2 == 0 ? 2 : 1);
-                sum += value > 9 ? value - 9 : value;
-            }
-
-            var verifier = (10 - sum % 10) % 10;
-            return verifier == cedula[9] - '0';
         }
 
         private sealed record CityOption(string Code, string Name);

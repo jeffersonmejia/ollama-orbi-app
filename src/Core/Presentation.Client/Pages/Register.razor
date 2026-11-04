@@ -17,6 +17,7 @@
         {
             <p class="orbi-register-message" role="alert">No se pudo completar el registro con Google. Inténtalo nuevamente.</p>
         }
+        <p id="registerSubmitMessage" class="orbi-register-message" role="alert" hidden></p>
 
         <form id="registerForm" class="orbi-register-grid" action="@_postUrl" method="post" novalidate>
             <input type="hidden" name="__RequestVerificationToken" value="@_requestToken" />
@@ -25,7 +26,7 @@
             </div>
 
             <section class="orbi-register-step active" data-step="0">
-                <h2>1. Datos personales</h2>
+                <h2 class="orbi-register-step-title">1. Datos personales</h2>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">person</span><input name="Input.FirstName" autocomplete="given-name" maxlength="80" placeholder=" " required /><span class="orbi-register-floating-label">Nombres</span></span></label>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">person</span><input name="Input.LastName" autocomplete="family-name" maxlength="80" placeholder=" " required /><span class="orbi-register-floating-label">Apellidos</span></span></label>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">badge</span><input name="Input.Cedula" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" placeholder=" " required /><span class="orbi-register-floating-label">Cédula</span></span></label>
@@ -37,7 +38,7 @@
             </section>
 
             <section class="orbi-register-step" data-step="1">
-                <h2>2. Ubicación y dirección</h2>
+                <h2 class="orbi-register-step-title">2. Ubicación y dirección</h2>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">map</span><select name="Input.ProvinceCode" id="Input_ProvinceCode" required disabled>
                         <option value="">@_locationsLoading</option>
                     </select><span class="orbi-register-floating-label">Provincia</span></span></label>
@@ -54,7 +55,7 @@
             </section>
 
             <section class="orbi-register-step" data-step="2">
-                <h2>3. Datos de acceso</h2>
+                <h2 class="orbi-register-step-title">3. Datos de acceso</h2>
                 <label class="orbi-register-field orbi-register-full"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">mail</span><input name="Input.Email" type="email" autocomplete="username" placeholder=" " required /><span class="orbi-register-floating-label">Correo electrónico</span></span></label>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">lock</span><input name="Input.Password" type="password" autocomplete="new-password" minlength="6" maxlength="100" placeholder=" " required /><span class="orbi-register-floating-label">Contraseña</span></span></label>
                 <label class="orbi-register-field"><span class="orbi-register-control"><span class="material-symbols-outlined orbi-register-field-icon" aria-hidden="true">lock</span><input name="Input.ConfirmPassword" type="password" autocomplete="new-password" minlength="6" maxlength="100" placeholder=" " required /><span class="orbi-register-floating-label">Confirmar contraseña</span></span></label>
@@ -73,8 +74,8 @@
 
         @if (_catalogError)
         {
-            <div class="orbi-register-load-error" role="alert">
-                No se pudieron cargar los roles y ubicaciones. <button type="button" @onclick="RetryLoadAsync">Reintentar</button>
+            <div class="orbi-register-load-error">
+                <button type="button" @onclick="RetryLoadAsync">Reintentar</button>
             </div>
         }
     </section>

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orbi-lab-config
+  namespace: orbi-lab
+  labels:
+    app.kubernetes.io/part-of: orbi-load-test-lab
+data:
+  ASPNETCORE_ENVIRONMENT: Lab
+  ASPNETCORE_HTTP_PORTS: "8080"
+  DataProtection__KeysPath: /var/orbi/keys
+  BACKUP_DIR: /backups
+  BACKUP_INTERVAL_MINUTES: "1440"
+  BACKUP_RETENTION_COUNT: "3"
+  ORBI_LAB_MULTI_REPLICA_SAFE: "false"

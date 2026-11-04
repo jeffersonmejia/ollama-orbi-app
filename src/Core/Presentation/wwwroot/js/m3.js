@@ -10,34 +10,114 @@
     initDismissibleAlerts();
     initPasswordToggles();
     initRoleSummary();
-    initNavigationProgress();
+    initStoreNavigationSkeleton();
   });
 
-  function initNavigationProgress() {
-    const storageKey = 'dash-nav-progress';
-    const root = document.documentElement;
-
-    function finish() {
-      root.classList.remove('dash-navigation-pending');
-      try { window.sessionStorage.removeItem(storageKey); } catch (error) { }
-    }
+  function initStoreNavigationSkeleton() {
+    const navigationSkeletonStorageKey = 'dash-nav-skeleton-pending';
 
     document.addEventListener('click', function (event) {
-      const link = event.target.closest('a[data-nav-progress="true"]');
+      const link = event.target.closest('a[data-nav-skeleton="true"]');
       if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
 
       let destination;
       try { destination = new URL(link.href, window.location.href); } catch (error) { return; }
       if (destination.origin !== window.location.origin || (destination.pathname === window.location.pathname && destination.search === window.location.search && destination.hash === window.location.hash)) return;
 
-      root.classList.add('dash-navigation-pending');
-      try { window.sessionStorage.setItem(storageKey, '1'); } catch (error) { }
+      rememberNavigationLoading();
+      showNavigationLoadingSkeleton();
       if (destination.pathname.replace(/\/$/, '').toLowerCase().endsWith('/delivery/index')) showStoreLoadingSkeleton();
     }, true);
 
     document.addEventListener('submit', function (event) {
-      if (event.target.matches('.orbi-store-filters')) showStoreLoadingSkeleton();
+      if (!event.target.matches('.orbi-store-filters')) return;
+      rememberNavigationLoading();
+      showNavigationLoadingSkeleton();
+      showStoreLoadingSkeleton();
     }, true);
+
+    function rememberNavigationLoading() {
+      try { window.sessionStorage.setItem(navigationSkeletonStorageKey, '1'); } catch (error) { }
+    }
+
+    function restoreNavigationLoadingSkeleton() {
+      const nav = document.querySelector('.m3-nav-rail');
+      if (!nav) return;
+      nav.querySelector('.orbi-nav-loading-skeleton')?.remove();
+      nav.querySelector('.orbi-nav-skeleton-status')?.remove();
+      nav.querySelector('.m3-nav-items')?.removeAttribute('hidden');
+      nav.querySelector('.m3-nav-rail-footer')?.removeAttribute('hidden');
+      nav.removeAttribute('aria-busy');
+    }
+
+    function showNavigationLoadingSkeleton() {
+      const nav = document.querySelector('.m3-nav-rail');
+      const items = nav?.querySelector('.m3-nav-items');
+      if (!nav || !items || nav.getAttribute('aria-busy') === 'true') return;
+
+      nav.setAttribute('aria-busy', 'true');
+      const status = document.createElement('span');
+      status.className = 'orbi-nav-skeleton-status';
+      status.setAttribute('role', 'status');
+      status.textContent = 'Cargando navegación';
+      nav.appendChild(status);
+
+      const skeleton = document.createElement('div');
+      skeleton.className = 'orbi-nav-loading-skeleton';
+      skeleton.setAttribute('aria-hidden', 'true');
+      const skeletonItems = document.createElement('ul');
+      skeletonItems.className = 'm3-nav-items orbi-nav-skeleton-items';
+
+      Array.from(items.children).forEach(function (item) {
+        const label = item.querySelector('.m3-nav-item > span:not(.material-symbols-outlined)');
+        const labelLength = label?.textContent.trim().length || 8;
+        const row = document.createElement('li');
+        row.className = 'orbi-nav-skeleton-row';
+
+        const icon = document.createElement('span');
+        icon.className = 'm3-skeleton orbi-nav-skeleton-icon';
+        const text = document.createElement('span');
+        text.className = 'm3-skeleton orbi-nav-skeleton-label ' + (labelLength < 8 ? 'is-short' : labelLength < 14 ? 'is-medium' : 'is-long');
+        row.append(icon, text);
+        skeletonItems.appendChild(row);
+      });
+
+      skeleton.appendChild(skeletonItems);
+      items.hidden = true;
+
+      const footer = nav.querySelector('.m3-nav-rail-footer');
+      if (footer) {
+        footer.hidden = true;
+        const profile = document.createElement('div');
+        profile.className = 'orbi-nav-skeleton-row orbi-nav-skeleton-profile';
+        const icon = document.createElement('span');
+        icon.className = 'm3-skeleton orbi-nav-skeleton-icon';
+        const label = document.createElement('span');
+        label.className = 'orbi-nav-skeleton-profile-label';
+        label.innerHTML = '<span class="m3-skeleton orbi-nav-skeleton-label is-medium"></span><span class="m3-skeleton orbi-nav-skeleton-label is-short"></span>';
+        profile.append(icon, label);
+        skeleton.appendChild(profile);
+      }
+
+      nav.appendChild(skeleton);
+    }
+
+    let navigationWasPending = false;
+    try {
+      navigationWasPending = window.sessionStorage.getItem(navigationSkeletonStorageKey) === '1';
+      if (navigationWasPending) window.sessionStorage.removeItem(navigationSkeletonStorageKey);
+    } catch (error) { }
+
+    if (navigationWasPending) {
+      showNavigationLoadingSkeleton();
+      const finishLoading = function () { window.setTimeout(restoreNavigationLoadingSkeleton, 180); };
+      if (document.readyState === 'complete') finishLoading();
+      else window.addEventListener('load', finishLoading, { once: true });
+    }
+
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) restoreNavigationLoadingSkeleton();
+    });
 
     function showStoreLoadingSkeleton() {
       const main = document.querySelector('.m3-main');
@@ -61,13 +141,6 @@
       main.appendChild(skeleton);
     }
 
-    try {
-      if (window.sessionStorage.getItem(storageKey) === '1') {
-        root.classList.add('dash-navigation-pending');
-        window.addEventListener('load', function () { window.setTimeout(finish, 180); }, { once: true });
-        window.addEventListener('pageshow', function (event) { if (event.persisted) finish(); }, { once: true });
-      }
-    } catch (error) { }
   }
 
   function initRipple() {

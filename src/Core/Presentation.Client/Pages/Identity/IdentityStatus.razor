@@ -1,0 +1,60 @@
+@page "/Identity/Account/AccessDenied"
+@page "/Identity/Account/Lockout"
+@page "/Identity/Account/ForgotPasswordConfirmation"
+@page "/Identity/Account/ResetPasswordConfirmation"
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+
+<PageTitle>@Title</PageTitle>
+
+@if (IsAccessDenied)
+{
+    <section class="access-denied-panel">
+        <div class="access-denied-icon" aria-hidden="true">!</div>
+        <div class="access-denied-copy">
+            <span>Permiso insuficiente</span>
+            <h1>Acceso denegado</h1>
+            <p>
+                Esta seccion esta reservada para usuarios con rol Administrador. Si necesitas entrar al panel administrativo,
+                cierra sesion e inicia con una cuenta autorizada.
+            </p>
+        </div>
+        <div class="access-denied-actions">
+            <NavLink class="m3-filled-button" href="/">Volver al inicio</NavLink>
+            <NavLink class="m3-outlined-button" href="/Identity/Account/Login">Cambiar de cuenta</NavLink>
+        </div>
+    </section>
+}
+else if (IsLockedOut)
+{
+    <header>
+        <h1 class="m3-validation-error">Locked out</h1>
+        <p class="m3-validation-error">This account has been locked out, please try again later.</p>
+    </header>
+}
+else if (IsForgotPasswordConfirmation)
+{
+    <h1>Forgot password confirmation</h1>
+    <p>Please check your email to reset your password.</p>
+}
+else if (IsResetPasswordConfirmation)
+{
+    <h1>Reset password confirmation</h1>
+    <p>Your password has been reset. Please <NavLink href="/Identity/Account/Login">click here to log in</NavLink>.</p>
+}
+
+@code {
+    private string CurrentPath => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .Split('?', '#')[0].Trim('/');
+
+    private bool IsAccessDenied => IsPage("AccessDenied");
+    private bool IsLockedOut => IsPage("Lockout");
+    private bool IsForgotPasswordConfirmation => IsPage("ForgotPasswordConfirmation");
+    private bool IsResetPasswordConfirmation => IsPage("ResetPasswordConfirmation");
+    private string Title => IsAccessDenied ? "Acceso denegado"
+        : IsLockedOut ? "Locked out"
+        : IsForgotPasswordConfirmation ? "Forgot password confirmation"
+        : "Reset password confirmation";
+
+    private bool IsPage(string pageName) => CurrentPath.EndsWith(pageName, StringComparison.OrdinalIgnoreCase);
+}

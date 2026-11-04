@@ -676,7 +676,10 @@ namespace OrbiApp.Data.MigrationsIdentity
                     b.HasIndex("DeliveryStoreId", "IsAvailable", "Name")
                         .HasDatabaseName("ix_delivery_product_store_available_name");
 
-                    b.ToTable("delivery_product", (string)null);
+                    b.ToTable("delivery_product", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_delivery_product_availability", "NOT is_available OR stock > 0");
+                        });
                 });
 
             modelBuilder.Entity("OrbiApp.Models.Delivery.DeliveryStore", b =>
@@ -689,8 +692,9 @@ namespace OrbiApp.Data.MigrationsIdentity
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("DeliveryStoreId"));
 
                     b.Property<string>("Address")
+                        .HasMaxLength(360)
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("character varying(360)")
                         .HasColumnName("address");
 
                     b.Property<string>("Category")
@@ -736,7 +740,15 @@ namespace OrbiApp.Data.MigrationsIdentity
                     b.HasIndex("CityCode", "IsActive", "Name")
                         .HasDatabaseName("ix_delivery_store_city_active_name");
 
-                    b.ToTable("delivery_store", (string)null);
+                    b.HasIndex("OwnerUserId")
+                        .IsUnique()
+                        .HasFilter("owner_user_id IS NOT NULL")
+                        .HasDatabaseName("ux_delivery_store_owner");
+
+                    b.ToTable("delivery_store", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_delivery_store_category", "category IN ('Restaurantes', 'Farmacia', 'Supermercado')");
+                        });
                 });
 
             modelBuilder.Entity("OrbiApp.Models.Identity.EcuadorCity", b =>
@@ -851,6 +863,10 @@ namespace OrbiApp.Data.MigrationsIdentity
                     b.HasKey("UserAddressId");
 
                     b.HasIndex("CityCode");
+
+                    b.HasIndex("IdentityUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_user_address_one_per_user");
 
                     b.HasIndex("IdentityUserId")
                         .IsUnique()

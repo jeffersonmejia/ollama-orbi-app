@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orbi
+  namespace: orbi-lab
+  labels:
+    app.kubernetes.io/name: orbi
+    app.kubernetes.io/part-of: orbi-load-test-lab
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orbi
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orbi
+        app.kubernetes.io/part-of: orbi-load-test-lab
+        environment: lab
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+        runAsGroup: 1654
+        fsGroup: 1654
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: orbi
+          image: orbiapp:lab
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: orbi-lab-config
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Lab
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: orbi-app-secrets
+                  key: DefaultConnection
+            - name: DataProtection__KeysPath
+              value: /var/orbi/keys
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 4
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data-protection-keys
+              mountPath: /var/orbi/keys
+            - name: backups
+              mountPath: /backups
+            - name: tmp
+              mountPath: /tmp
+            - name: app-logs
+              mountPath: /app/.logs
+      volumes:
+        - name: data-protection-keys
+          persistentVolumeClaim:
+            claimName: orbi-lab-data-protection
+        - name: backups
+          persistentVolumeClaim:
+            claimName: orbi-lab-backups
+        - name: tmp
+          emptyDir: {}
+        - name: app-logs
+          emptyDir: {}

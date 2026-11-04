@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrbiApp.Controllers;
+using Microsoft.AspNetCore.Http.Timeouts;
 using OrbiApp.Presentation.Client.Networking;
 using OrbiApp.Presentation.Client.Pages.Identity.Manage;
 using OrbiApp.Presentation.Client.Pages.Identity;
@@ -31,6 +32,45 @@ public sealed class IdentityAccountApiContractTests
         Assert.Equal("api/identity/account/addresses", Assert.Single(typeof(IdentityAddressesApiController).GetCustomAttributes<RouteAttribute>()).Template);
         Assert.NotNull(typeof(IdentityAuthenticationApiController).GetCustomAttribute<AllowAnonymousAttribute>());
         Assert.Equal("api/identity/auth", Assert.Single(typeof(IdentityAuthenticationApiController).GetCustomAttributes<RouteAttribute>()).Template);
+    }
+
+    [Fact]
+    public void Registration_options_api_remains_public_and_keeps_its_timeout_policy()
+    {
+        var controller = typeof(IdentityRegistrationOptionsApiController);
+        var action = controller.GetMethod(nameof(IdentityRegistrationOptionsApiController.Get));
+
+        Assert.NotNull(controller.GetCustomAttribute<AllowAnonymousAttribute>());
+        Assert.Equal("api/identity/registration", Assert.Single(controller.GetCustomAttributes<RouteAttribute>()).Template);
+        Assert.Equal("options", Assert.Single(action!.GetCustomAttributes<HttpGetAttribute>()).Template);
+        Assert.Equal("api", Assert.Single(action!.GetCustomAttributes<RequestTimeoutAttribute>()).PolicyName);
+    }
+
+    [Fact]
+    public void Password_recovery_routes_and_api_mutations_are_available_to_anonymous_users()
+    {
+        Assert.Contains("/Identity/Account/ForgotPassword", Routes<ForgotPassword>());
+        Assert.Contains("/Identity/Account/ResetPassword", Routes<ResetPassword>());
+
+        AssertMutation<IdentityAuthenticationApiController>(nameof(IdentityAuthenticationApiController.ForgotPassword), typeof(HttpPostAttribute));
+        AssertMutation<IdentityAuthenticationApiController>(nameof(IdentityAuthenticationApiController.ResetPassword), typeof(HttpPostAttribute));
+
+        Assert.Equal("forgot-password", typeof(IdentityAuthenticationApiController)
+            .GetMethod(nameof(IdentityAuthenticationApiController.ForgotPassword))!
+            .GetCustomAttribute<HttpPostAttribute>()!.Template);
+        Assert.Equal("reset-password", typeof(IdentityAuthenticationApiController)
+            .GetMethod(nameof(IdentityAuthenticationApiController.ResetPassword))!
+            .GetCustomAttribute<HttpPostAttribute>()!.Template);
+    }
+
+    [Fact]
+    public void Password_recovery_requests_keep_validation_rules()
+    {
+        Assert.False(IsValid(new ForgotPasswordRequest("correo-invalido")));
+        Assert.True(IsValid(new ForgotPasswordRequest("persona@example.com")));
+        Assert.False(IsValid(new ResetPasswordRequest("persona@example.com", "123", "123", "codigo")));
+        Assert.False(IsValid(new ResetPasswordRequest("persona@example.com", "secreto123", "distinta", "codigo")));
+        Assert.True(IsValid(new ResetPasswordRequest("persona@example.com", "secreto123", "secreto123", "codigo")));
     }
 
     [Fact]

@@ -2,13 +2,14 @@
 @{
     ViewData["Title"] = "Mi tienda";
     var isNew = Model == null;
-    var profile = ViewData["Profile"] as OrbiApp.Models.Identity.UserProfile;
+    var address = ViewData["SellerAddress"] as OrbiApp.Models.Identity.UserAddress;
+    var category = OrbiApp.Models.Delivery.DeliveryStoreCategories.Normalize(Model?.Category);
 }
 
 <div class="orbi-delivery-page">
-    <header class="orbi-delivery-header">
+    <header class="orbi-delivery-header orbi-seller-store-header">
         <h1>Mi tienda</h1>
-        <p>@(isNew ? "Registra tu tienda para poder agregar productos." : "Edita los datos de tu tienda.")</p>
+        <p>@(isNew ? "Registra tu única tienda y luego agrega los productos que tendrás disponibles." : "Edita la información de tu tienda y administra su catálogo.")</p>
     </header>
 
     @if (TempData["Error"] is string error)
@@ -20,39 +21,50 @@
         <div class="orbi-alert orbi-alert-success"><span class="material-symbols-outlined">check_circle</span>@success</div>
     }
 
-    <section class="orbi-google-card" style="padding:16px;">
-        <form method="post" asp-action="SellerStore" class="orbi-account-rows" style="padding:0;">
+    <section class="orbi-google-card orbi-seller-store-card">
+        <form method="post" asp-action="SellerStore" class="orbi-seller-store-form">
             @Html.AntiForgeryToken()
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <div class="orbi-seller-store-fields">
                 <div class="m3-text-field">
-                    <label class="m3-text-field-label">Nombre de la tienda</label>
-                    <input name="name" class="m3-text-field-input" required maxlength="100" value="@(Model?.Name ?? "")" placeholder="Ej. Mi Tienda" />
+                    <label class="m3-text-field-label" for="seller-store-name">Nombre de la tienda</label>
+                    <input id="seller-store-name" name="name" class="m3-text-field-input" required maxlength="100" value="@(Model?.Name ?? "")" placeholder="Ej. Mi Tienda" />
                 </div>
                 <div class="m3-text-field">
-                    <label class="m3-text-field-label">Categoría</label>
-                    <select name="category" class="m3-text-field-input" required>
+                    <label class="m3-text-field-label" for="seller-store-category">Categoría</label>
+                    <select id="seller-store-category" name="category" class="m3-text-field-input" required>
                         <option value="">Selecciona una categoría</option>
-                        <option value="Farmacia" selected="@(Model?.Category == "Farmacia")">Farmacia</option>
-                        <option value="Restaurante" selected="@(Model?.Category == "Restaurante")">Restaurante</option>
-                        <option value="Supermercado" selected="@(Model?.Category == "Supermercado")">Supermercado</option>
+                        <option value="@OrbiApp.Models.Delivery.DeliveryStoreCategories.Pharmacy" selected="@(category == OrbiApp.Models.Delivery.DeliveryStoreCategories.Pharmacy)">Farmacia</option>
+                        <option value="@OrbiApp.Models.Delivery.DeliveryStoreCategories.Restaurants" selected="@(category == OrbiApp.Models.Delivery.DeliveryStoreCategories.Restaurants)">Restaurantes</option>
+                        <option value="@OrbiApp.Models.Delivery.DeliveryStoreCategories.Supermarket" selected="@(category == OrbiApp.Models.Delivery.DeliveryStoreCategories.Supermarket)">Supermercado</option>
                     </select>
                 </div>
-                <div class="m3-text-field" style="grid-column:1/-1;">
-                    <label class="m3-text-field-label">Dirección <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
-                    <input class="m3-text-field-input" disabled value="@(profile?.AddressLine1 ?? "") @(profile?.AddressLine2 ?? "")" />
-                </div>
-                <div class="m3-text-field">
-                    <label class="m3-text-field-label">Provincia <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
-                    <input class="m3-text-field-input" disabled value="@(profile?.Province?.Name ?? "")" />
-                </div>
-                <div class="m3-text-field">
-                    <label class="m3-text-field-label">Ciudad <span style="opacity:.5;font-size:.75em">(de tu perfil)</span></label>
-                    <input class="m3-text-field-input" disabled value="@(profile?.City?.Name ?? "")" />
-                </div>
             </div>
-            <div class="orbi-form-actions" style="margin-top:12px;">
-                <a asp-action="SellerInventory" class="m3-text-button">Cancelar</a>
-                <button type="submit" class="m3-filled-button">@(isNew ? "Registrar tienda" : "Guardar cambios")</button>
+            <section class="orbi-seller-store-location" aria-labelledby="seller-store-location-title">
+                <div class="orbi-seller-store-location-icon"><span class="material-symbols-outlined" aria-hidden="true">location_on</span></div>
+                <div>
+                    <h2 id="seller-store-location-title">Ubicación de la tienda</h2>
+                    @if (address is null)
+                    {
+                        <p>Aún no tienes una dirección registrada.</p>
+                        <a class="m3-text-button" href="/Identity/Account/Manage/Addresses">Registrar mi dirección</a>
+                    }
+                    else
+                    {
+                        <p>@address.FormattedAddress</p>
+                        <small>@address.City.Name · @address.Province.Name · @address.Label</small>
+                        <a class="m3-text-button" href="/Identity/Account/Manage/Addresses">Editar dirección</a>
+                    }
+                </div>
+            </section>
+            <div class="orbi-form-actions orbi-seller-store-actions">
+                @if (!isNew)
+                {
+                    <a asp-action="SellerInventory" class="m3-text-button">Ver productos</a>
+                }
+                @if (address is not null)
+                {
+                    <button type="submit" class="m3-filled-button">@(isNew ? "Crear tienda" : "Guardar cambios")</button>
+                }
             </div>
         </form>
     </section>

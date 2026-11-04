@@ -18,3 +18,20 @@ public class DeliveryStore
     public EcuadorProvince? Province { get; set; }
     public EcuadorCity? City { get; set; }
 }
+
+public static class DeliveryStoreCategories
+{
+    public const string Restaurants = "Restaurantes";
+    public const string Pharmacy = "Farmacia";
+    public const string Supermarket = "Supermercado";
+
+    public static readonly IReadOnlyList<string> All = [Restaurants, Pharmacy, Supermarket];
+
+    public static string? Normalize(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "restaurante" or "restaurantes" => Restaurants,
+        "farmacia" or "farmacias" => Pharmacy,
+        "supermercado" or "supermercados" => Supermarket,
+        _ => null
+    };
+}

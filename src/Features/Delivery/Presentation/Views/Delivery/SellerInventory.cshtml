@@ -1,13 +1,13 @@
 @model PaginatedList<OrbiApp.Models.Delivery.DeliveryProduct>
 @{
-    ViewData["Title"] = "Mi inventario";
+    ViewData["Title"] = "Mis productos";
     var myStore = ViewBag.MyStore as OrbiApp.Models.Delivery.DeliveryStore;
 }
 
 <div class="orbi-delivery-page">
     <header class="orbi-delivery-header">
-        <h1>Mi inventario</h1>
-        <p>Productos de <strong>@(myStore?.Name ?? "mi tienda")</strong>.</p>
+        <h1>Mis productos</h1>
+        <p>Productos disponibles de <strong>@(myStore?.Name ?? "mi tienda")</strong> · Categoría <strong>@(myStore?.Category ?? "Sin categoría")</strong>.</p>
         <a asp-action="SellerStore" class="m3-text-button" style="font-size:13px;">Editar mi tienda</a>
     </header>
 
@@ -42,7 +42,7 @@
                 </div>
                 <div class="m3-text-field">
                     <label class="m3-text-field-label">Stock</label>
-                    <input name="stock" type="number" min="0" max="999" class="m3-text-field-input" required placeholder="0" />
+                    <input name="stock" type="number" min="1" max="999" class="m3-text-field-input" required placeholder="1" />
                 </div>
                 <div class="m3-text-field">
                     <label class="m3-text-field-label" for="newProductImageUrl">URL de imagen (HTTPS)</label>

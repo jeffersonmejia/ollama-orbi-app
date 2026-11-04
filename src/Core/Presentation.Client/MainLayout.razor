@@ -1,7 +1,8 @@
 @inherits LayoutComponentBase
-@implements IDisposable
+@implements IAsyncDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<MainLayout> Logger
+@inject IJSRuntime JS
 
 @if (_user.Identity?.IsAuthenticated == true && !IsRegistrationPage)
 {
@@ -31,21 +32,29 @@
             </button>
         </div>
         <ul class="m3-nav-items">
-            @if (!IsRegistrationPage)
+            @if (!IsRegistrationPage && _user.Identity?.IsAuthenticated == true)
             {
-                <li>
-                    <NavLink href="/Delivery" class="m3-nav-item" Match="NavLinkMatch.Prefix">
-                        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
-                        <span>Tiendas</span>
-                    </NavLink>
-                </li>
+                @if (_user.IsInRole("Vendedor"))
+                {
+                    <li><LegacyNavigationLink Href="/Delivery/SellerStore" Class="@(_asideState == AsideNavigationState.SellerStore ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">storefront</span><span>Tienda</span></LegacyNavigationLink></li>
+                    <li><LegacyNavigationLink Href="/Delivery/SellerInventory" Class="@(_asideState == AsideNavigationState.SellerProducts ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span><span>Productos</span></LegacyNavigationLink></li>
+                }
+                else if (_user.IsInRole("Usuario"))
+                {
+                    <li>
+                        <NavLink href="/Delivery" class="@(_asideState == AsideNavigationState.Stores ? "m3-nav-item active" : "m3-nav-item")" ActiveClass="nav-link-route-match" Match="NavLinkMatch.All">
+                            <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                            <span>Tiendas</span>
+                        </NavLink>
+                    </li>
+                }
                 @if (_user.IsInRole("Usuario"))
                 {
                     <li><NavLink href="/Delivery/Cart" Match="NavLinkMatch.Prefix" class="@(IsPurchasesPage ? "m3-nav-item active" : "m3-nav-item")"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></NavLink></li>
                 }
                 @if (_user.IsInRole("Repartidor"))
                 {
-                    <li><NavLink href="/Delivery/Deliveries" class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></NavLink></li>
+                    <li><NavLink href="/Delivery/Deliveries" class="@(_asideState == AsideNavigationState.Deliveries ? "m3-nav-item active" : "m3-nav-item")" ActiveClass="nav-link-route-match" Match="NavLinkMatch.All"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></NavLink></li>
                 }
                 @if (_user.IsInRole("Administrador"))
                 {
@@ -55,10 +64,10 @@
             else
             {
                 <li>
-                    <LegacyNavigationLink Href="/" Class="m3-nav-item">
+                    <NavLink href="/" class="m3-nav-item" Match="NavLinkMatch.All">
                         <span class="material-symbols-outlined" aria-hidden="true">home</span>
                         <span>Inicio</span>
-                    </LegacyNavigationLink>
+                    </NavLink>
                 </li>
                 <li>
                     <NavLink href="/Identity/Account/Login" class="m3-nav-item" Match="NavLinkMatch.All">
@@ -69,7 +78,7 @@
                 <li>
                     <NavLink href="/registro" class="m3-nav-item" Match="NavLinkMatch.All">
                         <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
-                        <span>Registro</span>
+                        <span>Registrarme</span>
                     </NavLink>
                 </li>
             }
@@ -84,28 +93,44 @@
                 </NavLink>
             </div>
         }
-        else if (!IsRegistrationPage)
-        {
-            <div class="m3-nav-rail-footer">
-                <LegacyNavigationLink Href="/Identity/Account/Login" Class="m3-nav-item"><span class="material-symbols-outlined" aria-hidden="true">login</span><span>Iniciar sesión</span></LegacyNavigationLink>
-                <NavLink href="/registro" class="m3-nav-item" Match="NavLinkMatch.All"><span class="material-symbols-outlined" aria-hidden="true">person_add</span><span>Registro</span></NavLink>
-            </div>
-        }
     </nav>
 
-    <div class="m3-content-area @(IsAssistantPage ? "orbi-assistant-content-area" : string.Empty)">
+    <div class="m3-content-area @(IsAssistantPage ? "orbi-assistant-content-area" : string.Empty) @(IsRegistrationPage ? "orbi-register-content-area" : string.Empty)">
         <main class="m3-main @(IsAssistantPage ? "orbi-assistant-main" : string.Empty) @(IsPublicHome ? "orbi-public-home-main" : string.Empty)">
-            <ErrorBoundary>
-                <ChildContent>@Body</ChildContent>
-                <ErrorContent>
-                    <section class="orbi-route-error" role="alert">
-                        <span class="material-symbols-outlined" aria-hidden="true">error</span>
-                        <h1>No se pudo cargar esta sección</h1>
-                        <p>Ocurrió un error inesperado. Intenta de nuevo o vuelve al inicio.</p>
-                        <button class="m3-filled-button" @onclick="ReloadPage">Volver a intentar</button>
-                    </section>
-                </ErrorContent>
-            </ErrorBoundary>
+            <div hidden="@_isOffline" inert="@_isOffline">
+                <ErrorBoundary>
+                    <ChildContent>@Body</ChildContent>
+                    <ErrorContent>
+                        <section class="orbi-route-error" role="alert">
+                            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                            <h1>No se pudo cargar esta sección</h1>
+                            <p>Ocurrió un error inesperado. Intenta de nuevo o vuelve al inicio.</p>
+                            <button class="m3-filled-button" @onclick="ReloadPage">Volver a intentar</button>
+                        </section>
+                    </ErrorContent>
+                </ErrorBoundary>
+            </div>
+            @if (_isOffline)
+            {
+                <section class="orbi-offline-page" role="alert" aria-labelledby="offline-title">
+                    <svg class="orbi-offline-illustration" viewBox="0 0 240 190" aria-hidden="true" focusable="false">
+                        <circle class="orbi-offline-illustration-wash" cx="120" cy="96" r="82" />
+                        <path class="orbi-offline-cloud" d="M69 125h97a25 25 0 0 0 0-50 39 39 0 0 0-75-8 30 30 0 0 0-22 58Z" />
+                        <path class="orbi-offline-signal" d="M97 103a34 34 0 0 1 46 0M107 114a19 19 0 0 1 26 0" />
+                        <circle class="orbi-offline-signal-dot" cx="120" cy="124" r="3.5" />
+                        <path class="orbi-offline-slash" d="m88 61 65 72" />
+                        <path class="orbi-offline-spark" d="M39 68h13m-6.5-6.5v13M184 46h11m-5.5-5.5v11M190 142h12m-6  -6v12" />
+                    </svg>
+                    <p class="orbi-offline-eyebrow">ESTADO DE CONEXIÓN</p>
+                    <h1 id="offline-title">No tienes conexión a internet</h1>
+                    <p class="orbi-offline-description">La página sigue abierta, pero algunas funciones necesitan internet. Cuando vuelva la conexión, podrás continuar donde estabas.</p>
+                    <div class="orbi-offline-status" aria-live="polite">
+                        <span class="orbi-offline-status-dot" aria-hidden="true"></span>
+                        Esperando conexión
+                    </div>
+                    <button type="button" class="m3-outlined-button orbi-offline-retry" @onclick="RetryConnectionAsync">Comprobar conexión</button>
+                </section>
+            }
         </main>
         <footer class="m3-footer @(IsAssistantPage ? "orbi-assistant-footer" : string.Empty)">&copy; 2026 Dash. Todos los derechos reservados.</footer>
     </div>
@@ -116,11 +141,15 @@
     private string _firstName = "Mi cuenta";
     private string _primaryRole = "Sin rol";
     private bool _navCollapsed;
+    private bool _isOffline;
+    private AsideNavigationState _asideState;
+    private IJSObjectReference? _networkModule;
+    private DotNetObjectReference<MainLayout>? _networkReference;
     private string ProfileLinkClass => $"m3-nav-item orbi-profile-nav-item {(IsProfilePage ? "active" : string.Empty)}";
     private bool IsRegistrationPage => Navigation.ToBaseRelativePath(Navigation.Uri)
         .Split('?', '#')[0].Trim('/').Equals("registro", StringComparison.OrdinalIgnoreCase);
-    private bool IsAssistantPage => Navigation.ToBaseRelativePath(Navigation.Uri)
-        .Split('?', '#')[0].Trim('/').Equals("app/asistente", StringComparison.OrdinalIgnoreCase);
+    private bool IsAssistantPage => CurrentPath.Equals("app/asistente", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("Home/Assistant", StringComparison.OrdinalIgnoreCase);
     private string CurrentPath => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Trim('/');
     private bool IsPublicHome => string.IsNullOrEmpty(CurrentPath);
     private bool IsPurchasesPage => _user.IsInRole("Usuario") && IsDeliveryAction("MyOrders", "MyPayments", "Cart", "Checkout", "PaymentSuccess");
@@ -132,8 +161,45 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _asideState = ResolveAsideState();
+        Navigation.LocationChanged += OnLocationChanged;
         AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
         await RefreshUserAsync(await AuthenticationStateProvider.GetAuthenticationStateAsync());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            _networkModule = await JS.InvokeAsync<IJSObjectReference>("import", "/MainLayout.razor.js");
+            _networkReference = DotNetObjectReference.Create(this);
+            _isOffline = !await _networkModule.InvokeAsync<bool>("subscribe", _networkReference);
+            StateHasChanged();
+        }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException exception)
+        {
+            Logger.LogDebug(exception, "No se pudo iniciar la detección de conexión en el navegador.");
+        }
+    }
+
+    [JSInvokable]
+    public Task OnConnectionChanged(bool isOnline) => InvokeAsync(() =>
+    {
+        var isOffline = !isOnline;
+        if (_isOffline == isOffline) return;
+
+        _isOffline = isOffline;
+        StateHasChanged();
+    });
+
+    private async Task RetryConnectionAsync()
+    {
+        if (_networkModule is null) return;
+        var isOnline = await _networkModule.InvokeAsync<bool>("isOnline");
+        await OnConnectionChanged(isOnline);
     }
 
     private async Task RefreshUserAsync(AuthenticationState state)
@@ -161,10 +227,50 @@
         catch (Exception exception) { Logger.LogWarning(exception, "No se pudo actualizar el perfil de navegación."); }
     }
 
-    public void Dispose() => AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    public async ValueTask DisposeAsync()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        _networkReference?.Dispose();
+        if (_networkModule is null) return;
+
+        try
+        {
+            await _networkModule.InvokeVoidAsync("unsubscribe");
+            await _networkModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+    }
 
     private void ReloadPage() => Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     private void ToggleNavigation() => _navCollapsed = !_navCollapsed;
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args) => _ = InvokeAsync(() =>
+    {
+        _asideState = ResolveAsideState(args.Location);
+        StateHasChanged();
+    });
+
+    private AsideNavigationState ResolveAsideState(string? location = null)
+    {
+        var path = Navigation.ToBaseRelativePath(location ?? Navigation.Uri).Split('?', '#')[0].Trim('/');
+        return path.ToUpperInvariant() switch
+        {
+            "DELIVERY" => AsideNavigationState.Stores,
+            "DELIVERY/DELIVERIES" => AsideNavigationState.Deliveries,
+            "DELIVERY/SELLERSTORE" => AsideNavigationState.SellerStore,
+            "DELIVERY/SELLERINVENTORY" => AsideNavigationState.SellerProducts,
+            _ => AsideNavigationState.None
+        };
+    }
+
+    private enum AsideNavigationState
+    {
+        None,
+        Stores,
+        Deliveries,
+        SellerStore,
+        SellerProducts
+    }
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 }

@@ -6,17 +6,17 @@ using OrbiApp.Application.Features.Shared.Ports;
 using OrbiApp.Models;
 using OrbiApp.Models.Delivery;
 using OrbiApp.Models.Identity;
+using OrbiApp.Features.Identity.Presentation.Services;
 using OrbiApp.Presentation.Client.Networking;
-using OrbiApp.Presentation.Services;
 
 namespace OrbiApp.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Usuario")]
 [Route("api/delivery/catalog")]
 public sealed class DeliveryCatalogApiController(
     IApplicationDataSession data,
-    DeliveryPageCache pageCache) : ControllerBase
+    IdentityPageCache pageCache) : ControllerBase
 {
     [HttpGet]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -29,6 +29,9 @@ public sealed class DeliveryCatalogApiController(
         [FromQuery] string? cityCode = null,
         CancellationToken cancellationToken = default)
     {
+        if (User.IsInRole("Vendedor"))
+            return Forbid();
+
         var isCustomer = User.IsInRole("Usuario");
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var hasAddress = false;
@@ -39,7 +42,9 @@ public sealed class DeliveryCatalogApiController(
         {
             profile = await pageCache.GetUserProfileAsync(data, userId, cancellationToken);
             primaryAddress = await pageCache.GetPrimaryAddressAsync(data, userId, cancellationToken);
-            if (isCustomer && primaryAddress is null && profile is not null && !string.IsNullOrWhiteSpace(profile.AddressLine1))
+            if (isCustomer && primaryAddress is null &&
+                !await data.Set<UserAddress>().AnyAsync(item => item.IdentityUserId == userId, cancellationToken) &&
+                profile is not null && !string.IsNullOrWhiteSpace(profile.AddressLine1))
             {
                 data.Set<UserAddress>().Add(new UserAddress
                 {
@@ -59,10 +64,10 @@ public sealed class DeliveryCatalogApiController(
             hasAddress = primaryAddress is not null;
         }
 
-        var location = profile is not null
-            ? new DeliveryCatalogLocation(profile.ProvinceCode, profile.Province?.Name, profile.CityCode, profile.City?.Name)
-            : primaryAddress is not null
-                ? new DeliveryCatalogLocation(primaryAddress.ProvinceCode, primaryAddress.Province?.Name, primaryAddress.CityCode, primaryAddress.City?.Name)
+        var location = primaryAddress is not null
+            ? new DeliveryCatalogLocation(primaryAddress.ProvinceCode, primaryAddress.Province?.Name, primaryAddress.CityCode, primaryAddress.City?.Name)
+            : profile is not null
+                ? new DeliveryCatalogLocation(profile.ProvinceCode, profile.Province?.Name, profile.CityCode, profile.City?.Name)
                 : null;
 
         var productsQuery = data.Set<DeliveryProduct>()

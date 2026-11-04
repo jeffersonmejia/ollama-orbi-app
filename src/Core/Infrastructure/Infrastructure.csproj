@@ -10,6 +10,7 @@
     <ProjectReference Include="../Application/Application.csproj" />
     <Compile Include="../../Features/**/Infrastructure/**/*.cs" />
     <PackageReference Include="MailKit" Version="4.17.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

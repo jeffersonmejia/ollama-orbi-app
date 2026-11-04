@@ -8,6 +8,7 @@
 @using OrbiApp.Presentation.Client.Networking
 @inject HttpClient Api
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Tiendas | Dash</PageTitle>
 
@@ -209,6 +210,7 @@
     private int _page = 1;
     private bool _categoryMenuOpen;
     private bool _loading;
+    private bool _redirectingUnauthorizedRole;
     private bool _savingAddress;
     private bool _addressDialogOpen;
 
@@ -219,17 +221,30 @@
     private IEnumerable<RegistrationCityOption> AvailableCities => (_addressOptions?.Cities ?? Array.Empty<RegistrationCityOption>())
         .Where(city => city.ProvinceCode == _addressForm.ProvinceCode);
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
+        var user = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        if (user.Identity?.IsAuthenticated == true &&
+            (user.IsInRole("Vendedor") || !user.IsInRole("Usuario")))
+        {
+            _redirectingUnauthorizedRole = true;
+            var destination = user.IsInRole("Vendedor")
+                ? "/Delivery/SellerStore"
+                : user.IsInRole("Repartidor")
+                    ? "/Delivery/Deliveries"
+                    : "/Delivery/Admin";
+            Navigation.NavigateTo(destination, replace: true, forceLoad: destination == "/Delivery/SellerStore" || destination == "/Delivery/Admin");
+            return;
+        }
+
         Navigation.LocationChanged += OnLocationChanged;
         ReadQuery();
         _loading = true;
-        return Task.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !_redirectingUnauthorizedRole)
             await LoadCatalogAsync();
     }
 

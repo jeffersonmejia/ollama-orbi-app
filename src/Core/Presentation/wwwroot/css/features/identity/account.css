@@ -11,7 +11,9 @@
 .orbi-account-nav a.active { color:var(--md-sys-color-on-primary-container); background:var(--md-sys-color-primary-container); }
 .orbi-account-nav a:focus-visible,.orbi-account-nav-legacy:focus-visible,.orbi-account-logout:focus-visible { outline:2px solid var(--md-sys-color-primary); outline-offset:2px; }
 .orbi-account-logout { display:flex; margin:0; }
-.orbi-account-logout button { background:transparent; }
+.orbi-account-logout button { all:unset; display:flex; align-items:center; justify-content:center; gap:10px; min-height:46px; padding:0 20px; border-radius:999px; color:var(--md-sys-color-on-surface-variant); font-family:inherit; font-size:14px; font-weight:500; white-space:nowrap; cursor:pointer; }
+.orbi-account-logout button:hover { background:var(--md-sys-color-surface-container-low); }
+.orbi-account-logout button:focus-visible { outline:2px solid var(--md-sys-color-primary); outline-offset:2px; }
 .orbi-account-nav .material-symbols-outlined { font-size:20px; }
 .orbi-account-page { display:grid; gap:24px; width:100%; max-width:760px; box-sizing:border-box; margin:0 auto; padding:24px 24px 48px; }
 .orbi-account-identity { display:grid; justify-items:center; gap:6px; padding:4px 0 18px; text-align:center; }
@@ -28,12 +30,59 @@
 .orbi-account-rows { display:grid; row-gap:14px; }
 .orbi-google-card > .orbi-account-rows + .orbi-account-rows { margin-top:26px; padding-top:24px; border-top:1px solid var(--md-sys-color-outline-variant); }
 .orbi-account-rows .m3-filled-button, .orbi-google-card .orbi-account-rows .m3-filled-button { width:auto; max-width:fit-content; }
+.orbi-account-profile-form .m3-filled-button { justify-self:end; }
+.orbi-profile-phone-field .m3-text-field-input { background:var(--md-sys-color-surface-container-lowest); }
+.orbi-account-page .orbi-account-email-form > .m3-filled-button { width:auto; max-width:fit-content; justify-self:end; margin-left:auto; }
+.orbi-account-page .orbi-profile-email-field input.m3-text-field-input { background-color:var(--md-sys-color-surface-container-lowest,#fff)!important; }
+.orbi-profile-verification-button { display:flex; justify-content:center; width:100%; min-height:56px; padding:0 24px; border-radius:999px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-primary); text-decoration:none; }
+.orbi-profile-verification-button:hover,.orbi-profile-verification-button:focus-visible { background:var(--md-sys-color-primary-container); color:var(--md-sys-color-primary); }
+.orbi-profile-verification-button:disabled { opacity:.6; }
 .orbi-account-row { display:grid; grid-template-columns:180px minmax(0,1fr) auto; align-items:center; gap:16px; min-height:64px; padding:0 4px; border-top:1px solid var(--md-sys-color-outline-variant); }
 .orbi-account-row label { color:var(--md-sys-color-on-surface-variant); font-size:13px; }
 .orbi-account-row>span:not(.material-symbols-outlined) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .orbi-account-row>.material-symbols-outlined { color:var(--md-sys-color-outline); font-size:18px; }
 .orbi-account-row input { width:100%; padding:9px 0; border:0; border-bottom:1px solid transparent; outline:0; background:transparent; color:var(--md-sys-color-on-surface); font:inherit; }
 .orbi-account-row input:focus { border-bottom-color:var(--md-sys-color-primary); }
+.orbi-account-skeleton,.orbi-address-skeleton { display:grid; gap:24px; width:100%; }
+.orbi-account-skeleton-identity { align-content:start; }
+.orbi-account-skeleton-avatar { width:84px; height:84px; border-radius:50%; }
+.orbi-account-skeleton-name { width:min(340px,80%); height:38px; border-radius:10px; }
+.orbi-account-skeleton-role { width:100px; height:28px; border-radius:999px; }
+.orbi-account-skeleton-card { display:grid; gap:22px; }
+.orbi-account-skeleton-heading { display:grid; align-content:start; gap:9px; flex:1; }
+.orbi-account-skeleton-title { display:block; width:min(240px,70%); height:26px; border-radius:8px; }
+.orbi-account-skeleton-copy { display:block; width:min(420px,90%); height:16px; border-radius:6px; }
+.orbi-account-skeleton-icon { width:24px; height:24px; border-radius:50%; }
+.orbi-account-skeleton-section { display:grid; gap:14px; padding-top:20px; border-top:1px solid var(--md-sys-color-outline-variant); }
+.orbi-account-skeleton-row { display:block; width:100%; height:44px; border-radius:8px; }
+.orbi-account-skeleton-field { display:block; width:100%; height:56px; border-radius:14px; }
+.orbi-account-skeleton-button { display:block; width:150px; height:40px; border-radius:999px; }
+.orbi-address-skeleton-card { display:grid; gap:16px; }
+.orbi-address-skeleton-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:6px; }
+.orbi-address-skeleton-fields .m3-skeleton { display:block; height:56px; border-radius:14px; }
+.orbi-address-skeleton-fields .m3-skeleton:last-child { grid-column:1/-1; }
+.orbi-address-skeleton-list { display:grid; gap:12px; }
+.orbi-address-skeleton-list .m3-skeleton { display:block; height:104px; border-radius:20px; }
+.orbi-payment-page { gap:32px; }
+.orbi-payment-page-title { display:grid; gap:8px; }
+.orbi-payment-page-title h1 { font-size:32px; }
+.orbi-payment-page-title p { margin:0; }
+.orbi-payment-card { display:grid; gap:24px; padding:32px; }
+.orbi-payment-card-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; padding-bottom:22px; border-bottom:1px solid var(--md-sys-color-outline-variant); }
+.orbi-payment-card-heading h2 { margin:5px 0 0; font-size:22px; font-weight:500; }
+.orbi-payment-card-heading p { margin:7px 0 0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-payment-eyebrow { color:var(--md-sys-color-primary); font-size:12px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+.orbi-payment-heading-icon { color:var(--md-sys-color-primary); font-size:24px; }
+.orbi-payment-provider { display:grid; grid-template-columns:52px minmax(0,1fr) auto; align-items:center; gap:16px; padding:20px; border:1px solid var(--md-sys-color-outline-variant); border-radius:18px; background:var(--md-sys-color-surface-container-lowest); }
+.orbi-payment-provider-icon { display:grid; width:52px; height:52px; place-items:center; border-radius:16px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); }
+.orbi-payment-provider-icon .material-symbols-outlined { display:block; font-size:26px; line-height:1; text-align:center; }
+.orbi-payment-provider-copy h3 { margin:0; font-size:18px; font-weight:600; }
+.orbi-payment-provider-copy p { margin:5px 0 0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-payment-provider-status { display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; background:var(--md-sys-color-secondary-container); color:var(--md-sys-color-on-secondary-container); font-size:13px; font-weight:500; white-space:nowrap; }
+.orbi-payment-provider-status .material-symbols-outlined { font-size:18px; }
+.orbi-payment-note { display:flex; align-items:flex-start; gap:10px; padding:14px 16px; border-radius:14px; background:var(--md-sys-color-surface-container-low); color:var(--md-sys-color-on-surface-variant); }
+.orbi-payment-note .material-symbols-outlined { color:var(--md-sys-color-primary); font-size:20px; }
+.orbi-payment-note p { margin:0; line-height:1.5; }
 .orbi-account-link-card { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px; transition:background .15s ease; }
 .orbi-account-link-card:hover { background:var(--md-sys-color-surface-container-low); color:inherit; }
 .orbi-account-link-card>.material-symbols-outlined:first-child { color:var(--md-sys-color-primary); }
@@ -49,4 +98,13 @@
 .orbi-address-actions { display:flex; align-items:center; gap:2px; flex-wrap:wrap; }
 .orbi-address-actions form { margin:0; }
 .orbi-danger-button { color:var(--md-sys-color-error)!important; }
+.orbi-security-page { gap:22px; }
+.orbi-security-page-title { display:grid; gap:6px; }
+.orbi-security-page-title h1 { margin:0; font-size:28px; font-weight:500; }
+.orbi-security-page-title p { margin:0; color:var(--md-sys-color-on-surface-variant); }
+.orbi-security-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+.orbi-security-actions form { margin:0; }
+@media(max-width:760px){.orbi-account-logout button{padding:0 14px}}
 @media(max-width:760px){.orbi-account-shell{padding:16px 12px 32px}.orbi-account-layout{gap:22px}.orbi-account-navigation{width:100%;overflow-x:auto;padding:2px 2px 8px}.orbi-account-nav{width:max-content;min-width:100%;justify-content:flex-start}.orbi-account-nav a,.orbi-account-nav-legacy,.orbi-account-logout{padding:0 14px}.orbi-account-shell-header{margin-bottom:18px}.orbi-address-form{grid-template-columns:1fr}.orbi-address-form .orbi-field-full,.orbi-address-form .orbi-form-actions{grid-column:auto}.orbi-saved-address{grid-template-columns:auto 1fr}.orbi-address-actions{grid-column:1/-1}.orbi-account-page{padding:16px 12px 32px}.orbi-google-card{padding:22px 18px}.orbi-google-card > .orbi-account-rows + .orbi-account-rows{margin-top:20px;padding-top:20px}.orbi-account-row{grid-template-columns:110px minmax(0,1fr) auto;min-height:60px;padding:0 2px}}
+@media(max-width:560px){.orbi-address-skeleton-fields{grid-template-columns:1fr}.orbi-address-skeleton-fields .m3-skeleton:last-child{grid-column:auto}.orbi-account-skeleton-card{padding:22px 18px}}
+@media(max-width:560px){.orbi-payment-page{gap:22px}.orbi-payment-card{gap:18px;padding:22px 18px}.orbi-payment-card-heading{gap:12px;padding-bottom:18px}.orbi-payment-card-heading h2{font-size:20px}.orbi-payment-provider{grid-template-columns:44px minmax(0,1fr);gap:12px;padding:16px}.orbi-payment-provider-icon{width:44px;height:44px;border-radius:14px;font-size:23px}.orbi-payment-provider-status{grid-column:2;justify-self:start}.orbi-payment-note{padding:12px}}

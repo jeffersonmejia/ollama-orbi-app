@@ -68,7 +68,7 @@
 .orbi-register-control input:not(:placeholder-shown) + .orbi-register-floating-label,
 .orbi-register-control select:valid + .orbi-register-floating-label {
     top: 0;
-    color: var(--md-sys-color-primary, #d2006e);
+    color: var(--md-sys-color-on-surface-variant, #44474e);
     background-color: var(--orbi-register-field-background) !important;
     transform: translateY(-50%) scale(.82);
 }
@@ -96,6 +96,16 @@
     color: var(--md-sys-color-error, #ba1a1a);
 }
 
+.orbi-register-control:focus-within .orbi-register-floating-label,
+.orbi-register-control:focus-within .orbi-register-field-icon {
+    color: var(--md-sys-color-primary, #d2006e) !important;
+}
+
+.orbi-register-control:has(input:user-invalid, select:user-invalid) .orbi-register-floating-label,
+.orbi-register-control:has(input:user-invalid, select:user-invalid) .orbi-register-field-icon {
+    color: var(--md-sys-color-error, #ba1a1a) !important;
+}
+
 .orbi-register-control select:focus + .orbi-register-floating-label {
     color: var(--md-sys-color-on-surface-variant, #44474e);
 }
@@ -104,7 +114,15 @@
     color: var(--md-sys-color-error, #ba1a1a);
 }
 
-.orbi-register-control:focus-within select + .orbi-register-floating-label,
 .orbi-register-control select:valid + .orbi-register-floating-label {
     color: var(--md-sys-color-on-surface-variant, #44474e);
+}
+
+.orbi-register-control:focus-within .orbi-register-floating-label {
+    color: var(--md-sys-color-primary, #d2006e);
+}
+
+.orbi-register-control input:user-invalid + .orbi-register-floating-label,
+.orbi-register-control select:user-invalid + .orbi-register-floating-label {
+    color: var(--md-sys-color-error, #ba1a1a);
 }

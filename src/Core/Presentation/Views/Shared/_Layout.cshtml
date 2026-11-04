@@ -76,13 +76,6 @@
     }
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script>
-        try {
-            if (sessionStorage.getItem('dash-nav-progress') === '1') {
-                document.documentElement.classList.add('dash-navigation-pending');
-            }
-        } catch { }
-    </script>
-    <script>
         (() => {
             const key = 'orbi-session-context';
             const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(User.FindFirstValue(ClaimTypes.NameIdentifier)));
@@ -190,32 +183,34 @@
         <ul class="m3-nav-items">
             @if (User.Identity?.IsAuthenticated == true && !isPublicIdentityPage)
             {
-                <li>
-                <a data-nav-progress="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "Index" ? "active" : "")"
-                       asp-controller="Delivery" asp-action="Index">
-                        <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
-                        <span>Tiendas</span>
-                    </a>
-                </li>
+                @if (User.IsInRole("Vendedor"))
+                {
+                    <li><a data-nav-skeleton="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "SellerStore" ? "active" : "")" asp-controller="Delivery" asp-action="SellerStore"><span class="material-symbols-outlined" aria-hidden="true">storefront</span><span>Tienda</span></a></li>
+                    <li><a data-nav-skeleton="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "SellerInventory" ? "active" : "")" asp-controller="Delivery" asp-action="SellerInventory"><span class="material-symbols-outlined" aria-hidden="true">inventory_2</span><span>Productos</span></a></li>
+                }
+                else if (User.IsInRole("Usuario"))
+                {
+                    <li><a data-nav-skeleton="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "Index" ? "active" : "")" asp-controller="Delivery" asp-action="Index"><span class="material-symbols-outlined" aria-hidden="true">storefront</span><span>Tiendas</span></a></li>
+                }
                 @if (User.IsInRole("Usuario"))
                 {
-                    <li><a data-nav-progress="true" class="m3-nav-item @(isUserPurchasesPage ? "active" : string.Empty)" asp-controller="Delivery" asp-action="Cart"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></a></li>
+                    <li><a data-nav-skeleton="true" class="m3-nav-item @(isUserPurchasesPage ? "active" : string.Empty)" asp-controller="Delivery" asp-action="Cart"><span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span>Mis compras</span></a></li>
                 }
                 @if (User.IsInRole("Repartidor"))
                 {
-                    <li><a data-nav-progress="true" class="m3-nav-item" asp-controller="Delivery" asp-action="Deliveries"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></a></li>
+                    <li><a data-nav-skeleton="true" class="m3-nav-item @(currentController == "Delivery" && currentAction == "Deliveries" ? "active" : "")" asp-controller="Delivery" asp-action="Deliveries"><span class="material-symbols-outlined" aria-hidden="true">delivery_dining</span><span>Entregas</span></a></li>
                 }
                 @if (User.IsInRole("Administrador"))
                 {
-                    <li><a data-nav-progress="true" class="m3-nav-item" asp-controller="Delivery" asp-action="Admin"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></a></li>
+                    <li><a data-nav-skeleton="true" class="m3-nav-item" asp-controller="Delivery" asp-action="Admin"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span><span>Admin</span></a></li>
                 }
-                @if (User.IsInRole("Administrador") || User.IsInRole("Vendedor") || User.IsInRole("Repartidor"))
+                @if (User.IsInRole("Administrador") || User.IsInRole("Repartidor"))
                 {
                     <li>
-                        <a data-nav-progress="true" class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" && (currentAction == "OrderStatusHistory" || currentAction == "DeliveryIncidents") || currentController == "Delivery" && (currentAction == "Deliveries" || currentAction == "SellerInventory") ? "active" : "")"
-                           asp-controller="@(User.IsInRole("Vendedor") ? "Delivery" : "Operations")" asp-action="@(User.IsInRole("Vendedor") ? "SellerInventory" : User.IsInRole("Administrador") ? "DeliveryIncidents" : "OrderStatusHistory")">
+                        <a data-nav-skeleton="true" class="m3-nav-item orbi-operation-nav-item @(currentController == "Operations" && (currentAction == "OrderStatusHistory" || currentAction == "DeliveryIncidents") ? "active" : "")"
+                           asp-controller="Operations" asp-action="@(User.IsInRole("Administrador") ? "DeliveryIncidents" : "OrderStatusHistory")">
                             <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
-                            <span>@(User.IsInRole("Administrador") ? "Operación" : User.IsInRole("Vendedor") ? "Inventario" : "Seguimiento")</span>
+                            <span>@(User.IsInRole("Administrador") ? "Operación" : "Seguimiento")</span>
                         </a>
                     </li>
                 }
@@ -223,19 +218,19 @@
             else
             {
                 <li>
-                    <a data-nav-progress="true" class="m3-nav-item @(Context.Request.Path == "/" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
+                    <a data-nav-skeleton="true" class="m3-nav-item @(Context.Request.Path == "/" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">
                         <span class="material-symbols-outlined" aria-hidden="true">home</span>
                         <span>Inicio</span>
                     </a>
                 </li>
                 <li>
-                    <a data-nav-progress="true" class="m3-nav-item @(currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Login">
+                    <a data-nav-skeleton="true" class="m3-nav-item @(currentPage?.EndsWith("/Login", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/Identity/Account/Login">
                         <span class="material-symbols-outlined" aria-hidden="true">login</span>
                         <span>Iniciar sesión</span>
                     </a>
                 </li>
                 <li>
-                    <a data-nav-progress="true" class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/registro">
+                    <a data-nav-skeleton="true" class="m3-nav-item @(currentPage?.EndsWith("/Register", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/registro">
                         <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
                         <span>Registro</span>
                     </a>
@@ -246,7 +241,7 @@
         @if (SignInManager.IsSignedIn(User) && !isPublicIdentityPage)
         {
             <div class="m3-nav-rail-footer">
-                <a data-nav-progress="true" class="m3-nav-item orbi-profile-nav-item @(currentPage?.StartsWith("/Account/Manage", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" asp-area="Identity" asp-page="/Account/Manage/Index"
+                <a data-nav-skeleton="true" class="m3-nav-item orbi-profile-nav-item @(currentPage?.StartsWith("/Account/Manage", StringComparison.OrdinalIgnoreCase) == true ? "active" : "")" href="/Identity/Account/Manage"
                    title="@User.Identity?.Name">
                     <span class="material-symbols-outlined" aria-hidden="true">person</span>
                     <span class="orbi-profile-label">

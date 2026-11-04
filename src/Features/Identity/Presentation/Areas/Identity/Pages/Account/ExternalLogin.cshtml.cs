@@ -96,7 +96,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             public string Email { get; set; }
         }
         
-        public IActionResult OnGet() => RedirectToPage("./Login");
+        public IActionResult OnGet() => LocalRedirect(Url.Content("~/Identity/Account/Login"));
 
         public IActionResult OnPost(string provider, string returnUrl = null, bool registration = false)
         {
@@ -127,13 +127,13 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return LocalRedirect(QueryHelpers.AddQueryString(Url.Content("~/Identity/Account/Login"), "returnUrl", returnUrl ?? "/"));
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return LocalRedirect(QueryHelpers.AddQueryString(Url.Content("~/Identity/Account/Login"), "returnUrl", returnUrl ?? "/"));
             }
 
             // Sign in the user with this external login provider if the user already has a login.
@@ -145,7 +145,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             }
             if (result.IsLockedOut)
             {
-                return RedirectToPage("./Lockout");
+                return LocalRedirect(Url.Content("~/Identity/Account/Lockout"));
             }
             else
             {
@@ -178,7 +178,7 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information during confirmation.";
-                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                return LocalRedirect(QueryHelpers.AddQueryString(Url.Content("~/Identity/Account/Login"), "returnUrl", returnUrl ?? "/"));
             }
 
             if (ModelState.IsValid)
@@ -276,14 +276,19 @@ namespace OrbiApp.Areas.Identity.Pages.Account
             var locationIsValid = await _context.Set<EcuadorCity>().AnyAsync(city =>
                 city.Code == profile.CityCode && city.ProvinceCode == profile.ProvinceCode);
             var cedulaExists = await _context.Set<UserProfile>().AnyAsync(item => item.Cedula == profile.Cedula);
+            var cedulaHasTenDigits = profile.Cedula.Length == 10 &&
+                profile.Cedula.All(character => character is >= '0' and <= '9');
 
             if (requiredValues.Any(string.IsNullOrWhiteSpace) ||
                 !publicRoles.Contains(profile.Role) ||
                 !locationIsValid ||
+                !cedulaHasTenDigits ||
                 cedulaExists)
             {
                 ErrorMessage = cedulaExists
                     ? "Ya existe una cuenta registrada con esa cédula."
+                    : !cedulaHasTenDigits
+                        ? "La cédula debe contener exactamente 10 dígitos."
                     : "Revisa los datos personales y de ubicación antes de continuar con Google.";
                 return RedirectToPage("./Register", new { ReturnUrl = returnUrl, oauthError = "profile" });
             }

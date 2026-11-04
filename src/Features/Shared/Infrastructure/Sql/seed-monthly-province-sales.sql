@@ -37,7 +37,7 @@ BEGIN
     -- Dos categorías faltantes, reconocidas por la clasificación económica del INEC.
     IF NOT EXISTS (SELECT 1 FROM delivery_store WHERE name = 'Panadería local de Azogues') THEN
         INSERT INTO delivery_store (name, category, address, province_code, city_code, is_active, created_at)
-        VALUES ('Panadería local de Azogues', 'Panadería', 'Centro de Azogues', '03', '0301', true, now())
+        VALUES ('Panadería local de Azogues', 'Restaurantes', 'Centro de Azogues', '03', '0301', true, now())
         RETURNING delivery_store_id INTO selected_store_id;
 
         INSERT INTO delivery_product
@@ -61,7 +61,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM delivery_store WHERE name = 'Cafetería local de Tulcán') THEN
         INSERT INTO delivery_store (name, category, address, province_code, city_code, is_active, created_at)
-        VALUES ('Cafetería local de Tulcán', 'Cafetería', 'Centro de Tulcán', '04', '0401', true, now())
+        VALUES ('Cafetería local de Tulcán', 'Restaurantes', 'Centro de Tulcán', '04', '0401', true, now())
         RETURNING delivery_store_id INTO selected_store_id;
 
         INSERT INTO delivery_product

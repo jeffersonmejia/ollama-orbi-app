@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="/css/core/motion/animations.css" />
     <link rel="stylesheet" href="/css/core/motion/experience.css" />
     <link rel="stylesheet" href="/css/core/runtime/blazor-navigation.css" />
+    <link rel="stylesheet" href="/css/features/connectivity/offline.css" />
     <link rel="stylesheet" href="/css/features/operations/operations.css" />
     <link rel="stylesheet" href="/css/features/operations/experience-cards.css" />
     <link rel="stylesheet" href="/css/features/delivery/catalog.css" />
@@ -54,14 +55,8 @@
     <link rel="stylesheet" href="/css/features/home/public-home.css" />
     <link rel="stylesheet" href="/css/features/home/experience-cards.css" />
     <link rel="stylesheet" href="/css/features/identity/signin.css" />
+    <link rel="stylesheet" href="/css/features/registration/layout.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script>
-        try {
-            if (sessionStorage.getItem('dash-nav-progress') === '1') {
-                document.documentElement.classList.add('dash-navigation-pending');
-            }
-        } catch { }
-    </script>
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 <body>

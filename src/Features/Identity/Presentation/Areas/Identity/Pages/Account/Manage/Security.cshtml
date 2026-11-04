@@ -6,12 +6,6 @@
 }
 
 <div class="orbi-account-page">
-    <header class="orbi-account-identity">
-        <div class="orbi-account-avatar">@((User.Identity?.Name ?? "U")[..1].ToUpperInvariant())</div>
-        <h1>Seguridad</h1>
-        <span>Administra la protección de tu cuenta.</span>
-    </header>
-
     <partial name="_StatusMessage" for="StatusMessage" />
 
     <section class="orbi-google-card">
@@ -19,7 +13,7 @@
             <div><h2>Clave</h2><p>Cambia o configura la contraseña de tu cuenta.</p></div>
             <span class="material-symbols-outlined">password</span>
         </div>
-        <a asp-page="@(Model.HasPassword ? "./ChangePassword" : "./SetPassword")" class="m3-filled-button">
+        <a href="@(Model.HasPassword ? "/Identity/Account/Manage/ChangePassword" : "/Identity/Account/Manage/SetPassword")" class="m3-filled-button">
             @(Model.HasPassword ? "Cambiar clave" : "Configurar clave")
         </a>
     </section>

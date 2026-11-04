@@ -16,4 +16,9 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../../Features/Identity/Client/**/*.cs" Link="Features/Identity/%(RecursiveDir)%(Filename)%(Extension)" />
+    <RazorComponent Include="../../Features/Identity/Client/**/*.razor" Link="Features/Identity/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

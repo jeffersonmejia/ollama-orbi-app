@@ -45,7 +45,8 @@
   --orbi-nav-active-container: var(--md-sys-color-primary-container);
   --orbi-nav-active-icon: var(--md-sys-color-primary);
   --orbi-nav-active-on-icon: #FFFFFF;
-  --orbi-nav-hover-container: color-mix(in srgb, var(--orbi-brand) 5%, #E8E5E7);
+  --orbi-nav-hover-container: var(--orbi-brand-container);
+  --orbi-nav-hover-on-container: var(--md-sys-color-on-surface);
   --orbi-nav-icon-blue-container: var(--orbi-brand-container);
   --orbi-nav-icon-blue: var(--orbi-brand-dark);
   --orbi-nav-icon-purple-container: color-mix(in srgb, var(--md-sys-color-tertiary) 12%, white);

@@ -15,7 +15,8 @@ namespace OrbiApp.Controllers;
 public sealed class DeliveryOrdersApiController(IApplicationDataSession data) : ControllerBase
 {
     private const int PageSize = 5;
-    private static readonly string[] RepartidorStatuses = ["Comprado", "En camino", "Entregado"];
+    private static readonly string[] RepartidorStatuses = ["En preparación", "En camino", "Entregado"];
+    private string? CurrentEmail => User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;
 
     [HttpGet("orders")]
     [Authorize(Roles = "Usuario")]
@@ -24,7 +25,7 @@ public sealed class DeliveryOrdersApiController(IApplicationDataSession data) : 
         [FromQuery] string? buscar,
         [FromQuery] int page = 1,
         CancellationToken cancellationToken = default) =>
-        GetOrdersAsync(buscar, page, User.Identity?.Name, deliveryPerson: false, cancellationToken);
+        GetOrdersAsync(buscar, page, CurrentEmail, deliveryPerson: false, cancellationToken);
 
     [HttpGet("deliveries")]
     [Authorize(Roles = "Repartidor")]
@@ -33,7 +34,7 @@ public sealed class DeliveryOrdersApiController(IApplicationDataSession data) : 
         [FromQuery] string? buscar,
         [FromQuery] int page = 1,
         CancellationToken cancellationToken = default) =>
-        GetOrdersAsync(buscar, page, User.Identity?.Name, deliveryPerson: true, cancellationToken);
+        GetOrdersAsync(buscar, page, CurrentEmail, deliveryPerson: true, cancellationToken);
 
     [HttpPut("deliveries/{orderId:int}/status")]
     [Authorize(Roles = "Repartidor")]
@@ -46,12 +47,13 @@ public sealed class DeliveryOrdersApiController(IApplicationDataSession data) : 
         if (!RepartidorStatuses.Contains(request.Status, StringComparer.Ordinal))
             return BadRequest(new { code = "invalid_order_status", message = "Selecciona un estado válido para la entrega." });
 
-        var email = User.Identity?.Name;
+        var email = CurrentEmail;
         if (string.IsNullOrWhiteSpace(email))
             return Unauthorized(new { code = "authentication_required", message = "Inicia sesión para actualizar la entrega." });
 
         var order = await data.Set<DeliveryOrder>()
-            .FirstOrDefaultAsync(item => item.DeliveryOrderId == orderId && item.DeliveryPersonEmail == email, cancellationToken);
+            .FirstOrDefaultAsync(item => item.DeliveryOrderId == orderId &&
+                item.DeliveryPersonEmail != null && EF.Functions.ILike(item.DeliveryPersonEmail, email), cancellationToken);
         if (order is null)
             return NotFound(new { code = "delivery_not_found", message = "No se encontró la entrega asignada." });
 
@@ -87,8 +89,8 @@ public sealed class DeliveryOrdersApiController(IApplicationDataSession data) : 
             .Include(order => order.Store)
             .Include(order => order.Items)
             .Where(order => deliveryPerson
-                ? order.DeliveryPersonEmail == email && order.Status != "Cancelado"
-                : order.CustomerEmail == email);
+                ? order.DeliveryPersonEmail != null && EF.Functions.ILike(order.DeliveryPersonEmail, email) && order.Status != "Cancelado"
+                : EF.Functions.ILike(order.CustomerEmail, email));
 
         if (!string.IsNullOrWhiteSpace(search))
         {

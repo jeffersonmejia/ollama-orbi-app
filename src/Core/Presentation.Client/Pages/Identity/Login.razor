@@ -2,8 +2,11 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Net
 @using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Features.Identity.Client.Authentication
 @inject HttpClient Api
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider Authentication
 
 <PageTitle>Iniciar sesión - Dash</PageTitle>
 
@@ -19,7 +22,7 @@
             <p class="orbi-auth-message @(_isError ? "error" : string.Empty)" role="@(_isError ? "alert" : "status")">@_message</p>
         }
 
-        <EditForm Model="_input" OnValidSubmit="LoginAsync" class="orbi-login-form">
+        <EditForm Model="_input" OnValidSubmit="LoginAsync" class="orbi-login-form" id="orbi-login-form">
             <DataAnnotationsValidator />
             <div class="m3-text-field">
                 <div class="orbi-auth-control">
@@ -38,18 +41,20 @@
                 <ValidationMessage For="() => _input.Password" class="m3-validation-error" />
             </div>
             <label class="m3-checkbox"><InputCheckbox @bind-Value="_input.RememberMe" /> Recordarme</label>
-            <button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Ingresando…" : "Ingresar")</button>
         </EditForm>
-        <form method="post" action="@ExternalLoginUrl" class="orbi-login-google-form">
-            <input type="hidden" name="__RequestVerificationToken" value="@_requestToken" />
-            <input type="hidden" name="provider" value="Google" />
-            <button type="submit" class="m3-outlined-button orbi-google-login" disabled="@_busy">
-                <img class="orbi-google-mark" src="/assets/icons/google.png" alt="" aria-hidden="true" />
-                Ingresar con Google
-            </button>
-        </form>
+        <div class="orbi-login-actions">
+            <button type="submit" form="orbi-login-form" class="m3-filled-button" disabled="@(_busy || _preparing)">@(_busy ? "Ingresando…" : "Ingresar")</button>
+            <form method="post" action="@ExternalLoginUrl" class="orbi-login-google-form">
+                <input type="hidden" name="__RequestVerificationToken" value="@_requestToken" />
+                <input type="hidden" name="provider" value="Google" />
+                <button type="submit" class="m3-outlined-button orbi-google-login" disabled="@(_busy || _preparing || string.IsNullOrEmpty(_requestToken))">
+                    <img class="orbi-google-mark" src="/assets/icons/google.png" alt="" aria-hidden="true" />
+                    Ingresar con Google
+                </button>
+            </form>
+        </div>
         <div class="orbi-login-links">
-            <a href="/Identity/Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
+            <NavLink href="/Identity/Account/ForgotPassword">¿Olvidaste tu contraseña?</NavLink>
             <NavLink href="/registro">Crear una cuenta</NavLink>
         </div>
     </section>
@@ -60,24 +65,27 @@
     private string? _requestToken;
     private string? _message;
     private bool _busy;
+    private bool _preparing = true;
     private bool _isError;
     private bool _oauthError;
     private string _returnUrl = "/";
     private string ExternalLoginUrl => $"/Identity/Account/ExternalLogin?returnUrl={Uri.EscapeDataString(_returnUrl)}";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         _returnUrl = ReadLocalReturnUrl("returnUrl") ?? "/";
         _oauthError = ReadQueryValue("oauthError") == "google";
         try
         {
             _requestToken = (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
         }
-        catch (HttpRequestException)
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException or TaskCanceledException)
         {
             _message = "No se pudo iniciar sesión. Inténtalo nuevamente.";
             _isError = true;
         }
+        finally { _preparing = false; StateHasChanged(); }
     }
 
     private async Task LoginAsync()
@@ -88,6 +96,8 @@
         _isError = false;
         try
         {
+            if (string.IsNullOrWhiteSpace(_requestToken))
+                _requestToken = (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
             if (string.IsNullOrWhiteSpace(_requestToken))
                 throw new InvalidOperationException("No se pudo validar la solicitud.");
 
@@ -100,7 +110,17 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Navigation.NavigateTo(_returnUrl, forceLoad: true, replace: true);
+                if (Authentication is not SessionAuthenticationStateProvider sessionProvider)
+                    throw new InvalidOperationException();
+                var state = await sessionProvider.RefreshAsync();
+                if (state.User.Identity?.IsAuthenticated != true) throw new InvalidOperationException();
+                Navigation.NavigateTo(_returnUrl, forceLoad: !ClientRouteRegistry.Contains(_returnUrl, Navigation.BaseUri), replace: true);
+                return;
+            }
+
+            if ((int)response.StatusCode == 428)
+            {
+                Navigation.NavigateTo($"/Identity/Account/LoginWith2fa?returnUrl={Uri.EscapeDataString(_returnUrl)}&rememberMe={_input.RememberMe.ToString().ToLowerInvariant()}");
                 return;
             }
 
@@ -114,7 +134,7 @@
             };
             _isError = true;
         }
-        catch (Exception exception) when (exception is HttpRequestException or InvalidOperationException or TaskCanceledException)
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException or TaskCanceledException)
         {
             _message = "No se pudo completar el inicio de sesión. Inténtalo nuevamente.";
             _isError = true;
@@ -125,7 +145,8 @@
     private string? ReadLocalReturnUrl(string key)
     {
         var value = ReadQueryValue(key);
-        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
+        return value.StartsWith('/') && !value.StartsWith("//", StringComparison.Ordinal)
+            && !value.StartsWith("/\\", StringComparison.Ordinal) && !value.Any(char.IsControl) ? value : null;
     }
 
     private string ReadQueryValue(string key)

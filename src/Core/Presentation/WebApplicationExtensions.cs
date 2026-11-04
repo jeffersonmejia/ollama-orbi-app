@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
 using OrbiApp.Presentation.Client;
 using OrbiApp.Presentation.Logging;
-using OrbiApp.Application.Features.Shared.Ports;
-using OrbiApp.Models.Identity;
-using OrbiApp.Presentation.Services;
 using Serilog.Context;
 
 namespace OrbiApp.Presentation;
@@ -121,39 +118,20 @@ public static class WebApplicationExtensions
 
         app.MapControllerRoute(
             name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
+            pattern: "{controller=Home}/{action=Index}/{id?}")
+            .Add(endpointBuilder =>
+            {
+                if (endpointBuilder is RouteEndpointBuilder routeEndpoint &&
+                    routeEndpoint.RoutePattern.RawText?.StartsWith("api/", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    endpointBuilder.Metadata.Add(new RequestTimeoutAttribute("api"));
+                }
+            });
         app.MapRazorPages();
         app.MapGet("/api/security/antiforgery", (HttpContext context, IAntiforgery antiforgery) =>
         {
             var tokens = antiforgery.GetAndStoreTokens(context);
             return Results.Ok(new { requestToken = tokens.RequestToken });
-        }).AllowAnonymous().WithRequestTimeout("api");
-
-        app.MapGet("/api/identity/registration/options", async (
-            HttpContext context,
-            IAntiforgery antiforgery,
-            RoleManager<IdentityRole> roleManager,
-            IApplicationDataSession data,
-            DeliveryPageCache pageCache,
-            CancellationToken cancellationToken) =>
-        {
-            var publicRoles = new[] { "Usuario", "Vendedor", "Repartidor" };
-            var roleNames = await roleManager.Roles
-                .AsNoTracking()
-                .Where(role => role.Name != null && publicRoles.Contains(role.Name))
-                .Select(role => role.Name!)
-                .ToListAsync(cancellationToken);
-            var roles = publicRoles.Where(roleNames.Contains).ToArray();
-
-            var provinces = (await pageCache.GetProvincesAsync(data, cancellationToken))
-                .Select(province => new RegistrationProvinceOption(province.Code, province.Name))
-                .ToList();
-            var cities = (await pageCache.GetCitiesAsync(data, cancellationToken))
-                .Select(city => new RegistrationCityOption(city.Code, city.Name, city.ProvinceCode))
-                .ToList();
-
-            var tokens = antiforgery.GetAndStoreTokens(context);
-            return Results.Ok(new RegistrationOptionsResponse(tokens.RequestToken ?? string.Empty, roles, provinces, cities));
         }).AllowAnonymous().WithRequestTimeout("api");
 
         app.MapStaticAssets();

@@ -38,9 +38,10 @@ public sealed class DeliveryOrdersApiContractTests
     [Fact]
     public void Delivery_status_request_rejects_empty_or_overlong_values()
     {
-        Assert.False(IsValid(new UpdateDeliveryOrderStatusRequest("")));
-        Assert.False(IsValid(new UpdateDeliveryOrderStatusRequest(new string('x', 31))));
-        Assert.True(IsValid(new UpdateDeliveryOrderStatusRequest("En camino")));
+        Assert.NotNull(typeof(UpdateDeliveryOrderStatusRequest).GetConstructor(Type.EmptyTypes));
+        Assert.False(IsValid(new UpdateDeliveryOrderStatusRequest { Status = "" }));
+        Assert.False(IsValid(new UpdateDeliveryOrderStatusRequest { Status = new string('x', 31) }));
+        Assert.True(IsValid(new UpdateDeliveryOrderStatusRequest { Status = "En camino" }));
     }
 
     [Fact]

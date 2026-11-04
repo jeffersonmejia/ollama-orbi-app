@@ -128,6 +128,7 @@ public class ApplicationDbContext : IdentityDbContext
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
             entity.HasIndex(x => x.IdentityUserId).HasDatabaseName("ix_user_address_user");
+            entity.HasIndex(x => x.IdentityUserId).IsUnique().HasDatabaseName("ux_user_address_one_per_user");
             entity.HasIndex(x => new { x.IdentityUserId, x.Label }).IsUnique().HasDatabaseName("ux_user_address_user_label");
             entity.HasIndex(x => x.IdentityUserId)
                 .HasFilter("is_default")
@@ -140,16 +141,19 @@ public class ApplicationDbContext : IdentityDbContext
 
         builder.Entity<DeliveryStore>(entity =>
         {
-            entity.ToTable("delivery_store");
+            entity.ToTable("delivery_store", table => table.HasCheckConstraint(
+                "ck_delivery_store_category",
+                "category IN ('Restaurantes', 'Farmacia', 'Supermercado')"));
             entity.Property(x => x.DeliveryStoreId).HasColumnName("delivery_store_id");
             entity.Property(x => x.Name).HasColumnName("name");
             entity.Property(x => x.Category).HasColumnName("category");
-            entity.Property(x => x.Address).HasColumnName("address");
+            entity.Property(x => x.Address).HasColumnName("address").HasMaxLength(360);
             entity.Property(x => x.ProvinceCode).HasColumnName("province_code").HasMaxLength(2);
             entity.Property(x => x.CityCode).HasColumnName("city_code").HasMaxLength(4);
             entity.Property(x => x.IsActive).HasColumnName("is_active");
             entity.Property(x => x.OwnerUserId).HasColumnName("owner_user_id").HasMaxLength(450);
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("now()");
+            entity.HasIndex(x => x.OwnerUserId).IsUnique().HasFilter("owner_user_id IS NOT NULL").HasDatabaseName("ux_delivery_store_owner");
             entity.HasIndex(x => new { x.CityCode, x.IsActive, x.Name }).HasDatabaseName("ix_delivery_store_city_active_name");
             entity.HasIndex(x => new { x.ProvinceCode, x.Name }).HasDatabaseName("ix_delivery_store_province_name");
             entity.HasOne(x => x.Province).WithMany().HasForeignKey(x => x.ProvinceCode).OnDelete(DeleteBehavior.SetNull);
@@ -158,7 +162,9 @@ public class ApplicationDbContext : IdentityDbContext
 
         builder.Entity<DeliveryProduct>(entity =>
         {
-            entity.ToTable("delivery_product");
+            entity.ToTable("delivery_product", table => table.HasCheckConstraint(
+                "ck_delivery_product_availability",
+                "NOT is_available OR stock > 0"));
             entity.Property(x => x.DeliveryProductId).HasColumnName("delivery_product_id");
             entity.Property(x => x.DeliveryStoreId).HasColumnName("delivery_store_id");
             entity.Property(x => x.CreatedByUserId).HasColumnName("created_by_user_id").HasMaxLength(450);

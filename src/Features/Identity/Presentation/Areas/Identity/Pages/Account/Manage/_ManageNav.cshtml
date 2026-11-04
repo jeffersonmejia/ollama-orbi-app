@@ -1,7 +1,7 @@
 <div class="orbi-account-nav">
-    <a class="@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "active" : "")" id="profile" asp-page="./Index"><span class="material-symbols-outlined">person</span><span>Perfil</span></a>
-    <a class="@(ManageNavPages.AddressesNavClass(ViewContext) == "active" ? "active" : "")" id="addresses" asp-page="./Addresses"><span class="material-symbols-outlined">location_on</span><span>Direcciones</span></a>
-    <a class="@(ManageNavPages.PaymentMethodsNavClass(ViewContext) == "active" ? "active" : "")" id="payment-methods" asp-page="./PaymentMethods"><span class="material-symbols-outlined">payment</span><span>Pagos</span></a>
+    <a class="@(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "active" : "")" id="profile" href="/Identity/Account/Manage"><span class="material-symbols-outlined">person</span><span>Perfil</span></a>
+    <a class="@(ManageNavPages.AddressesNavClass(ViewContext) == "active" ? "active" : "")" id="addresses" href="/Identity/Account/Manage/Addresses"><span class="material-symbols-outlined">location_on</span><span>Direcciones</span></a>
+    <a class="@(ManageNavPages.PaymentMethodsNavClass(ViewContext) == "active" ? "active" : "")" id="payment-methods" href="/Identity/Account/Manage/PaymentMethods"><span class="material-symbols-outlined">payment</span><span>Pagos</span></a>
     <a class="@(ManageNavPages.SecurityNavClass(ViewContext) == "active" ? "active" : "")" id="security" asp-page="./Security"><span class="material-symbols-outlined">security</span><span>Seguridad</span></a>
 
     <form class="orbi-account-logout" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">

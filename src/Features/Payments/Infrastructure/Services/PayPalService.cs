@@ -145,6 +145,12 @@ public class PayPalService : IPayPalGateway
 
     private async Task<string> GetAccessTokenAsync()
     {
+        if (string.IsNullOrWhiteSpace(_settings.ClientId) || string.IsNullOrWhiteSpace(_settings.ClientSecret))
+        {
+            throw new InvalidOperationException(
+                "PayPal credentials are not configured. Set PayPal:ClientId and PayPal:ClientSecret in server-side configuration.");
+        }
+
         var credentials = Convert.ToBase64String(
             Encoding.UTF8.GetBytes($"{_settings.ClientId}:{_settings.ClientSecret}"));
 
@@ -168,7 +174,10 @@ public class PayPalService : IPayPalGateway
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException("Payment provider authentication is temporarily unavailable.");
+            throw new HttpRequestException(
+                $"PayPal OAuth token request failed with HTTP {(int)response.StatusCode}.",
+                null,
+                response.StatusCode);
         }
 
         using var document = JsonDocument.Parse(content);

@@ -1,0 +1,127 @@
+@page "/Identity/Account/LoginWith2fa"
+@page "/Identity/Account/LoginWithRecoveryCode"
+@namespace OrbiApp.Presentation.Client.Pages.Identity
+@attribute [AllowAnonymous]
+@using System.Text.Json
+@using OrbiApp.Features.Identity.Client.Authentication
+@using OrbiApp.Features.Identity.Client.Contracts
+@inject HttpClient Api
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider Authentication
+
+<PageTitle>@(IsRecovery ? "Recovery code verification" : "Two-factor authentication") - Dash</PageTitle>
+<HeadContent><link rel="stylesheet" href="/css/features/identity/two-factor-login.css" /></HeadContent>
+
+<div class="@(IsRecovery ? string.Empty : "orbi-two-factor-page")">
+    <div class="@(IsRecovery ? string.Empty : "m3-card orbi-two-factor-card")">
+        <h1>@(IsRecovery ? "Recovery code verification" : "Two-factor authentication")</h1>
+        @if (IsRecovery)
+        {
+            <hr />
+            <p>You have requested to log in with a recovery code. This login will not be remembered until you provide an authenticator app code at log in or disable 2FA and log in again.</p>
+        }
+        else
+        {
+            <p class="m3-supporting-text">Your login is protected with an authenticator app. Enter your authenticator code below.</p>
+        }
+        @if (_loading) { <p role="status">Cargando…</p> }
+        @if (_error is not null) { <p class="m3-validation-error" role="alert">@_error</p> }
+        @if (_pending)
+        {
+            @if (IsRecovery)
+            {
+                <div class="m3-form-container">
+                    <EditForm Model="_recovery" OnValidSubmit="SubmitAsync">
+                        <DataAnnotationsValidator />
+                        <div class="m3-text-field">
+                            <InputText id="recovery-code" @bind-Value="_recovery.RecoveryCode" class="m3-text-field-input" autocomplete="off" placeholder="RecoveryCode" disabled="@_busy" />
+                            <label for="recovery-code" class="m3-text-field-label">Recovery code</label>
+                            <ValidationMessage For="() => _recovery.RecoveryCode" class="m3-validation-error" />
+                        </div>
+                        <button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Ingresando…" : "Log in")</button>
+                    </EditForm>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="_authenticator" OnValidSubmit="SubmitAsync">
+                    <DataAnnotationsValidator />
+                    <div class="m3-text-field">
+                        <InputText id="authenticator-code" @bind-Value="_authenticator.TwoFactorCode" class="m3-text-field-input" autocomplete="off" placeholder="Authenticator code" aria-label="Authenticator code" disabled="@_busy" />
+                        <ValidationMessage For="() => _authenticator.TwoFactorCode" class="m3-validation-error" />
+                    </div>
+                    <label class="m3-checkbox"><InputCheckbox @bind-Value="_authenticator.RememberMachine" disabled="@_busy" /> Remember this machine</label>
+                    <button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Ingresando…" : "Log in")</button>
+                </EditForm>
+                <div class="orbi-two-factor-links"><NavLink href="@RecoveryUrl" class="m3-text-button">Log in with a recovery code</NavLink></div>
+            }
+        }
+        else if (!_loading)
+        {
+            <button type="button" class="m3-text-button" @onclick="LoadAsync">Reintentar</button>
+            <NavLink href="/Identity/Account/Login" class="m3-text-button">Iniciar sesión</NavLink>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")] public string? ReturnUrl { get; set; }
+    [SupplyParameterFromQuery(Name = "rememberMe")] public bool RememberMe { get; set; }
+    private readonly AuthenticatorSignInRequest _authenticator = new();
+    private readonly RecoveryCodeSignInRequest _recovery = new();
+    private bool _loading = true, _pending, _busy;
+    private string? _error;
+    private bool IsRecovery => new Uri(Navigation.Uri).AbsolutePath.EndsWith("/LoginWithRecoveryCode", StringComparison.OrdinalIgnoreCase);
+    private string RecoveryUrl => $"/Identity/Account/LoginWithRecoveryCode?returnUrl={Uri.EscapeDataString(LocalReturnUrl)}";
+    private string LocalReturnUrl => ReturnUrl is not null && ReturnUrl.StartsWith('/') && !ReturnUrl.StartsWith("//", StringComparison.Ordinal)
+        && !ReturnUrl.StartsWith("/\\", StringComparison.Ordinal) && !ReturnUrl.Any(char.IsControl) ? ReturnUrl : "/";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null;
+        try
+        {
+            _pending = (await Api.GetFromJsonAsync<TwoFactorChallengeResponse>("/api/identity/auth/two-factor"))?.ChallengePending == true;
+            if (!_pending) _error = "La verificación venció. Vuelve a iniciar sesión.";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        { _error = "No se pudo cargar la verificación. Inténtalo de nuevo."; }
+        finally { _loading = false; StateHasChanged(); }
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_busy) return;
+        _busy = true; _error = null;
+        try
+        {
+            var token = (await Api.GetFromJsonAsync<AntiforgeryResponse>("/api/security/antiforgery"))?.RequestToken;
+            if (string.IsNullOrWhiteSpace(token)) throw new InvalidOperationException();
+            _authenticator.RememberMe = RememberMe;
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/identity/auth/two-factor/{(IsRecovery ? "recovery-code" : "authenticator")}");
+            request.Content = IsRecovery ? JsonContent.Create(_recovery) : JsonContent.Create(_authenticator);
+            request.Headers.Add("RequestVerificationToken", token);
+            using var response = await Api.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Locked) { Navigation.NavigateTo("/Identity/Account/Lockout"); return; }
+            if (!response.IsSuccessStatusCode)
+            {
+                _error = (await response.Content.ReadFromJsonAsync<TwoFactorSignInError>())?.Message ?? "No se pudo verificar el código.";
+                return;
+            }
+            if (Authentication is not SessionAuthenticationStateProvider provider) throw new InvalidOperationException();
+            var state = await provider.RefreshAsync();
+            if (state.User.Identity?.IsAuthenticated != true) throw new InvalidOperationException();
+            Navigation.NavigateTo(LocalReturnUrl, forceLoad: !ClientRouteRegistry.Contains(LocalReturnUrl, Navigation.BaseUri), replace: true);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException or TaskCanceledException)
+        { _error = "No se pudo completar la verificación. Inténtalo de nuevo."; }
+        finally { _busy = false; }
+    }
+
+    private sealed record AntiforgeryResponse(string RequestToken);
+}

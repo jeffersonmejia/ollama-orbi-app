@@ -1,0 +1,109 @@
+@page "/Identity/Account/Manage/Security"
+@attribute [Authorize]
+@using System.Net.Http.Json
+@using System.Text.Json
+@using OrbiApp.Features.Identity.Client.Contracts
+@inject HttpClient Api
+
+<PageTitle>Seguridad - Dash</PageTitle>
+
+<div class="orbi-account-shell">
+    <AccountManageNavigation />
+    <main class="orbi-account-page orbi-security-page">
+        <header class="orbi-security-page-title">
+            <h1>Seguridad</h1>
+            <p>Administra las opciones de protección de tu cuenta.</p>
+        </header>
+
+        @if (_error is not null)
+        {
+            <div class="orbi-route-error" role="alert">
+                <p>@_error</p>
+                <button type="button" class="m3-text-button" @onclick="LoadPasswordStatusAsync">Reintentar</button>
+            </div>
+        }
+
+        <section class="orbi-google-card">
+            <div class="orbi-google-card-heading">
+                <div><h2>Clave</h2><p>Cambia o configura la contraseña de tu cuenta.</p></div>
+                <span class="material-symbols-outlined" aria-hidden="true">password</span>
+            </div>
+            @if (_loading)
+            {
+                <p class="m3-loading-message" role="status">Cargando configuración de clave…</p>
+            }
+            else if (_hasPassword.HasValue)
+            {
+                <div class="orbi-security-actions">
+                    <NavLink href="@(_hasPassword.Value ? "/Identity/Account/Manage/ChangePassword" : "/Identity/Account/Manage/SetPassword")" class="m3-filled-button">
+                        @(_hasPassword.Value ? "Cambiar clave" : "Configurar clave")
+                    </NavLink>
+                </div>
+            }
+        </section>
+
+        <section class="orbi-google-card">
+            <div class="orbi-google-card-heading">
+                <div><h2>Doble factor (2FA)</h2><p>Añade una verificación adicional al iniciar sesión.</p></div>
+                <span class="material-symbols-outlined" aria-hidden="true">security</span>
+            </div>
+            <div class="orbi-security-actions">
+                <LegacyNavigationLink Href="/Identity/Account/Manage/TwoFactorAuthentication" Class="m3-outlined-button">Administrar verificación en dos pasos</LegacyNavigationLink>
+            </div>
+        </section>
+
+        <section class="orbi-google-card">
+            <div class="orbi-google-card-heading">
+                <div><h2>Accesos externos</h2><p>Revisa los servicios vinculados para iniciar sesión.</p></div>
+                <span class="material-symbols-outlined" aria-hidden="true">link</span>
+            </div>
+            <div class="orbi-security-actions">
+                <LegacyNavigationLink Href="/Identity/Account/Manage/ExternalLogins" Class="m3-outlined-button">Administrar accesos</LegacyNavigationLink>
+            </div>
+        </section>
+
+        <section class="orbi-google-card">
+            <div class="orbi-google-card-heading">
+                <div><h2>Datos personales</h2><p>Descarga o elimina la información asociada a tu cuenta.</p></div>
+                <span class="material-symbols-outlined" aria-hidden="true">database</span>
+            </div>
+            <div class="orbi-security-actions">
+                <LegacyNavigationLink Href="/Identity/Account/Manage/PersonalData" Class="m3-outlined-button">Administrar datos</LegacyNavigationLink>
+            </div>
+        </section>
+    </main>
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool? _hasPassword;
+    private string? _error;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await LoadPasswordStatusAsync();
+    }
+
+    private async Task LoadPasswordStatusAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var status = await Api.GetFromJsonAsync<IdentityPasswordStatusResponse>("/api/identity/account/password")
+                ?? throw new JsonException("La respuesta de contraseña estaba vacía.");
+            _hasPassword = status.HasPassword;
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
+        {
+            _hasPassword = null;
+            _error = "No se pudo cargar la configuración de clave. Inténtalo de nuevo.";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+}

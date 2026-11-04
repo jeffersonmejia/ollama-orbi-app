@@ -1,0 +1,78 @@
+.orbi-offline-page {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 1rem;
+    width: min(100%, 42rem);
+    min-height: min(68vh, 42rem);
+    margin-inline: auto;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    color: var(--md-sys-color-on-surface);
+    text-align: center;
+}
+
+.orbi-offline-illustration {
+    display: block;
+    width: clamp(9rem, 25vw, 14rem);
+    height: auto;
+    margin-bottom: .5rem;
+}
+
+.orbi-offline-illustration-wash { fill: var(--md-sys-color-primary-container); }
+.orbi-offline-cloud { fill: var(--md-sys-color-surface-container-low); stroke: var(--md-sys-color-primary); stroke-width: 3; stroke-linejoin: round; }
+.orbi-offline-signal { fill: none; stroke: var(--md-sys-color-on-surface-variant); stroke-width: 4; stroke-linecap: round; }
+.orbi-offline-signal-dot { fill: var(--md-sys-color-on-surface-variant); }
+.orbi-offline-slash { fill: none; stroke: var(--md-sys-color-error); stroke-width: 6; stroke-linecap: round; }
+.orbi-offline-spark { fill: none; stroke: var(--md-sys-color-primary); stroke-width: 3; stroke-linecap: round; }
+
+.orbi-offline-eyebrow {
+    margin: 0;
+    color: var(--md-sys-color-primary);
+    font-size: var(--md-sys-typescale-label-large-size);
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.orbi-offline-page h1,
+.orbi-offline-description { margin: 0; }
+
+.orbi-offline-page h1 {
+    max-width: 36rem;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    line-height: 1.15;
+}
+
+.orbi-offline-description {
+    max-width: 34rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--md-sys-typescale-body-large-size);
+    line-height: 1.55;
+}
+
+.orbi-offline-status {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    min-height: 2.75rem;
+    margin-top: .25rem;
+    padding: .4rem 1rem;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+}
+
+.orbi-offline-status-dot {
+    width: .65rem;
+    height: .65rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--md-sys-color-error);
+}
+
+.orbi-offline-retry { min-height: 3rem; margin-top: .25rem; }
+.orbi-offline-retry:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 3px; }
+
+@media (max-width: 600px) {
+    .orbi-offline-page { min-height: min(62vh, 38rem); padding: 1.25rem; }
+}

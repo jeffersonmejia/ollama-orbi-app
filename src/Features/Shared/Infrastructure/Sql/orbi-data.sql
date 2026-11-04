@@ -2,14 +2,14 @@
 
 INSERT INTO delivery_store (delivery_store_id, name, category, address, is_active) VALUES
     (1, 'Orbi Market', 'Supermercado', 'Av. Principal 101', true),
-    (2, 'Sabor Urbano', 'Restaurante', 'Calle Central 25', true)
+    (2, 'Sabor Urbano', 'Restaurantes', 'Calle Central 25', true)
 ON CONFLICT (delivery_store_id) DO NOTHING;
 
-INSERT INTO delivery_product (delivery_product_id, delivery_store_id, name, price, is_available) VALUES
-    (1, 1, 'Canasta básica', 12.50, true),
-    (2, 1, 'Bebidas surtidas', 6.25, true),
-    (3, 2, 'Hamburguesa Orbi', 7.90, true),
-    (4, 2, 'Menú ejecutivo', 5.50, true)
+INSERT INTO delivery_product (delivery_product_id, delivery_store_id, name, price, stock, is_available) VALUES
+    (1, 1, 'Canasta básica', 12.50, 24, true),
+    (2, 1, 'Bebidas surtidas', 6.25, 48, true),
+    (3, 2, 'Hamburguesa Orbi', 7.90, 20, true),
+    (4, 2, 'Menú ejecutivo', 5.50, 15, true)
 ON CONFLICT (delivery_product_id) DO NOTHING;
 
 INSERT INTO delivery_order

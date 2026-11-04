@@ -5,6 +5,7 @@ let steps = [];
 let indicators = [];
 let currentStep = 0;
 let cities = [];
+let isSubmitting = false;
 
 export async function loadOptions() {
     const response = await fetch('/api/identity/registration/options', {
@@ -21,6 +22,7 @@ export async function loadOptions() {
 export function initializeWizard() {
     form = document.getElementById('registerForm');
     if (!form) return;
+    isSubmitting = false;
 
     provinceSelect = form.querySelector('#Input_ProvinceCode');
     citySelect = form.querySelector('#Input_CityCode');
@@ -87,17 +89,87 @@ function onWizardClick(event) {
     }
 }
 
-function onSubmit(event) {
-    if (event.submitter?.formNoValidate) return;
+async function onSubmit(event) {
+    if (isSubmitting) {
+        event.preventDefault();
+        return;
+    }
 
-    const fields = Array.from(form.querySelectorAll('input:not([type="hidden"]), select'));
-    const invalid = fields.find(field => !field.checkValidity());
-    if (!invalid) return;
+    const isGoogleSignUp = event.submitter?.formNoValidate === true;
+    if (!isGoogleSignUp) {
+        const fields = Array.from(form.querySelectorAll('input:not([type="hidden"]), select'));
+        const invalid = fields.find(field => !field.checkValidity());
+        if (invalid) {
+            event.preventDefault();
+            const stepIndex = steps.findIndex(step => step.contains(invalid));
+            if (stepIndex >= 0) showStep(stepIndex);
+            invalid.reportValidity();
+            return;
+        }
+    }
 
-    event.preventDefault();
-    const stepIndex = steps.findIndex(step => step.contains(invalid));
-    if (stepIndex >= 0) showStep(stepIndex);
-    invalid.reportValidity();
+    isSubmitting = true;
+    const submitter = event.submitter ?? form.querySelector('.orbi-register-actions button[type="submit"]');
+    if (!submitter) return;
+
+    const idleMarkup = submitter.innerHTML;
+    const spinner = document.createElement('span');
+    spinner.className = 'orbi-register-submit-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+    submitter.replaceChildren(spinner, document.createTextNode(isGoogleSignUp ? 'Conectando con Google…' : 'Creando cuenta…'));
+    submitter.setAttribute('aria-busy', 'true');
+
+    form.querySelectorAll('button[type="submit"]').forEach(button => {
+        if (button !== submitter) button.disabled = true;
+    });
+
+    if (!isGoogleSignUp) {
+        event.preventDefault();
+        await submitRegistration(submitter, idleMarkup);
+    }
+}
+
+async function submitRegistration(submitter, idleMarkup) {
+    const message = document.getElementById('registerSubmitMessage');
+    if (message) message.hidden = true;
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            credentials: 'same-origin',
+            redirect: 'follow'
+        });
+        const responseUrl = new URL(response.url, window.location.href);
+        const registrationEndpoint = new URL(form.action, window.location.href);
+
+        if (responseUrl.pathname.toLowerCase() === registrationEndpoint.pathname.toLowerCase()) {
+            const html = await response.text();
+            const responseDocument = new DOMParser().parseFromString(html, 'text/html');
+            const serverMessage = responseDocument.querySelector('.validation-summary-errors li, .field-validation-error')?.textContent?.trim();
+            showSubmitMessage(message, serverMessage || 'No se pudo crear la cuenta. Revisa los datos e inténtalo nuevamente.');
+            restoreSubmitState(submitter, idleMarkup);
+            return;
+        }
+
+        window.location.assign(responseUrl.href);
+    } catch {
+        showSubmitMessage(message, 'No se pudo completar el registro. Revisa tu conexión e inténtalo nuevamente.');
+        restoreSubmitState(submitter, idleMarkup);
+    }
+}
+
+function showSubmitMessage(message, text) {
+    if (!message) return;
+    message.textContent = text;
+    message.hidden = false;
+}
+
+function restoreSubmitState(submitter, idleMarkup) {
+    isSubmitting = false;
+    submitter.innerHTML = idleMarkup;
+    submitter.removeAttribute('aria-busy');
+    form.querySelectorAll('button[type="submit"]').forEach(button => button.disabled = false);
 }
 
 function showStep(index) {

@@ -1,0 +1,76 @@
+@page "/Home/PanelAdministrador"
+@attribute [Authorize(Roles = "Administrador")]
+@using OrbiApp.Presentation.Client.Networking
+@inject HttpClient Api
+
+<PageTitle>Panel del Administrador - Dash</PageTitle>
+
+<div class="m3-anim-fade-in-up">
+    <div style="text-align:center;margin-bottom:24px;">
+        <h1 class="m3-headline">Panel del Administrador</h1>
+        <p style="color:var(--md-sys-color-on-surface-variant);margin:0;">Resumen operativo de tiendas, pedidos y entregas de Dash.</p>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="orbi-page-loader" role="status" aria-live="polite">
+            <span class="orbi-loader-ring" aria-hidden="true"></span>
+            <span>Cargando métricas…</span>
+        </div>
+    }
+    else if (_error)
+    {
+        <div class="m3-card" role="alert">
+            <p>No se pudo cargar el resumen. Inténtalo nuevamente.</p>
+            <button type="button" class="m3-outlined-button" @onclick="LoadAsync">Reintentar</button>
+        </div>
+    }
+    else
+    {
+        <div class="m3-metric-grid">
+            @for (var index = 0; index < _metrics.Count; index++)
+            {
+                var item = _metrics[index];
+                <article class="m3-metric-card m3-anim-card-enter m3-stagger-@(index + 1)" @key="item.Label">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>
+                            <div class="m3-metric-label">@item.Label</div>
+                            <div style="font-size:var(--md-sys-typescale-body-small-size);color:var(--md-sys-color-on-surface-variant);margin-top:2px;">@item.Detail</div>
+                        </div>
+                        <span class="m3-metric-value">@item.Value</span>
+                    </div>
+                    <div class="m3-metric-bar">
+                        <div class="m3-metric-bar-fill" style="width: @(item.Percent)%"></div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<AdminDashboardMetricDto> _metrics = Array.Empty<AdminDashboardMetricDto>();
+    private bool _loading = true;
+    private bool _error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = false;
+        try
+        {
+            _metrics = await Api.GetFromJsonAsync<AdminDashboardMetricDto[]>("/api/home/admin-metrics")
+                ?? Array.Empty<AdminDashboardMetricDto>();
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            _error = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

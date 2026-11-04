@@ -1,0 +1,17 @@
+services:
+  k6:
+    image: grafana/k6:2.3.0
+    profiles: ["loadtest"]
+    working_dir: /work
+    entrypoint: ["k6"]
+    volumes:
+      - ./tests/k6:/work:ro
+      - ./tests/k6/results:/results
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      ORBI_K6_BASE_URL: ${ORBI_LAB_BASE_URL:-http://host.docker.internal:30083}
+      K6_PROMETHEUS_RW_SERVER_URL: http://prometheus:9090/api/v1/write
+      K6_PROMETHEUS_RW_TREND_STATS: avg,p(95),p(99)
+      K6_PROMETHEUS_RW_PUSH_INTERVAL: 2s
+      K6_PROMETHEUS_RW_LABELS: environment=orbi-lab

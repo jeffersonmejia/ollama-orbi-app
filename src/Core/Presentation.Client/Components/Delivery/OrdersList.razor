@@ -25,30 +25,15 @@
             </NavLink>
         </nav>
     }
-    else
-    {
-        <header class="orbi-orders-header">
-            <div>
-                <h1 class="m3-page-title">Mis entregas</h1>
-                <p>Pedidos asignados para entregar.</p>
-            </div>
-        </header>
-    }
-
     <form class="orbi-order-search" @onsubmit="SearchAsync" @onsubmit:preventDefault>
         <span class="material-symbols-outlined" aria-hidden="true">search</span>
-        <input type="search" @bind="_searchDraft" placeholder="Buscar por pedido, tienda, producto o estado" aria-label="Buscar pedidos" />
-        <button type="submit" class="m3-filled-button">Buscar</button>
-        @if (!string.IsNullOrWhiteSpace(SearchTerm))
+        <input type="search" value="@_searchDraft" @oninput="SearchInputChangedAsync" placeholder="Buscar por pedido, tienda, producto o estado" aria-label="Buscar pedidos" />
+        @if (!string.IsNullOrWhiteSpace(_searchDraft) || !string.IsNullOrWhiteSpace(SearchTerm))
         {
             <button type="button" class="m3-text-button" @onclick="ClearSearch">Limpiar</button>
         }
     </form>
 
-    @if (_notice is not null)
-    {
-        <div class="orbi-alert" role="status">@_notice</div>
-    }
     @if (_error is not null)
     {
         <div class="orbi-orders-feedback is-error" role="alert">
@@ -76,11 +61,10 @@
                     <thead>
                         <tr>
                             <th scope="col">Pedido</th>
-                            <th scope="col">Tienda y productos</th>
+                            <th scope="col">Tienda</th>
                             <th scope="col">Dirección</th>
                             <th scope="col">Total</th>
                             <th scope="col">Estado</th>
-                            @if (IsDeliveryPerson) { <th scope="col">Acciones</th> }
                         </tr>
                     </thead>
                     <tbody>
@@ -94,24 +78,46 @@
                                 </td>
                                 <td class="orbi-order-address">@order.DeliveryAddress</td>
                                 <td><strong>@order.Total.ToString("C2", CultureInfo.GetCultureInfo("es-EC"))</strong></td>
-                                <td><span class="orbi-order-status @StatusClass(order.Status)"><span class="orbi-status-dot"></span>@order.Status</span></td>
                                 @if (IsDeliveryPerson)
                                 {
                                     <td>
-                                        <div class="orbi-delivery-actions">
-                                            <select value="@SelectedStatus(order)" aria-label="Estado del pedido #@order.DeliveryOrderId" disabled="@(_busyOrders.Contains(order.DeliveryOrderId) || order.Status == "Entregado")" @onchange="args => SelectStatus(order.DeliveryOrderId, args.Value?.ToString())">
-                                                <option value="Comprado">Comprado</option>
+                                        <span class="orbi-order-status-control">
+                                            @if (_updatingOrderId == order.DeliveryOrderId)
+                                            {
+                                                <span class="orbi-order-status-loader" role="status" aria-label="Actualizando"></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="orbi-status-dot" aria-hidden="true"></span>
+                                            }
+                                            <select class="orbi-order-status orbi-order-status-select @StatusClass(SelectedStatus(order))"
+                                                    value="@(_updatingOrderId == order.DeliveryOrderId ? "__updating" : SelectedStatus(order))"
+                                                    aria-label="Cambiar estado del pedido #@order.DeliveryOrderId"
+                                                    aria-busy="@(_updatingOrderId == order.DeliveryOrderId)"
+                                                    disabled="@(_updatingOrderId is not null || order.Status == "Entregado")"
+                                                    @onchange="args => UpdateStatusAsync(order, args.Value?.ToString())">
+                                                @if (_updatingOrderId == order.DeliveryOrderId)
+                                                {
+                                                    <option value="__updating" disabled>Actualizando…</option>
+                                                }
+                                                @if (order.Status is not ("En preparación" or "En camino" or "Entregado"))
+                                                {
+                                                    <option value="@order.Status" disabled>@order.Status</option>
+                                                }
+                                                <option value="En preparación">En preparación</option>
                                                 <option value="En camino">En camino</option>
                                                 <option value="Entregado">Entregado</option>
                                             </select>
-                                            @if (order.Status != "Entregado")
+                                            @if (_updatingOrderId != order.DeliveryOrderId)
                                             {
-                                                <button class="m3-filled-button" type="button" disabled="@(_busyOrders.Contains(order.DeliveryOrderId) || SelectedStatus(order) == order.Status)" @onclick="() => UpdateStatusAsync(order)">
-                                                    @(_busyOrders.Contains(order.DeliveryOrderId) ? "Guardando…" : "Actualizar")
-                                                </button>
+                                                <span class="material-symbols-outlined orbi-order-status-chevron" aria-hidden="true">keyboard_arrow_down</span>
                                             }
-                                        </div>
+                                        </span>
                                     </td>
+                                }
+                                else
+                                {
+                                    <td><span class="orbi-order-status @StatusClass(order.Status)"><span class="orbi-status-dot"></span>@order.Status</span></td>
                                 }
                             </tr>
                         }
@@ -152,15 +158,15 @@
 
     private DeliveryOrdersResponse? _orders;
     private readonly Dictionary<int, string> _selectedStatuses = [];
-    private readonly HashSet<int> _busyOrders = [];
+    private int? _updatingOrderId;
     private string _searchDraft = string.Empty;
     private string? _error;
-    private string? _notice;
     private string? _requestToken;
     private bool _hasRendered;
     private bool _isLoading = true;
     private string? _loadedSearch;
     private int _loadedPage;
+    private CancellationTokenSource? _searchDebounce;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -182,7 +188,6 @@
     {
         _isLoading = true;
         _error = null;
-        _notice = null;
         StateHasChanged();
 
         var page = Math.Max(1, Page);
@@ -224,16 +229,42 @@
         finally
         {
             _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SearchInputChangedAsync(ChangeEventArgs args)
+    {
+        _searchDraft = args.Value?.ToString() ?? string.Empty;
+        _searchDebounce?.Cancel();
+        _searchDebounce?.Dispose();
+        var debounce = new CancellationTokenSource();
+        _searchDebounce = debounce;
+
+        try
+        {
+            await Task.Delay(250, debounce.Token);
+            if (!debounce.IsCancellationRequested)
+                await InvokeAsync(() => NavigateToPage(1, _searchDraft.Trim()));
+        }
+        catch (TaskCanceledException)
+        {
         }
     }
 
     private Task SearchAsync()
     {
+        _searchDebounce?.Cancel();
         NavigateToPage(1, _searchDraft.Trim());
         return Task.CompletedTask;
     }
 
-    private void ClearSearch() => NavigateToPage(1, string.Empty);
+    private void ClearSearch()
+    {
+        _searchDebounce?.Cancel();
+        _searchDraft = string.Empty;
+        NavigateToPage(1, string.Empty);
+    }
 
     private void GoToPage(int page) => NavigateToPage(page, SearchTerm ?? string.Empty);
 
@@ -248,29 +279,22 @@
         Navigation.NavigateTo(query.Count == 0 ? path : $"{path}?{string.Join("&", query)}");
     }
 
-    private string SelectedStatus(DeliveryOrderSummary order) =>
-        _selectedStatuses.GetValueOrDefault(order.DeliveryOrderId, order.Status);
-
-    private void SelectStatus(int orderId, string? status)
+    private async Task UpdateStatusAsync(DeliveryOrderSummary order, string? status)
     {
-        if (status is "Comprado" or "En camino" or "Entregado")
-            _selectedStatuses[orderId] = status;
-    }
-
-    private async Task UpdateStatusAsync(DeliveryOrderSummary order)
-    {
-        if (!_selectedStatuses.TryGetValue(order.DeliveryOrderId, out var status) || status == order.Status)
+        if (status is not ("En preparación" or "En camino" or "Entregado") || status == order.Status)
+            return;
+        if (_updatingOrderId is not null)
             return;
 
-        _busyOrders.Add(order.DeliveryOrderId);
+        _updatingOrderId = order.DeliveryOrderId;
+        _selectedStatuses[order.DeliveryOrderId] = status;
         _error = null;
-        _notice = null;
         try
         {
             await EnsureRequestTokenAsync();
             using var request = new HttpRequestMessage(HttpMethod.Put, $"/api/delivery/deliveries/{order.DeliveryOrderId}/status")
             {
-                Content = JsonContent.Create(new UpdateDeliveryOrderStatusRequest(status))
+                Content = JsonContent.Create(new UpdateDeliveryOrderStatusRequest { Status = status })
             };
             request.Headers.Add("RequestVerificationToken", _requestToken);
             using var response = await Api.SendAsync(request);
@@ -282,29 +306,48 @@
                 throw new InvalidOperationException("La entrega ya no está asignada a tu cuenta.");
             if (response.StatusCode == HttpStatusCode.Conflict)
                 throw new InvalidOperationException("La entrega cambió y ya no se puede actualizar. Recarga la lista.");
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                string? apiMessage = null;
+                try
+                {
+                    using var document = JsonDocument.Parse(responseBody);
+                    if (document.RootElement.TryGetProperty("message", out var message))
+                        apiMessage = message.GetString();
+                }
+                catch (JsonException)
+                {
+                }
+                throw new InvalidOperationException(apiMessage ?? $"No se pudo guardar el cambio (HTTP {(int)response.StatusCode}).");
+            }
 
+            _selectedStatuses[order.DeliveryOrderId] = status;
             _orders = _orders! with
             {
                 Orders = _orders.Orders
                     .Select(item => item.DeliveryOrderId == order.DeliveryOrderId ? item with { Status = status } : item)
                     .ToArray()
             };
-            _notice = $"El pedido #{order.DeliveryOrderId} ahora está en estado «{status}».";
         }
         catch (InvalidOperationException exception)
         {
+            _selectedStatuses[order.DeliveryOrderId] = order.Status;
             _error = exception.Message;
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException)
         {
-            _error = "No se pudo actualizar la entrega. Inténtalo de nuevo.";
+            _selectedStatuses[order.DeliveryOrderId] = order.Status;
+            _error = "No se pudo conectar para guardar el cambio. Inténtalo de nuevo.";
         }
         finally
         {
-            _busyOrders.Remove(order.DeliveryOrderId);
+            _updatingOrderId = null;
         }
     }
+
+    private string SelectedStatus(DeliveryOrderSummary order) =>
+        _selectedStatuses.GetValueOrDefault(order.DeliveryOrderId, order.Status);
 
     private async Task EnsureRequestTokenAsync()
     {
@@ -349,7 +392,11 @@
         }
     }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        _searchDebounce?.Cancel();
+        _searchDebounce?.Dispose();
+    }
 
     private sealed record AntiforgeryResponse(string RequestToken);
 }

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrbiApp.Application.Features.Shared.Ports;
 using OrbiApp.Models.Delivery;
 using OrbiApp.Presentation.Client.Networking;
-using OrbiApp.Presentation.Services;
+using OrbiApp.Features.Identity.Presentation.Services;
 
 namespace OrbiApp.Controllers;
 
@@ -13,7 +13,7 @@ namespace OrbiApp.Controllers;
 [Route("api/delivery/cart")]
 public sealed class DeliveryCartApiController(
     IApplicationDataSession data,
-    DeliveryPageCache pageCache) : ControllerBase
+    IdentityPageCache pageCache) : ControllerBase
 {
     [HttpGet]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]

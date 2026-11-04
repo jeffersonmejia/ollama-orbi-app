@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using OrbiApp.Presentation.Client.Networking;
+using OrbiApp.Features.Identity.Client.Authentication;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddAuthenticationStateDeserialization();
+builder.Services.AddIdentityClientAuthentication();
 builder.Services.Configure<ApiTimeoutOptions>(builder.Configuration.GetSection("Blazor"));
 builder.Services.AddTransient<ApiTimeoutHandler>();
 builder.Services.AddHttpClient("OrbiApi", (services, client) =>

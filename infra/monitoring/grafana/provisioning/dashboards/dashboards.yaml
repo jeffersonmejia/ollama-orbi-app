@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: Orbi Lab
+    orgId: 1
+    folder: Orbi Lab
+    type: file
+    disableDeletion: true
+    editable: false
+    updateIntervalSeconds: 5
+    options:
+      path: /var/lib/grafana/dashboards

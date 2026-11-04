@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using OrbiApp.Application.Features.Shared.Ports;
+using OrbiApp.Features.Identity.Presentation.Services;
+using OrbiApp.Models.Delivery;
 using OrbiApp.Models.Identity;
 using OrbiApp.Presentation.Client.Networking;
-using OrbiApp.Presentation.Services;
 
 namespace OrbiApp.Controllers;
 
@@ -14,7 +15,7 @@ namespace OrbiApp.Controllers;
 [Route("api/identity/account/addresses")]
 public sealed class IdentityAddressesApiController(
     IApplicationDataSession data,
-    DeliveryPageCache pageCache) : ControllerBase
+    IdentityPageCache pageCache) : ControllerBase
 {
     [HttpGet]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -89,27 +90,25 @@ public sealed class IdentityAddressesApiController(
         }
         else
         {
+            var existingAddress = await data.Set<UserAddress>()
+                .FirstOrDefaultAsync(item => item.IdentityUserId == userId, cancellationToken);
+            if (existingAddress is not null)
+                return Conflict(new { message = "Tu cuenta ya tiene una dirección. Edítala para cambiarla." });
+
             address = new UserAddress { IdentityUserId = userId };
             data.Set<UserAddress>().Add(address);
         }
 
-        var hasAddresses = await data.Set<UserAddress>().AnyAsync(item => item.IdentityUserId == userId, cancellationToken);
         address.Label = label;
         address.AddressLine1 = request.AddressLine1.Trim();
         address.AddressLine2 = request.AddressLine2.Trim();
         address.ProvinceCode = request.ProvinceCode;
         address.CityCode = request.CityCode;
         address.Reference = string.IsNullOrWhiteSpace(request.Reference) ? null : request.Reference.Trim();
-        address.IsDefault = request.IsDefault || !hasAddresses || address.IsDefault;
+        address.IsDefault = true;
         address.UpdatedAt = DateTimeOffset.UtcNow;
 
-        if (address.IsDefault)
-        {
-            await data.Set<UserAddress>()
-                .Where(item => item.IdentityUserId == userId && item.UserAddressId != address.UserAddressId)
-                .ExecuteUpdateAsync(update => update.SetProperty(item => item.IsDefault, false), cancellationToken);
-            await SyncProfileAddressAsync(userId, address, cancellationToken);
-        }
+        await SyncProfileAddressAsync(userId, address, cancellationToken);
 
         await data.SaveChangesAsync(cancellationToken);
         pageCache.InvalidateUser(userId);
@@ -132,9 +131,6 @@ public sealed class IdentityAddressesApiController(
         if (address is null)
             return NotFound(new { message = "No se encontró la dirección de tu cuenta." });
 
-        await data.Set<UserAddress>()
-            .Where(item => item.IdentityUserId == userId)
-            .ExecuteUpdateAsync(update => update.SetProperty(item => item.IsDefault, false), cancellationToken);
         address.IsDefault = true;
         address.UpdatedAt = DateTimeOffset.UtcNow;
         await SyncProfileAddressAsync(userId, address, cancellationToken);
@@ -158,8 +154,8 @@ public sealed class IdentityAddressesApiController(
             cancellationToken);
         if (address is null)
             return NotFound(new { message = "No se encontró la dirección de tu cuenta." });
-        if (address.IsDefault)
-            return Conflict(new { message = "Elige otra dirección principal antes de eliminar esta." });
+        if (address.IsDefault || await data.Set<UserAddress>().CountAsync(item => item.IdentityUserId == userId, cancellationToken) <= 1)
+            return Conflict(new { message = "Tu única dirección no se puede eliminar; puedes editarla." });
 
         data.Set<UserAddress>().Remove(address);
         await data.SaveChangesAsync(cancellationToken);
@@ -177,7 +173,7 @@ public sealed class IdentityAddressesApiController(
         if (profile is null || string.IsNullOrWhiteSpace(profile.AddressLine1))
             return;
 
-        data.Set<UserAddress>().Add(new UserAddress
+        var address = new UserAddress
         {
             IdentityUserId = userId,
             Label = "Casa",
@@ -187,7 +183,9 @@ public sealed class IdentityAddressesApiController(
             CityCode = profile.CityCode,
             Reference = profile.Reference,
             IsDefault = true
-        });
+        };
+        data.Set<UserAddress>().Add(address);
+        await SyncProfileAddressAsync(userId, address, cancellationToken);
         await data.SaveChangesAsync(cancellationToken);
         pageCache.InvalidateUser(userId);
     }
@@ -196,13 +194,23 @@ public sealed class IdentityAddressesApiController(
     {
         var profile = await data.Set<UserProfile>()
             .SingleOrDefaultAsync(item => item.IdentityUserId == userId, cancellationToken);
-        if (profile is null)
-            return;
+        if (profile is not null)
+        {
+            profile.AddressLine1 = address.AddressLine1;
+            profile.AddressLine2 = address.AddressLine2;
+            profile.ProvinceCode = address.ProvinceCode;
+            profile.CityCode = address.CityCode;
+            profile.Reference = address.Reference;
+        }
 
-        profile.AddressLine1 = address.AddressLine1;
-        profile.AddressLine2 = address.AddressLine2;
-        profile.ProvinceCode = address.ProvinceCode;
-        profile.CityCode = address.CityCode;
-        profile.Reference = address.Reference;
+        var store = await data.Set<DeliveryStore>()
+            .SingleOrDefaultAsync(item => item.OwnerUserId == userId, cancellationToken);
+        if (store is not null)
+        {
+            store.Address = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+                .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+            store.ProvinceCode = address.ProvinceCode;
+            store.CityCode = address.CityCode;
+        }
     }
 }

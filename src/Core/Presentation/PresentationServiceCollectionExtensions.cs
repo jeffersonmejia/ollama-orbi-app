@@ -11,7 +11,7 @@ using OrbiApp.Data;
 using OrbiApp.Infrastructure;
 using OrbiApp.Presentation.Client.Networking;
 using OrbiApp.Presentation.Features;
-using OrbiApp.Presentation.Services;
+using OrbiApp.Features.Identity.Presentation.DependencyInjection;
 
 namespace OrbiApp.Presentation;
 
@@ -29,7 +29,7 @@ public static class PresentationServiceCollectionExtensions
             .AddRazorOptions(options => options.ViewLocationExpanders.Add(new FeatureViewLocationExpander()));
         services.AddRazorPages();
         services.AddMemoryCache();
-        services.AddSingleton<DeliveryPageCache>();
+        services.AddIdentityPresentation();
         services.AddRazorComponents()
             .AddInteractiveWebAssemblyComponents()
             .AddAuthenticationStateSerialization();

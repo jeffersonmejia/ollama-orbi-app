@@ -13,17 +13,36 @@
 <div class="orbi-account-shell">
     <AccountManageNavigation />
     <div class="orbi-account-page">
-        <header class="orbi-account-page-title"><h1>Direcciones</h1><p>Lugares que puedes usar para recibir tus pedidos.</p></header>
+        <header class="orbi-account-page-title"><h1>Dirección</h1><p>Tu cuenta puede tener una sola dirección. Puedes cambiarla cuando lo necesites.</p></header>
         @if (_message is not null) { <p class="m3-success-message" role="status">@_message</p> }
         @if (_error is not null) { <p class="m3-validation-error" role="alert">@_error</p> }
         @if (_isLoading)
         {
-            <p class="m3-loading-message" role="status">Cargando direcciones…</p>
+            <div class="orbi-address-skeleton" role="status" aria-label="Cargando direcciones">
+                <header class="orbi-account-page-title orbi-account-skeleton-heading" aria-hidden="true">
+                    <span class="m3-skeleton orbi-account-skeleton-title"></span>
+                    <span class="m3-skeleton orbi-account-skeleton-copy"></span>
+                </header>
+                <section class="orbi-google-card orbi-address-skeleton-card" aria-hidden="true">
+                    <span class="m3-skeleton orbi-account-skeleton-title"></span>
+                    <span class="m3-skeleton orbi-account-skeleton-copy"></span>
+                    <div class="orbi-address-skeleton-fields">
+                        <span class="m3-skeleton"></span><span class="m3-skeleton"></span>
+                        <span class="m3-skeleton"></span><span class="m3-skeleton"></span>
+                        <span class="m3-skeleton"></span>
+                    </div>
+                    <span class="m3-skeleton orbi-account-skeleton-button"></span>
+                </section>
+                <div class="orbi-address-skeleton-list" aria-hidden="true">
+                    <span class="m3-skeleton"></span>
+                    <span class="m3-skeleton"></span>
+                </div>
+            </div>
         }
         else if (_book is not null)
         {
             <section class="orbi-google-card">
-                <div class="orbi-google-card-heading"><div><h2>@(_form.UserAddressId.HasValue ? "Editar dirección" : "Nueva dirección")</h2><p>Identifícala como Casa, Trabajo u otro nombre breve.</p></div>@if (_form.UserAddressId.HasValue){<button type="button" class="m3-text-button" @onclick="CancelEdit">Cancelar</button>}else{<span class="material-symbols-outlined" aria-hidden="true">add_location_alt</span>}</div>
+                <div class="orbi-google-card-heading"><div><h2>Mi dirección</h2><p>Esta dirección se usa para tu ubicación y tus pedidos.</p></div><span class="material-symbols-outlined" aria-hidden="true">location_on</span></div>
                 <EditForm Model="_form" OnValidSubmit="SaveAsync" class="orbi-address-form">
                     <DataAnnotationsValidator /><ValidationSummary class="m3-validation-error orbi-field-full" />
                     <div class="m3-text-field"><label class="m3-text-field-label" for="address-label">Nombre de la dirección</label><InputText id="address-label" @bind-Value="_form.Label" class="m3-text-field-input" placeholder="Casa" /><ValidationMessage For="() => _form.Label" /></div>
@@ -32,8 +51,7 @@
                     <div class="m3-text-field"><label class="m3-text-field-label" for="address-province">Provincia</label><InputSelect id="address-province" @bind-Value="_form.ProvinceCode" @bind-Value:after="ProvinceChanged" class="m3-text-field-input"><option value="">Selecciona una provincia</option>@foreach (var province in _book.Provinces){<option value="@province.Code">@province.Name</option>}</InputSelect><ValidationMessage For="() => _form.ProvinceCode" /></div>
                     <div class="m3-text-field"><label class="m3-text-field-label" for="address-city">Ciudad</label><InputSelect id="address-city" @bind-Value="_form.CityCode" class="m3-text-field-input" disabled="@string.IsNullOrWhiteSpace(_form.ProvinceCode)"><option value="">Selecciona una ciudad</option>@foreach (var city in AvailableCities){<option value="@city.Code">@city.Name</option>}</InputSelect><ValidationMessage For="() => _form.CityCode" /></div>
                     <div class="m3-text-field"><label class="m3-text-field-label" for="address-reference">Referencia</label><InputText id="address-reference" @bind-Value="_form.Reference" class="m3-text-field-input" placeholder="Opcional" /><ValidationMessage For="() => _form.Reference" /></div>
-                    <label class="orbi-address-default orbi-field-full"><InputCheckbox @bind-Value="_form.IsDefault" /> <span>Usar como dirección principal</span></label>
-                    <div class="orbi-form-actions"><button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Guardando…" : _form.UserAddressId.HasValue ? "Guardar cambios" : "Agregar dirección")</button></div>
+                    <div class="orbi-form-actions"><button type="submit" class="m3-filled-button" disabled="@_busy">@(_busy ? "Guardando…" : "Guardar dirección")</button></div>
                 </EditForm>
             </section>
             <section class="orbi-address-list" aria-label="Direcciones guardadas">
@@ -42,8 +60,8 @@
                 {
                     <article class="orbi-google-card orbi-saved-address @(address.IsDefault ? "is-default" : string.Empty)">
                         <span class="material-symbols-outlined" aria-hidden="true">@(address.IsDefault ? "home" : "location_on")</span>
-                        <div><div class="orbi-address-title"><h2>@address.Label</h2>@if(address.IsDefault){<small>Principal</small>}</div><p>@address.FormattedAddress</p></div>
-                        <div class="orbi-address-actions"><button type="button" class="m3-text-button" disabled="@_busy" @onclick="() => EditAddress(address)">Editar</button>@if(!address.IsDefault){<button type="button" class="m3-text-button" disabled="@_busy" @onclick="() => SetDefaultAsync(address)">Principal</button><button type="button" class="m3-text-button orbi-danger-button" disabled="@_busy" @onclick="() => DeleteAsync(address)">Eliminar</button>}</div>
+                        <div><div class="orbi-address-title"><h2>@address.Label</h2><small>Única dirección</small></div><p>@address.FormattedAddress</p></div>
+                        <div class="orbi-address-actions"><button type="button" class="m3-text-button" disabled="@_busy" @onclick="() => EditAddress(address)">Editar</button></div>
                     </article>
                 }
             </section>
@@ -81,11 +99,19 @@
     private void ApplyEditQuery()
     {
         _appliedEditId = EditAddressId;
-        if (EditAddressId is null) { _form = new SaveIdentityAddressRequest(); return; }
+        if (EditAddressId is null)
+        {
+            var existingAddress = _book?.Addresses.FirstOrDefault();
+            if (existingAddress is null) { _form = new SaveIdentityAddressRequest(); return; }
+            _form = ToForm(existingAddress);
+            return;
+        }
         var address = _book?.Addresses.FirstOrDefault(item => item.UserAddressId == EditAddressId.Value);
         if (address is null) { _error = "No se encontró esa dirección en tu cuenta."; _form = new SaveIdentityAddressRequest(); return; }
-        _form = new SaveIdentityAddressRequest { UserAddressId = address.UserAddressId, Label = address.Label, AddressLine1 = address.AddressLine1, AddressLine2 = address.AddressLine2, ProvinceCode = address.ProvinceCode, CityCode = address.CityCode, Reference = address.Reference, IsDefault = address.IsDefault };
+        _form = ToForm(address);
     }
+
+    private static SaveIdentityAddressRequest ToForm(IdentityAddressSummary address) => new() { UserAddressId = address.UserAddressId, Label = address.Label, AddressLine1 = address.AddressLine1, AddressLine2 = address.AddressLine2, ProvinceCode = address.ProvinceCode, CityCode = address.CityCode, Reference = address.Reference, IsDefault = true };
 
     private void ProvinceChanged()
     { if (_book?.Cities.Any(city => city.Code == _form.CityCode && city.ProvinceCode == _form.ProvinceCode) != true) _form.CityCode = string.Empty; }

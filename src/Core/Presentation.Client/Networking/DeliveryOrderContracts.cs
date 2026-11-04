@@ -38,5 +38,8 @@ public sealed record DeliveryPaymentSummary(
     string Status,
     DateTimeOffset CreatedAt);
 
-public sealed record UpdateDeliveryOrderStatusRequest(
-    [property: Required, StringLength(30)] string Status);
+public sealed class UpdateDeliveryOrderStatusRequest
+{
+    [Required, StringLength(30)]
+    public string Status { get; init; } = string.Empty;
+}

@@ -27,6 +27,5 @@
 .orbi-panel:hover {
   border-color: color-mix(in srgb, var(--md-sys-color-primary) 24%, var(--md-sys-color-outline-variant));
   box-shadow: 0 4px 8px rgba(25, 29, 22, .08), 0 10px 24px rgba(25, 29, 22, .06);
-  transform: translateY(-2px);
 
 }

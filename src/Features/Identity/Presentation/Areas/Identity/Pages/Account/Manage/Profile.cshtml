@@ -1,0 +1,52 @@
+@page "/Identity/Account/Manage"
+@model OrbiApp.Areas.Identity.Pages.Account.Manage.ProfileModel
+@{
+    ViewData["Title"] = "Perfil";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="orbi-account-page">
+    <header class="orbi-account-identity">
+        <div class="orbi-account-avatar">@(string.IsNullOrEmpty(Model.Username) ? "U" : Model.Username[..1].ToUpperInvariant())</div>
+        <h1>@Model.Username</h1><span>@Model.RoleSummary</span>
+    </header>
+    <section class="orbi-google-card">
+        <div class="orbi-google-card-heading"><div><h2>Perfil y correo</h2><p>Administra tus datos básicos y el correo de tu cuenta.</p></div><span class="material-symbols-outlined" aria-hidden="true">person</span></div>
+        <partial name="_StatusMessage" for="StatusMessage" />
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <p class="m3-validation-error" role="alert">@Model.ErrorMessage</p>
+        }
+        <form method="post" asp-page-handler="SavePhone" class="orbi-account-rows orbi-account-profile-form">
+            <div class="orbi-account-row"><label>Nombre de usuario</label><span>@Model.Username</span></div>
+            <div class="orbi-account-row"><label>Rol</label><span>@Model.RoleSummary</span></div>
+            <div class="m3-text-field orbi-profile-phone-field">
+                <label class="m3-text-field-label" asp-for="Input.PhoneNumber">Teléfono</label>
+                <input asp-for="Input.PhoneNumber" class="m3-text-field-input" autocomplete="tel" />
+                <span asp-validation-for="Input.PhoneNumber" class="m3-validation-error"></span>
+            </div>
+            <button type="submit" class="m3-filled-button">Guardar perfil</button>
+        </form>
+        <div class="orbi-account-rows">
+            <div class="orbi-account-row"><span><strong>Correo</strong><br />@Model.Email</span><span class="material-symbols-outlined" aria-label="@(Model.IsEmailConfirmed ? "Correo verificado" : "Correo sin verificar")">@(Model.IsEmailConfirmed ? "verified" : "mark_email_unread")</span></div>
+            @if (!Model.IsEmailConfirmed)
+            {
+                <form method="post" asp-page-handler="SendVerification">
+                    <button type="submit" class="m3-text-button orbi-profile-verification-button">Enviar correo de verificación</button>
+                </form>
+            }
+            <form method="post" asp-page-handler="ChangeEmail" class="orbi-account-rows orbi-account-email-form">
+                <div class="m3-text-field orbi-profile-email-field">
+                    <label class="m3-text-field-label" asp-for="Input.NewEmail">Nuevo correo</label>
+                    <input asp-for="Input.NewEmail" class="m3-text-field-input" autocomplete="email" />
+                    <span asp-validation-for="Input.NewEmail" class="m3-validation-error"></span>
+                </div>
+                <button type="submit" class="m3-filled-button">Cambiar correo</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

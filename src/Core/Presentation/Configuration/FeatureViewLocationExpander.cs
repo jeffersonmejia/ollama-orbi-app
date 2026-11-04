@@ -23,7 +23,9 @@ public sealed class FeatureViewLocationExpander : IViewLocationExpander
         ViewLocationExpanderContext context,
         IEnumerable<string> viewLocations)
     {
-        if (context.AreaName is null && FeatureByController.TryGetValue(context.ControllerName, out var feature))
+        if (context.AreaName is null &&
+            context.ControllerName is { } controllerName &&
+            FeatureByController.TryGetValue(controllerName, out var feature))
         {
             yield return $"/Features/{feature}/Presentation/Views/{{1}}/{{0}}.cshtml";
         }

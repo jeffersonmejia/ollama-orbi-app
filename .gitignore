@@ -42,6 +42,11 @@ cookies.txt
 *.dump
 *.tar
 backups/
+/tests/k6/results/
 
 # Local-only instructions
 /AGENTS.md
+
+# Markdown files (keep the root README)
+*.md
+!/README.md

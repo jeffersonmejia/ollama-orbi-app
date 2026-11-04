@@ -12,7 +12,7 @@ using OrbiApp.Application.Features.Delivery.Ports;
 using OrbiApp.Application.Features.Payments.Ports;
 using OrbiApp.Application.Features.Shared.Ports;
 using OrbiApp.Data;
-using OrbiApp.Presentation.Services;
+using OrbiApp.Features.Identity.Presentation.Services;
 
 namespace OrbiApp.Controllers;
 
@@ -27,7 +27,7 @@ public class DeliveryController : Controller
     private readonly ISuggestMarketPriceUseCase _suggestMarketPrice;
     private readonly ApplicationDbContext _database;
     private readonly ILogger<DeliveryController> _logger;
-    private readonly DeliveryPageCache _pageCache;
+    private readonly IdentityPageCache _pageCache;
 
     public DeliveryController(
         IApplicationDataSession context,
@@ -35,7 +35,7 @@ public class DeliveryController : Controller
         ISuggestMarketPriceUseCase suggestMarketPrice,
         ApplicationDbContext database,
         ILogger<DeliveryController> logger,
-        DeliveryPageCache pageCache)
+        IdentityPageCache pageCache)
     {
         _context = context;
         _payPalService = payPalService;
@@ -83,23 +83,24 @@ public class DeliveryController : Controller
         else if (CurrentUserId is string userId)
         {
             var profile = await _pageCache.GetUserProfileAsync(_context, userId, HttpContext.RequestAborted);
-            if (profile is not null)
-            {
-                userFirstName = profile.FirstName;
-                userProvinceCode = profile.ProvinceCode;
-                userProvinceName = profile.Province?.Name;
-                userCityName = profile.City?.Name;
-                userCityCode = profile.CityCode;
-                productsQuery = productsQuery.Where(p => p.Store.CityCode == userCityCode);
-            }
-            else if (await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted) is { } primaryAddress)
+            var primaryAddress = await _pageCache.GetPrimaryAddressAsync(_context, userId, HttpContext.RequestAborted);
+            userFirstName = profile?.FirstName;
+            if (primaryAddress is not null)
             {
                 userProvinceCode = primaryAddress.ProvinceCode;
                 userProvinceName = primaryAddress.Province?.Name;
                 userCityName = primaryAddress.City?.Name;
                 userCityCode = primaryAddress.CityCode;
-                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
             }
+            else if (profile is not null)
+            {
+                userProvinceCode = profile.ProvinceCode;
+                userProvinceName = profile.Province?.Name;
+                userCityName = profile.City?.Name;
+                userCityCode = profile.CityCode;
+            }
+            if (userCityCode is not null)
+                productsQuery = productsQuery.Where(product => product.Store.CityCode == userCityCode);
         }
         LogStage("profile/address lookup");
 
@@ -212,8 +213,8 @@ public class DeliveryController : Controller
         return Json(new
         {
             displayName = profile?.FirstName,
-            provinceCode = profile?.ProvinceCode ?? primaryAddress?.ProvinceCode,
-            cityCode = profile?.CityCode ?? primaryAddress?.CityCode,
+            provinceCode = primaryAddress?.ProvinceCode ?? profile?.ProvinceCode,
+            cityCode = primaryAddress?.CityCode ?? profile?.CityCode,
             hasAddress = primaryAddress is not null
         });
     }
@@ -243,10 +244,16 @@ public class DeliveryController : Controller
             if (address is null)
                 return NotFound(new { code = "address_not_found", message = "No encontramos esa dirección." });
         }
+        else
+        {
+            address = await _context.Set<UserAddress>()
+                .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
+        }
 
+        var excludedAddressId = address?.UserAddressId ?? input.UserAddressId ?? 0;
         var duplicateLabel = await _context.Set<UserAddress>().AnyAsync(existingAddress =>
             existingAddress.IdentityUserId == userId && existingAddress.Label.ToLower() == label.ToLower() &&
-            existingAddress.UserAddressId != (input.UserAddressId ?? 0));
+            existingAddress.UserAddressId != excludedAddressId);
         if (duplicateLabel)
             return Conflict(new { code = "validation_error", errors = new { Label = new[] { "Ya tienes una dirección con ese nombre." } } });
 
@@ -277,7 +284,7 @@ public class DeliveryController : Controller
             await _context.Set<UserAddress>()
                 .Where(item => item.IdentityUserId == userId && item.IsDefault && item.UserAddressId != address.UserAddressId)
                 .ExecuteUpdateAsync(update => update.SetProperty(item => item.IsDefault, false));
-            if (!input.UserAddressId.HasValue)
+            if (address.UserAddressId == 0)
                 _context.Set<UserAddress>().Add(address);
 
             var profile = await _context.Set<UserProfile>().SingleOrDefaultAsync(item => item.IdentityUserId == userId);
@@ -288,6 +295,16 @@ public class DeliveryController : Controller
                 profile.ProvinceCode = address.ProvinceCode;
                 profile.CityCode = address.CityCode;
                 profile.Reference = address.Reference;
+            }
+
+            var ownedStore = await _context.Set<DeliveryStore>()
+                .FirstOrDefaultAsync(item => item.OwnerUserId == userId);
+            if (ownedStore is not null)
+            {
+                ownedStore.Address = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+                    .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+                ownedStore.ProvinceCode = address.ProvinceCode;
+                ownedStore.CityCode = address.CityCode;
             }
 
             await _context.SaveChangesAsync();
@@ -607,6 +624,19 @@ public class DeliveryController : Controller
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "PayPal order creation failed for the delivery checkout.");
+            try
+            {
+                var failedOrders = await _context.Set<DeliveryOrder>()
+                    .Where(order => createdOrderIds.Contains(order.DeliveryOrderId))
+                    .ToListAsync();
+                _context.Set<DeliveryOrder>().RemoveRange(failedOrders);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception cleanupException)
+            {
+                _logger.LogError(cleanupException, "Could not remove unpaid delivery orders after PayPal checkout failed.");
+            }
+
             return CheckoutFailure(StatusCodes.Status503ServiceUnavailable, "payment_unavailable", "No se pudo iniciar el pago. Inténtalo de nuevo más tarde.");
         }
 
@@ -695,11 +725,12 @@ public class DeliveryController : Controller
         var userId = CurrentUserId;
         var store = await _context.Set<DeliveryStore>().AsNoTracking()
             .FirstOrDefaultAsync(s => s.OwnerUserId == userId);
-
-        var profile = await _context.Set<UserProfile>().AsNoTracking()
-            .Include(p => p.Province).Include(p => p.City)
-            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
-        ViewData["Profile"] = profile;
+        var address = await _context.Set<UserAddress>().AsNoTracking()
+            .Where(item => item.IdentityUserId == userId)
+            .Include(item => item.Province).Include(item => item.City)
+            .OrderByDescending(item => item.IsDefault)
+            .FirstOrDefaultAsync();
+        ViewData["SellerAddress"] = address;
 
         return View(store);
     }
@@ -710,30 +741,33 @@ public class DeliveryController : Controller
     public async Task<IActionResult> SellerStore(string name, string category)
     {
         var userId = CurrentUserId;
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category))
+        var normalizedCategory = DeliveryStoreCategories.Normalize(category);
+        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 100 || normalizedCategory is null)
         {
-            TempData["Error"] = "Completa nombre y categoría.";
+            TempData["Error"] = "Ingresa un nombre válido y selecciona una de las tres categorías disponibles.";
             return RedirectToAction(nameof(SellerStore));
         }
 
-        var profile = await _context.Set<UserProfile>().AsNoTracking()
-            .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
-        if (profile == null)
+        var address = await _context.Set<UserAddress>().AsNoTracking()
+            .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
+        if (address is null)
         {
-            TempData["Error"] = "No se encontró tu perfil de usuario.";
-            return RedirectToAction(nameof(SellerStore));
+            TempData["Error"] = "Primero registra tu única dirección desde tu perfil. La tienda usará esa ubicación.";
+            return Redirect("/Identity/Account/Manage/Addresses");
         }
 
         var store = await _context.Set<DeliveryStore>().FirstOrDefaultAsync(s => s.OwnerUserId == userId);
+        var formattedAddress = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+            .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
         if (store == null)
         {
             store = new DeliveryStore
             {
                 Name = name.Trim(),
-                Category = category.Trim(),
-                Address = profile.AddressLine1 + (string.IsNullOrWhiteSpace(profile.AddressLine2) ? "" : " " + profile.AddressLine2),
-                ProvinceCode = profile.ProvinceCode,
-                CityCode = profile.CityCode,
+                Category = normalizedCategory,
+                Address = formattedAddress,
+                ProvinceCode = address.ProvinceCode,
+                CityCode = address.CityCode,
                 OwnerUserId = userId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -743,10 +777,22 @@ public class DeliveryController : Controller
         else
         {
             store.Name = name.Trim();
-            store.Category = category.Trim();
+            store.Category = normalizedCategory;
+            store.Address = formattedAddress;
+            store.ProvinceCode = address.ProvinceCode;
+            store.CityCode = address.CityCode;
         }
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception)
+        {
+            _logger.LogWarning(exception, "No se pudo guardar la tienda del vendedor {UserId}; puede existir una tienda concurrente.", userId);
+            TempData["Error"] = "No se pudo guardar la tienda. Actualiza la página e inténtalo de nuevo.";
+            return RedirectToAction(nameof(SellerStore));
+        }
         TempData["Success"] = "Tu tienda fue guardada correctamente.";
         return RedirectToAction(nameof(SellerInventory));
     }
@@ -795,9 +841,9 @@ public class DeliveryController : Controller
     public async Task<IActionResult> CreateProduct(string name, decimal price, decimal unitCost, int stock, string? imageUrl)
     {
         var userId = CurrentUserId;
-        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 0 || stock > 999 || !TryNormalizeProductImageUrl(imageUrl, out imageUrl))
+        if (string.IsNullOrWhiteSpace(name) || price < 0 || unitCost < 0 || stock < 1 || stock > 999 || !TryNormalizeProductImageUrl(imageUrl, out imageUrl))
         {
-            TempData["Error"] = "Completa los campos correctamente. El stock debe ser 0-999 y la imagen debe usar una URL HTTPS válida.";
+            TempData["Error"] = "Completa los campos correctamente. Un producto nuevo necesita stock de 1-999 y una imagen HTTPS válida si la agregas.";
             return RedirectToAction(nameof(SellerInventory));
         }
 
@@ -817,7 +863,7 @@ public class DeliveryController : Controller
             Price = price,
             UnitCost = unitCost,
             Stock = stock,
-            IsAvailable = true,
+            IsAvailable = stock > 0,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });
@@ -833,7 +879,8 @@ public class DeliveryController : Controller
     {
         var userId = CurrentUserId;
         var product = await _context.Set<DeliveryProduct>().FirstOrDefaultAsync(p =>
-            p.DeliveryProductId == productId && p.CreatedByUserId == userId);
+            p.DeliveryProductId == productId && p.CreatedByUserId == userId &&
+            p.Store.OwnerUserId == userId && p.Store.IsActive);
 
         if (product == null)
         {
@@ -852,6 +899,7 @@ public class DeliveryController : Controller
         product.Price = price;
         product.UnitCost = unitCost;
         product.Stock = stock;
+        product.IsAvailable = stock > 0;
         product.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         TempData["Success"] = $"Producto '{name.Trim()}' actualizado.";
@@ -877,9 +925,12 @@ public class DeliveryController : Controller
         var profile = await _context.Set<UserProfile>().AsNoTracking()
             .Include(p => p.Province).Include(p => p.City)
             .FirstOrDefaultAsync(p => p.IdentityUserId == userId);
+        var address = await _context.Set<UserAddress>().AsNoTracking()
+            .Include(item => item.Province).Include(item => item.City)
+            .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
 
-        var provinceName = profile?.Province?.Name ?? "Guayaquil";
-        var cityName = profile?.City?.Name ?? "Guayaquil";
+        var provinceName = address?.Province?.Name ?? profile?.Province?.Name ?? "Guayaquil";
+        var cityName = address?.City?.Name ?? profile?.City?.Name ?? "Guayaquil";
 
         try
         {
@@ -924,7 +975,8 @@ public class DeliveryController : Controller
     {
         var userId = CurrentUserId;
         var product = await _context.Set<DeliveryProduct>().FirstOrDefaultAsync(p =>
-            p.DeliveryProductId == productId && p.CreatedByUserId == userId);
+            p.DeliveryProductId == productId && p.CreatedByUserId == userId &&
+            p.Store.OwnerUserId == userId && p.Store.IsActive);
 
         if (product == null)
         {
@@ -1091,9 +1143,10 @@ public class DeliveryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStore(int storeId, string name, string category, string address)
     {
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(address))
+        var normalizedCategory = DeliveryStoreCategories.Normalize(category);
+        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 100 || normalizedCategory is null || string.IsNullOrWhiteSpace(address))
         {
-            TempData["Error"] = "Completa el nombre, la categoría y la dirección de la tienda.";
+            TempData["Error"] = "Completa el nombre, una de las tres categorías y la dirección de la tienda.";
             return RedirectToAction(nameof(AdminStores));
         }
 
@@ -1101,8 +1154,26 @@ public class DeliveryController : Controller
         if (store == null) return NotFound();
 
         store.Name = name.Trim();
-        store.Category = category.Trim();
-        store.Address = address.Trim();
+        store.Category = normalizedCategory;
+        if (!string.IsNullOrWhiteSpace(store.OwnerUserId))
+        {
+            var ownerAddress = await _context.Set<UserAddress>().AsNoTracking()
+                .FirstOrDefaultAsync(item => item.IdentityUserId == store.OwnerUserId);
+            if (ownerAddress is null)
+            {
+                TempData["Error"] = "La tienda pertenece a un vendedor sin dirección registrada. Pídele actualizar su perfil.";
+                return RedirectToAction(nameof(AdminStores));
+            }
+
+            store.Address = string.Join(" ", new[] { ownerAddress.AddressLine1, ownerAddress.AddressLine2 }
+                .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+            store.ProvinceCode = ownerAddress.ProvinceCode;
+            store.CityCode = ownerAddress.CityCode;
+        }
+        else
+        {
+            store.Address = address.Trim();
+        }
         await _context.SaveChangesAsync();
         TempData["Success"] = $"La tienda {store.Name} fue actualizada.";
         return RedirectToAction(nameof(AdminStores));
@@ -1348,6 +1419,31 @@ public class DeliveryController : Controller
         profile.ProvinceCode = provinceCode;
         profile.CityCode = cityCode;
         profile.Reference = string.IsNullOrWhiteSpace(reference) ? null : reference.Trim();
+
+        var address = await _context.Set<UserAddress>()
+            .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
+        var addressWasCreated = address is null;
+        address ??= new UserAddress { IdentityUserId = userId };
+        address.Label = string.IsNullOrWhiteSpace(address.Label) ? "Casa" : address.Label;
+        address.AddressLine1 = profile.AddressLine1;
+        address.AddressLine2 = profile.AddressLine2;
+        address.ProvinceCode = profile.ProvinceCode;
+        address.CityCode = profile.CityCode;
+        address.Reference = profile.Reference;
+        address.IsDefault = true;
+        address.UpdatedAt = DateTimeOffset.UtcNow;
+        if (addressWasCreated) _context.Set<UserAddress>().Add(address);
+
+        var ownedStore = await _context.Set<DeliveryStore>()
+            .FirstOrDefaultAsync(item => item.OwnerUserId == userId);
+        if (ownedStore is not null)
+        {
+            ownedStore.Address = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+                .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+            ownedStore.ProvinceCode = address.ProvinceCode;
+            ownedStore.CityCode = address.CityCode;
+        }
+
         await _context.SaveChangesAsync();
         _pageCache.InvalidateUser(userId);
 
@@ -1361,26 +1457,45 @@ public class DeliveryController : Controller
     public async Task<IActionResult> CreateAddress(string label, string addressLine1, string addressLine2, string provinceCode, string cityCode, string? reference)
     {
         var userId = CurrentUserId!;
-        var hasDefault = await _context.Set<UserAddress>()
-            .AnyAsync(a => a.IdentityUserId == userId && a.IsDefault);
+        var address = await _context.Set<UserAddress>()
+            .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
+        var wasCreated = address is null;
+        address ??= new UserAddress { IdentityUserId = userId, IsDefault = true };
+        address.Label = string.IsNullOrWhiteSpace(label) ? "Casa" : label.Trim();
+        address.AddressLine1 = addressLine1.Trim();
+        address.AddressLine2 = string.IsNullOrWhiteSpace(addressLine2) ? "" : addressLine2.Trim();
+        address.ProvinceCode = provinceCode;
+        address.CityCode = cityCode;
+        address.Reference = string.IsNullOrWhiteSpace(reference) ? null : reference.Trim();
+        address.IsDefault = true;
+        address.UpdatedAt = DateTimeOffset.UtcNow;
+        if (wasCreated) _context.Set<UserAddress>().Add(address);
 
-        _context.Set<UserAddress>().Add(new UserAddress
+        var profile = await _context.Set<UserProfile>()
+            .FirstOrDefaultAsync(item => item.IdentityUserId == userId);
+        if (profile is not null)
         {
-            IdentityUserId = userId,
-            Label = string.IsNullOrWhiteSpace(label) ? "Casa" : label.Trim(),
-            AddressLine1 = addressLine1.Trim(),
-            AddressLine2 = string.IsNullOrWhiteSpace(addressLine2) ? "" : addressLine2.Trim(),
-            ProvinceCode = provinceCode,
-            CityCode = cityCode,
-            Reference = string.IsNullOrWhiteSpace(reference) ? null : reference.Trim(),
-            IsDefault = !hasDefault,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        });
+            profile.AddressLine1 = address.AddressLine1;
+            profile.AddressLine2 = address.AddressLine2;
+            profile.ProvinceCode = address.ProvinceCode;
+            profile.CityCode = address.CityCode;
+            profile.Reference = address.Reference;
+        }
+
+        var ownedStore = await _context.Set<DeliveryStore>()
+            .FirstOrDefaultAsync(item => item.OwnerUserId == userId);
+        if (ownedStore is not null)
+        {
+            ownedStore.Address = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+                .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+            ownedStore.ProvinceCode = address.ProvinceCode;
+            ownedStore.CityCode = address.CityCode;
+        }
+
         await _context.SaveChangesAsync();
         _pageCache.InvalidateUser(userId);
 
-        TempData["Success"] = "Dirección creada.";
+        TempData["Success"] = wasCreated ? "Dirección creada." : "Tu única dirección fue actualizada.";
         return RedirectToAction(nameof(Profile));
     }
 
@@ -1390,6 +1505,10 @@ public class DeliveryController : Controller
     public async Task<IActionResult> SetDefaultAddress(long addressId)
     {
         var userId = CurrentUserId!;
+        var selectedAddress = await _context.Set<UserAddress>()
+            .FirstOrDefaultAsync(address => address.UserAddressId == addressId && address.IdentityUserId == userId);
+        if (selectedAddress is null) return NotFound();
+
         var addresses = await _context.Set<UserAddress>()
             .Where(a => a.IdentityUserId == userId).ToListAsync();
 
@@ -1413,6 +1532,11 @@ public class DeliveryController : Controller
 
         if (address != null)
         {
+            if (address.IsDefault || await _context.Set<UserAddress>().CountAsync(item => item.IdentityUserId == userId) <= 1)
+            {
+                TempData["Error"] = "Tu única dirección no se puede eliminar; puedes editarla desde tu perfil.";
+                return RedirectToAction(nameof(Profile));
+            }
             _context.Set<UserAddress>().Remove(address);
             await _context.SaveChangesAsync();
             _pageCache.InvalidateUser(userId);
@@ -1436,7 +1560,7 @@ public class DeliveryController : Controller
         var profile = await _context.Set<UserProfile>().AsNoTracking().SingleOrDefaultAsync(item => item.IdentityUserId == userId);
         if (profile is null || string.IsNullOrWhiteSpace(profile.AddressLine1)) return;
 
-        _context.Set<UserAddress>().Add(new UserAddress
+        var address = new UserAddress
         {
             IdentityUserId = userId,
             Label = "Casa",
@@ -1446,7 +1570,19 @@ public class DeliveryController : Controller
             CityCode = profile.CityCode,
             Reference = profile.Reference,
             IsDefault = true
-        });
+        };
+        _context.Set<UserAddress>().Add(address);
+
+        var ownedStore = await _context.Set<DeliveryStore>()
+            .FirstOrDefaultAsync(item => item.OwnerUserId == userId);
+        if (ownedStore is not null)
+        {
+            ownedStore.Address = string.Join(" ", new[] { address.AddressLine1, address.AddressLine2 }
+                .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+            ownedStore.ProvinceCode = address.ProvinceCode;
+            ownedStore.CityCode = address.CityCode;
+        }
+
         await _context.SaveChangesAsync();
         _pageCache.InvalidateUser(userId);
     }

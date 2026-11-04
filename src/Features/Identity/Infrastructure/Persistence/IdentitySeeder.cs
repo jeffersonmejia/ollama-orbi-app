@@ -96,7 +96,10 @@ public static class IdentitySeeder
             profile.Reference = userSeed.Reference;
 
             var primaryAddress = await dbContext.UserAddresses
-                .SingleOrDefaultAsync(item => item.IdentityUserId == user.Id && item.IsDefault);
+                .Where(item => item.IdentityUserId == user.Id)
+                .OrderByDescending(item => item.IsDefault)
+                .ThenByDescending(item => item.UpdatedAt)
+                .FirstOrDefaultAsync();
             if (primaryAddress is null)
             {
                 primaryAddress = new UserAddress
@@ -108,6 +111,7 @@ public static class IdentitySeeder
                 dbContext.UserAddresses.Add(primaryAddress);
             }
 
+            primaryAddress.IsDefault = true;
             primaryAddress.AddressLine1 = userSeed.AddressLine1;
             primaryAddress.AddressLine2 = userSeed.AddressLine2;
             primaryAddress.ProvinceCode = userSeed.ProvinceCode;
@@ -134,6 +138,13 @@ public static class IdentitySeeder
         var repartidor = await userManager.FindByEmailAsync("carlos.perez@orbi.com");
         if (vendedor is null || repartidor is null) return;
 
+        var sellerAddress = await db.UserAddresses
+            .Where(item => item.IdentityUserId == vendedor.Id)
+            .OrderByDescending(item => item.IsDefault)
+            .ThenByDescending(item => item.UpdatedAt)
+            .FirstOrDefaultAsync();
+        if (sellerAddress is null) return;
+
         var store = await db.DeliveryStores
             .FirstOrDefaultAsync(item => item.OwnerUserId == vendedor.Id);
         store ??= await db.DeliveryStores
@@ -147,9 +158,10 @@ public static class IdentitySeeder
 
         store.Name = "Farmacia Cruz Azul";
         store.Category = "Farmacia";
-        store.Address = "Av. Amazonas y Naciones Unidas, Quito";
-        store.ProvinceCode = "17";
-        store.CityCode = "1701";
+        store.Address = string.Join(" ", new[] { sellerAddress.AddressLine1, sellerAddress.AddressLine2 }
+            .Where(value => !string.IsNullOrWhiteSpace(value))).Trim();
+        store.ProvinceCode = sellerAddress.ProvinceCode;
+        store.CityCode = sellerAddress.CityCode;
         store.OwnerUserId = vendedor.Id;
         store.IsActive = true;
         await db.SaveChangesAsync();
@@ -260,9 +272,9 @@ public static class IdentitySeeder
         if (await db.DeliveryStores.AnyAsync()) return;
 
         db.DeliveryStores.AddRange(
-            new DeliveryStore { Name = "Mercado Popular", Category = "Alimentos", Address = "Av. 9 de Octubre 1234, Guayaquil", ProvinceCode = "09", CityCode = "0901", IsActive = true },
-            new DeliveryStore { Name = "Tienda Gourmet", Category = "Gourmet", Address = "Av. Amazonas N36-50, Quito", ProvinceCode = "17", CityCode = "1701", IsActive = true },
-            new DeliveryStore { Name = "Café Artesanal", Category = "Cafetería", Address = "Calle La Niña 456, Quito", ProvinceCode = "17", CityCode = "1701", IsActive = true }
+            new DeliveryStore { Name = "Mercado Popular", Category = DeliveryStoreCategories.Supermarket, Address = "Av. 9 de Octubre 1234, Guayaquil", ProvinceCode = "09", CityCode = "0901", IsActive = true },
+            new DeliveryStore { Name = "Tienda Gourmet", Category = DeliveryStoreCategories.Supermarket, Address = "Av. Amazonas N36-50, Quito", ProvinceCode = "17", CityCode = "1701", IsActive = true },
+            new DeliveryStore { Name = "Café Artesanal", Category = DeliveryStoreCategories.Restaurants, Address = "Calle La Niña 456, Quito", ProvinceCode = "17", CityCode = "1701", IsActive = true }
         );
     }
 

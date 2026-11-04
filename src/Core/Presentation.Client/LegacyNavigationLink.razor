@@ -1,6 +1,6 @@
 @inject NavigationManager Navigation
 
-<a href="@Href" class="@Class" title="@Title" data-nav-progress="true" @onclick="Navigate" @onclick:preventDefault>
+<a href="@Href" class="@Class" title="@Title" data-nav-skeleton="true" @onclick="Navigate" @onclick:preventDefault>
     @ChildContent
 </a>
 
@@ -10,5 +10,5 @@
     [Parameter] public string? Title { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    private void Navigate() => Navigation.NavigateTo(Href, forceLoad: true);
+    private void Navigate() => Navigation.NavigateTo(Href, forceLoad: !ClientRouteRegistry.Contains(Href, Navigation.BaseUri));
 }

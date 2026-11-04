@@ -1,4 +1,8 @@
 /* Diseño común de los pasos y el indicador del formulario de registro. */
+.m3-content-area.orbi-register-content-area {
+    background: var(--md-sys-color-surface);
+}
+
 .orbi-register-container {
     width: min(960px, 100%);
     margin: 2rem auto;
@@ -7,6 +11,8 @@
 
 .orbi-register-card {
     padding: 2rem;
+    background: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-shape-corner-extra-large);
 }
 
 .orbi-register-progress {

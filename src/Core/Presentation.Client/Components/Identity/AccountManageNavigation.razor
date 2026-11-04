@@ -1,15 +1,17 @@
 @using System.Net.Http.Json
 @using System.Text.Json
 @using OrbiApp.Presentation.Client.Networking
+@using OrbiApp.Features.Identity.Client.Authentication
 @inject HttpClient Api
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider Authentication
 
 <nav class="orbi-account-navigation" aria-label="Secciones de la cuenta">
     <div class="orbi-account-nav">
         <NavLink href="/Identity/Account/Manage" Match="NavLinkMatch.All"><span class="material-symbols-outlined" aria-hidden="true">person</span><span>Perfil</span></NavLink>
         <NavLink href="/Identity/Account/Manage/Addresses"><span class="material-symbols-outlined" aria-hidden="true">location_on</span><span>Direcciones</span></NavLink>
         <NavLink href="/Identity/Account/Manage/PaymentMethods"><span class="material-symbols-outlined" aria-hidden="true">payment</span><span>Pagos</span></NavLink>
-        <LegacyNavigationLink Href="/Identity/Account/Manage/Security" Class="orbi-account-nav-legacy"><span class="material-symbols-outlined" aria-hidden="true">security</span><span>Seguridad</span></LegacyNavigationLink>
+        <NavLink href="/Identity/Account/Manage/Security" Match="NavLinkMatch.All"><span class="material-symbols-outlined" aria-hidden="true">security</span><span>Seguridad</span></NavLink>
         <button type="button" class="orbi-account-logout" disabled="@_busy" @onclick="LogoutAsync"><span class="material-symbols-outlined" aria-hidden="true">logout</span><span>@(_busy ? "Saliendo…" : "Salir")</span></button>
     </div>
 </nav>
@@ -33,7 +35,8 @@
             using var response = await Api.SendAsync(request);
             if (!response.IsSuccessStatusCode) throw new InvalidOperationException();
             try { await JS.InvokeVoidAsync("orbiSessionCache.clear"); } catch (JSException) { }
-            Navigation.NavigateTo("/", forceLoad: true);
+            if (Authentication is SessionAuthenticationStateProvider sessionProvider) sessionProvider.SetSignedOut();
+            Navigation.NavigateTo("/");
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException or TaskCanceledException)
         { _error = "No se pudo cerrar la sesión. Inténtalo de nuevo."; _busy = false; }
