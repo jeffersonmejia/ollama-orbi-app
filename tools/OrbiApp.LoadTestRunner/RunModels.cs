@@ -31,7 +31,11 @@ public sealed record RunMetadata
     public required int ExitCode { get; init; }
     public required Dictionary<string, string> ToolVersions { get; init; }
     public required string K6Image { get; init; }
+    public string? DeletedPod { get; init; }
+    public DateTimeOffset? DeletionRequestedAtUtc { get; init; }
     public string? RecoveryPod { get; init; }
+    public DateTimeOffset? RecoveryCompletedAtUtc { get; init; }
+    public string? RecoveryDefinition { get; init; }
     public double? RecoverySeconds { get; init; }
     public string? Notes { get; init; }
 }

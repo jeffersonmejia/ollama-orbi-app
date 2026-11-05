@@ -44,6 +44,12 @@ public sealed class EmailQueueWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+        var connection = context.Database.GetDbConnection();
+        await connection.OpenAsync(cancellationToken);
+        await using var lockCommand = connection.CreateCommand();
+        lockCommand.CommandText = "SELECT pg_try_advisory_lock(728314903);";
+        if (await lockCommand.ExecuteScalarAsync(cancellationToken) is not true) return;
+
         var now = DateTimeOffset.UtcNow;
 
         var item = await context.EmailQueue

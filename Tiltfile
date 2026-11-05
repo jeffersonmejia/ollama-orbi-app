@@ -1,5 +1,5 @@
 allow_k8s_contexts('docker-desktop')
-runner_dll = os.path.abspath('tools/OrbiApp.LoadTestRunner/bin/Release/net10.0/tilt/OrbiApp.LoadTestRunner.dll')
+runner_dll = os.path.abspath('tools/OrbiApp.LoadTestRunner/bin/Release/net10.0/tilt-final/OrbiApp.LoadTestRunner.dll')
 repo_root = os.path.abspath('.')
 
 docker_compose([
@@ -17,15 +17,21 @@ k8s_resource(
         'orbi-lab-data-protection:persistentvolumeclaim:orbi-lab',
         'orbi-lab-backups:persistentvolumeclaim:orbi-lab',
     ],
-    port_forwards=['0.0.0.0:30083:8080'],
+    # Keep direct app debugging off the stable k6 proxy tunnel.
+    port_forwards=['0.0.0.0:30084:8080'],
     resource_deps=['orbi-lab-preflight', 'orbi-lab-secret', 'postgres', 'prometheus', 'grafana'],
+)
+k8s_resource(
+    'orbi-k6-proxy',
+    port_forwards=['0.0.0.0:30083:8080'],
+    resource_deps=['orbi'],
 )
 
 # Build the runner once; Tilt's local resources invoke its DLL to avoid
 # concurrent `dotnet run` builds while the event server is serving requests.
 local_resource(
     'orbi-runner-build',
-    cmd=['dotnet', 'publish', 'tools/OrbiApp.LoadTestRunner', '--configuration', 'Release', '--no-restore', '--output', 'tools/OrbiApp.LoadTestRunner/bin/Release/net10.0/tilt'],
+    cmd=['dotnet', 'publish', 'tools/OrbiApp.LoadTestRunner', '--configuration', 'Release', '--no-restore', '--output', 'tools/OrbiApp.LoadTestRunner/bin/Release/net10.0/tilt-final', '/p:SonarQubeTargetsPath='],
     deps=[
         'tools/OrbiApp.LoadTestRunner/CommandRunner.cs',
         'tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs',

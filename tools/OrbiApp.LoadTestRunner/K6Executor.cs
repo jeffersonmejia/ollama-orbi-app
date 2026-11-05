@@ -83,7 +83,8 @@ public sealed class K6RunSession : IAsyncDisposable
             await File.WriteAllTextAsync(Path.Combine(runDirectory, "run-status.json"),
                 "{\"run_status\":\"CANCELLED\",\"exit_code\":130}", CancellationToken.None);
             await _events.PublishAsync(new LabEvent(DateTimeOffset.UtcNow, "test", "CANCELLED",
-                "Corrida cancelada; se detuvo el contenedor k6 del run.", _runId, _request.Replicas, _request.Vus));
+                "Corrida cancelada; se detuvo el contenedor k6 del run.", _runId, _request.Replicas, _request.Vus),
+                CancellationToken.None);
             throw;
         }
 
@@ -118,7 +119,7 @@ public sealed class K6RunSession : IAsyncDisposable
 
         await _events.PublishAsync(new LabEvent(DateTimeOffset.UtcNow, "test", status,
             $"Corrida {_request.Profile} finalizada (exit {exitCode}).", _runId,
-            _request.Replicas, _request.Vus));
+            _request.Replicas, _request.Vus), cancellationToken);
 
         return new K6RunResult(_runId, runDirectory, summaryPath, _stdoutPath, _stderrPath,
             beforePath, afterPath, exitCode, status, _started, metrics, notes);
@@ -177,6 +178,7 @@ public sealed class K6Executor(string repositoryRoot, CommandRunner commands, Ev
 
     public async Task<K6RunSession> StartAsync(K6RunRequest request, string? runId = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!Profiles.TryGetValue(request.Profile, out var profile))
             throw new ArgumentException($"Perfil k6 no reconocido: {request.Profile}.");
         if (request.Vus < 1 || request.Vus > 500 || request.DurationSeconds < 1 || request.DurationSeconds > 120)
@@ -213,6 +215,7 @@ public sealed class K6Executor(string repositoryRoot, CommandRunner commands, Ev
             startInfo.ArgumentList.Add("-f");
             startInfo.ArgumentList.Add(composeFile);
         }
+        cancellationToken.ThrowIfCancellationRequested();
         startInfo.ArgumentList.Add("run");
         startInfo.ArgumentList.Add("--rm");
         startInfo.ArgumentList.Add("--no-deps");
@@ -247,7 +250,8 @@ public sealed class K6Executor(string repositoryRoot, CommandRunner commands, Ev
         var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
         var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
         await events.PublishAsync(new LabEvent(started, "test", "RUNNING",
-            $"Corrida {_safeProfile(request.Profile)} iniciada.", id, request.Replicas, request.Vus));
+            $"Corrida {_safeProfile(request.Profile)} iniciada.", id, request.Replicas, request.Vus),
+            CancellationToken.None);
         return new K6RunSession(process, stdout, stderr, stdoutPath, stderrPath, events, commands,
             request, id, started);
 

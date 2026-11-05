@@ -38,8 +38,10 @@ internal static class Program
                     return await RunOneAsync(root, commandRunner, kubernetes, events, reports,
                         new K6RunRequest("smoke", 1, 10, 1, false), cancellation.Token);
                 case "baseline":
+                    await EnsureLabAsync(kubernetes, 1, cancellation.Token);
+                    var baselineDeployment = await kubernetes.GetDeploymentAsync(cancellation.Token);
                     return await RunOneAsync(root, commandRunner, kubernetes, events, reports,
-                        new K6RunRequest("baseline", 100, 30, 1, false), cancellation.Token);
+                        new K6RunRequest("baseline", 100, 30, baselineDeployment.ReadyReplicas, false), cancellation.Token);
                 case "matrix":
                     return await RunMatrixAsync(root, commandRunner, kubernetes, events, reports, options, cancellation.Token);
                 case "availability":
@@ -56,7 +58,7 @@ internal static class Program
     private static async Task<int> RunOneAsync(string root, CommandRunner commands, KubernetesController kube,
         EventPublisher events, ReportWriter reports, K6RunRequest request, CancellationToken token)
     {
-        await EnsureLabAsync(kube, request.Replicas, token);
+        await EnsureLabAsync(kube, request.Replicas, token, requireExactReplicas: true);
         var before = await kube.GetDeploymentJsonAsync(token);
         var podsBefore = await kube.GetPodsJsonAsync(token);
         var runId = K6Executor.CreateRunId(request.Replicas, request.Vus);
@@ -73,6 +75,15 @@ internal static class Program
         await File.WriteAllTextAsync(afterPath, JsonSerializer.Serialize(new { deployment = JsonDocument.Parse(after).RootElement,
             pods = JsonDocument.Parse(podsAfter).RootElement }), token);
         var snapshot = await kube.GetDeploymentAsync(token);
+        if (snapshot.DesiredReplicas != request.Replicas || snapshot.ReadyReplicas != request.Replicas)
+        {
+            run = run with
+            {
+                ExitCode = 1,
+                Status = "INFRA_ERROR",
+                Notes = $"Readiness posterior a k6: {snapshot.ReadyReplicas}/{snapshot.DesiredReplicas}; escenario={request.Replicas}."
+            };
+        }
         var metadata = new RunMetadata
         {
             RunId = run.RunId, Profile = request.Profile, StartedAtUtc = run.StartedAtUtc,
@@ -109,23 +120,23 @@ internal static class Program
         {
             foreach (var group in MatrixPlanner.Plan(options.MaxVus).GroupBy(item => item.Replicas))
             {
-                if (group.Key != original.DesiredReplicas)
+                Console.WriteLine($"MATRIZ: preparando {group.Key} réplicas y {group.Count()} escenarios.");
+                if (group.Key != lastAppliedReplicas)
                 {
                     await kube.ScaleAsync(group.Key, token);
                     lastAppliedReplicas = group.Key;
                     await events.PublishAsync(new LabEvent(DateTimeOffset.UtcNow, "replicas", "SCALING",
                         $"Escalando Deployment orbi a {group.Key} réplicas.", null, group.Key), token);
-                    var rollout = await kube.WaitRolloutAsync(TimeSpan.FromMinutes(5), token);
-                    if (rollout.ExitCode != 0) throw new InvalidOperationException("Timeout esperando Pods Ready durante escalado.");
                 }
-                var ready = await kube.GetDeploymentAsync(token);
-                if (ready.Uid != ownerUid || ready.TemplateFingerprint != originalTemplate || ready.ReadyReplicas != group.Key)
-                    throw new InvalidOperationException("Deployment cambió o no alcanzó todas las réplicas Ready; se detiene la matriz.");
+                await WaitForReadyReplicasAsync(kube, group.Key, ownerUid, originalTemplate,
+                    TimeSpan.FromMinutes(5), token);
+                Console.WriteLine($"MATRIZ: {group.Key}/{group.Key} réplicas Ready y Available.");
                 foreach (var item in group)
                 {
+                    Console.WriteLine($"MATRIZ: inicia {item.Replicas} réplicas, {item.Vus} VUs, {item.DurationSeconds} s.");
                     var code = await RunOneAsync(root, commands, kube, events, reports,
                         new K6RunRequest("scalability", item.Vus, item.DurationSeconds, item.Replicas, options.AllowStress), token);
-                    if (code != 0) { result = code; if (item.Vus <= 100) return result; }
+                    if (code != 0) { result = code; return result; }
                 }
             }
             return result;
@@ -137,7 +148,8 @@ internal static class Program
                 current.DesiredReplicas == lastAppliedReplicas && current.DesiredReplicas != original.DesiredReplicas)
             {
                 await kube.ScaleAsync(original.DesiredReplicas, CancellationToken.None);
-                await kube.WaitRolloutAsync(TimeSpan.FromMinutes(5), CancellationToken.None);
+                await WaitForReadyReplicasAsync(kube, original.DesiredReplicas, ownerUid, originalTemplate,
+                    TimeSpan.FromMinutes(5), CancellationToken.None);
             }
         }
     }
@@ -235,12 +247,18 @@ internal static class Program
         if (deployment.DesiredReplicas < 2 || deployment.ReadyReplicas < 2)
             throw new InvalidOperationException("availability requiere al menos dos Pods Ready antes de iniciar.");
         using var podsJson = JsonDocument.Parse(await kube.GetPodsJsonAsync(token));
-        var target = podsJson.RootElement.GetProperty("items").EnumerateArray()
+        var initialPods = podsJson.RootElement.GetProperty("items").EnumerateArray().ToArray();
+        var initialPodUids = initialPods
+            .Select(pod => pod.GetProperty("metadata").GetProperty("uid").GetString())
+            .Where(uid => !string.IsNullOrWhiteSpace(uid))
+            .ToHashSet(StringComparer.Ordinal);
+        var target = initialPods
             .Where(pod => pod.GetProperty("status").TryGetProperty("phase", out var phase) && phase.GetString() == "Running")
             .FirstOrDefault(pod => pod.GetProperty("status").TryGetProperty("conditions", out var conditions) &&
                 conditions.EnumerateArray().Any(condition => condition.GetProperty("type").GetString() == "Ready" && condition.GetProperty("status").GetString() == "True"));
         if (target.ValueKind == JsonValueKind.Undefined) throw new InvalidOperationException("No hay Pod Ready verificable para la prueba.");
         var targetName = target.GetProperty("metadata").GetProperty("name").GetString()!;
+        var targetUid = target.GetProperty("metadata").GetProperty("uid").GetString()!;
         var id = K6Executor.CreateRunId(deployment.DesiredReplicas, 20);
         var directory = Path.Combine(root, "tests", "k6", "results", id);
         Directory.CreateDirectory(directory);
@@ -254,21 +272,16 @@ internal static class Program
         try
         {
             await new PrometheusClient().WaitForRunRequestsAsync(id, TimeSpan.FromSeconds(30), token);
+            var deletionStarted = DateTimeOffset.UtcNow;
             var delete = await kube.DeletePodAsync(targetName, token);
             if (delete.ExitCode != 0) throw new InvalidOperationException("No se pudo eliminar el Pod de prueba del namespace orbi-lab.");
             await events.PublishAsync(new LabEvent(DateTimeOffset.UtcNow, "pod", "DELETED", "Pod de laboratorio eliminado durante disponibilidad.", id, deployment.DesiredReplicas, 20), token);
-            var recoveryStart = DateTimeOffset.UtcNow;
-            while (DateTimeOffset.UtcNow - recoveryStart < TimeSpan.FromMinutes(3))
-            {
-                token.ThrowIfCancellationRequested();
-                var current = await kube.GetDeploymentAsync(token);
-                if (current.Uid != deployment.Uid) throw new InvalidOperationException("Deployment cambió durante la prueba; se detiene.");
-                if (current.ReadyReplicas >= deployment.DesiredReplicas) { recovery = (DateTimeOffset.UtcNow - recoveryStart).TotalSeconds; break; }
-                await Task.Delay(TimeSpan.FromSeconds(2), token);
-            }
-            if (recovery is null) throw new TimeoutException("No se recuperaron todas las réplicas Ready en tres minutos.");
+            var replacement = await WaitForPodRecoveryAsync(kube, deployment, targetUid, initialPodUids,
+                deletionStarted, TimeSpan.FromMinutes(3), token);
+            recovery = replacement.RecoverySeconds;
             await events.PublishAsync(new LabEvent(DateTimeOffset.UtcNow, "pod", "RECOVERED",
-                $"Readiness recuperada en {recovery.Value:0.###} s.", id, deployment.DesiredReplicas, 20), token);
+                $"Pod sustituto {replacement.PodName} Ready y réplicas recuperadas en {recovery.Value:0.###} s desde la solicitud de eliminación.",
+                id, deployment.DesiredReplicas, 20), token);
             var result = await session.WaitAsync(directory, beforePath, afterPath, token);
             await SaveSnapshotAsync(kube, afterPath, token);
             var currentDeployment = await kube.GetDeploymentAsync(token);
@@ -283,10 +296,15 @@ internal static class Program
                 ProcessorCount = Environment.ProcessorCount, RunStatus = result.Status,
                 ThresholdStatus = result.Status == "PASS" ? "PASS" : result.Status == "THRESHOLD_FAIL" ? "FAIL" : "UNKNOWN",
                 ExitCode = result.ExitCode, ToolVersions = await ToolVersionsAsync(commands, token),
-                K6Image = K6Executor.ImageReference, RecoveryPod = targetName, RecoverySeconds = recovery,
+                K6Image = K6Executor.ImageReference, DeletedPod = targetName,
+                DeletionRequestedAtUtc = deletionStarted, RecoveryPod = replacement.PodName,
+                RecoveryCompletedAtUtc = replacement.RecoveredAtUtc,
+                RecoveryDefinition = "Segundos desde que kubectl aceptó la eliminación hasta que el Pod original dejó Ready y un UID nuevo quedó Ready con todas las réplicas deseadas.",
+                RecoverySeconds = recovery,
                 Notes = result.Notes
             };
             await reports.SaveRunAsync(metadata, token);
+            Console.WriteLine($"Availability {id}: {result.Status} (exit {result.ExitCode}); eliminada={targetName}; solicitud_UTC={deletionStarted:O}; sustituta={replacement.PodName}; recuperada_UTC={replacement.RecoveredAtUtc:O}; recuperación={recovery.Value:0.###} s; VUs={result.Metrics?.ObservedVus}; solicitudes={result.Metrics?.TotalRequests:0}; RPS={result.Metrics?.RequestsPerSecond:0.###}; error={result.Metrics?.ErrorRate:P3}; checks={result.Metrics?.ChecksRate:P3}; resultados={directory}");
             return result.ExitCode;
         }
         catch
@@ -297,6 +315,52 @@ internal static class Program
         finally { await session.DisposeAsync(); }
     }
 
+    private static async Task<(string PodName, double RecoverySeconds, DateTimeOffset RecoveredAtUtc)> WaitForPodRecoveryAsync(
+        KubernetesController kube,
+        DeploymentSnapshot deployment,
+        string deletedPodUid,
+        HashSet<string> initialPodUids,
+        DateTimeOffset deletionStarted,
+        TimeSpan timeout,
+        CancellationToken token)
+    {
+        while (DateTimeOffset.UtcNow - deletionStarted < timeout)
+        {
+            token.ThrowIfCancellationRequested();
+            var currentDeployment = await kube.GetDeploymentAsync(token);
+            if (currentDeployment.Uid != deployment.Uid)
+                throw new InvalidOperationException("Deployment cambió durante la prueba; se detiene.");
+
+            using var podsJson = JsonDocument.Parse(await kube.GetPodsJsonAsync(token));
+            var pods = podsJson.RootElement.GetProperty("items").EnumerateArray().ToArray();
+            var readyPods = pods.Where(IsReadyPod).ToArray();
+            var deletedPod = pods.FirstOrDefault(pod =>
+                pod.GetProperty("metadata").GetProperty("uid").GetString() == deletedPodUid);
+            var deletedPodNoLongerReady = deletedPod.ValueKind == JsonValueKind.Undefined || !IsReadyPod(deletedPod);
+            var replacement = readyPods.FirstOrDefault(pod =>
+                !initialPodUids.Contains(pod.GetProperty("metadata").GetProperty("uid").GetString() ?? string.Empty));
+
+            if (deletedPodNoLongerReady && readyPods.Length >= deployment.DesiredReplicas &&
+                replacement.ValueKind == JsonValueKind.Object)
+            {
+                var recoveredAtUtc = DateTimeOffset.UtcNow;
+                var name = replacement.GetProperty("metadata").GetProperty("name").GetString()!;
+                return (name, (recoveredAtUtc - deletionStarted).TotalSeconds, recoveredAtUtc);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1), token);
+        }
+
+        throw new TimeoutException("No se observó que el Pod eliminado dejara de estar Ready y que un Pod nuevo completara Ready con todas las réplicas en tres minutos.");
+
+        static bool IsReadyPod(JsonElement pod) =>
+            pod.GetProperty("status").TryGetProperty("phase", out var phase) && phase.GetString() == "Running" &&
+            pod.GetProperty("status").TryGetProperty("conditions", out var conditions) &&
+            conditions.EnumerateArray().Any(condition => condition.GetProperty("type").GetString() == "Ready" &&
+                condition.GetProperty("status").GetString() == "True") &&
+            !pod.GetProperty("metadata").TryGetProperty("deletionTimestamp", out _);
+    }
+
     private static async Task SaveSnapshotAsync(KubernetesController kube, string path, CancellationToken token)
     {
         using var deployment = JsonDocument.Parse(await kube.GetDeploymentJsonAsync(token));
@@ -304,7 +368,11 @@ internal static class Program
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { deployment = deployment.RootElement, pods = pods.RootElement }), token);
     }
 
-    private static async Task EnsureLabAsync(KubernetesController kube, int replicas, CancellationToken token)
+    private static async Task EnsureLabAsync(
+        KubernetesController kube,
+        int replicas,
+        CancellationToken token,
+        bool requireExactReplicas = false)
     {
         await kube.EnsureLocalContextAsync(token);
         if (!await kube.IsNamespaceOwnedAsync(token)) throw new InvalidOperationException("Namespace orbi-lab no existe o no está etiquetado como propiedad de este laboratorio.");
@@ -312,8 +380,9 @@ internal static class Program
         await kube.ReadinessAsync(token);
         var snapshot = await kube.GetDeploymentAsync(token);
         if (snapshot.Environment != "Lab") throw new InvalidOperationException("Deployment no es Environment=Lab.");
-        if (snapshot.ReadyReplicas != snapshot.DesiredReplicas || snapshot.DesiredReplicas < replicas)
-            throw new InvalidOperationException("El Deployment no tiene todas las réplicas Ready requeridas.");
+        if (snapshot.ReadyReplicas != snapshot.DesiredReplicas || snapshot.DesiredReplicas < replicas ||
+            (requireExactReplicas && snapshot.DesiredReplicas != replicas))
+            throw new InvalidOperationException($"Réplicas efectivas distintas de las registradas: {snapshot.ReadyReplicas}/{snapshot.DesiredReplicas} Ready; escenario={replicas}.");
         if (replicas > 1 && !await kube.IsMultiReplicaApprovedAsync(token)) throw new InvalidOperationException("Escalado multi-réplica bloqueado por seguridad.");
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
         var appUrl = Environment.GetEnvironmentVariable("ORBI_LAB_BASE_URL") ?? "http://127.0.0.1:30083";
@@ -324,6 +393,30 @@ internal static class Program
         await EnsureHttpOkAsync(http, new Uri(appBase, "/health/ready"), "Orbi /health/ready", token);
         await EnsureHttpOkAsync(http, new Uri("http://127.0.0.1:19090/-/ready"), "Prometheus readiness", token);
         await EnsureHttpOkAsync(http, new Uri("http://127.0.0.1:13000/api/health"), "Grafana health", token);
+    }
+
+    private static async Task WaitForReadyReplicasAsync(
+        KubernetesController kube,
+        int expectedReplicas,
+        string expectedUid,
+        string expectedTemplate,
+        TimeSpan timeout,
+        CancellationToken token)
+    {
+        var deadline = DateTimeOffset.UtcNow + timeout;
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            var deployment = await kube.GetDeploymentAsync(token);
+            if (deployment.Uid != expectedUid || deployment.TemplateFingerprint != expectedTemplate)
+                throw new InvalidOperationException("Deployment cambió durante la matriz; se detiene por seguridad.");
+            if (deployment.DesiredReplicas == expectedReplicas &&
+                deployment.ReadyReplicas == expectedReplicas &&
+                deployment.AvailableReplicas == expectedReplicas)
+                return;
+            await Task.Delay(TimeSpan.FromSeconds(2), token);
+        }
+
+        throw new TimeoutException($"Timeout esperando {expectedReplicas}/{expectedReplicas} réplicas Ready y Available.");
     }
 
     private static async Task EnsureHttpOkAsync(HttpClient http, Uri uri, string name, CancellationToken token)

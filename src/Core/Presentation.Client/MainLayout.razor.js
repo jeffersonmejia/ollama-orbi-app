@@ -26,10 +26,10 @@ async function checkConnectivity() {
 
 async function publishConnectivity() {
     const isOnline = await checkConnectivity();
-    if (isOnline === lastKnownStatus) return isOnline;
-
-    lastKnownStatus = isOnline;
-    await dotNet.invokeMethodAsync('OnConnectionChanged', isOnline).catch(() => {});
+    if (isOnline !== lastKnownStatus) {
+        lastKnownStatus = isOnline;
+        await dotNet.invokeMethodAsync('OnConnectionChanged', isOnline).catch(() => {});
+    }
     return isOnline;
 }
 

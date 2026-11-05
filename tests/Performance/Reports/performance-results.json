@@ -1,12 +1,12 @@
 {
   "database": {
     "catalog count \u002B page": {
-      "MinMs": 198.0025,
-      "AverageMs": 316.4993800000001,
-      "P50Ms": 269.2677,
-      "P95Ms": 620.2431,
-      "P99Ms": 745.9181,
-      "MaxMs": 745.9181,
+      "MinMs": 114.8062,
+      "AverageMs": 473.28951,
+      "P50Ms": 240.6859,
+      "P95Ms": 1067.2822,
+      "P99Ms": 1277.8087,
+      "MaxMs": 1277.8087,
       "Samples": 30,
       "RequestsPerSecond": null,
       "ErrorPercent": null,

@@ -5,18 +5,18 @@
   "tags": ["orbi", "k6", "lab"],
   "timezone": "browser",
   "schemaVersion": 41,
-  "version": 1,
+  "version": 5,
   "refresh": "5s",
   "time": { "from": "now-15m", "to": "now" },
   "templating": {
     "list": [
       {
-        "name": "testid",
+        "name": "run_id",
         "label": "Run ID",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "definition": "label_values(k6_http_reqs_total, testid)",
-        "query": { "query": "label_values(k6_http_reqs_total, testid)", "refId": "Prometheus-testid-Variable-Query" },
+        "definition": "label_values(k6_http_reqs_total, run_id)",
+        "query": { "query": "label_values(k6_http_reqs_total, run_id)", "refId": "Prometheus-run-id-Variable-Query" },
         "refresh": 2,
         "sort": 1,
         "multi": true,
@@ -34,7 +34,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } }, "overrides": [] },
-      "targets": [{ "expr": "sum(rate(k6_http_reqs_total{testid=~\"$testid\"}[1m]))", "legendFormat": "requests/s", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(k6_http_reqs_total{run_id=~\"$run_id\"}[1m]))", "legendFormat": "requests/s", "refId": "A" }]
     },
     {
       "id": 2,
@@ -44,9 +44,9 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "palette-classic" } }, "overrides": [] },
       "targets": [
-        { "expr": "avg(k6_http_req_duration_avg{testid=~\"$testid\"})", "legendFormat": "avg", "refId": "A" },
-        { "expr": "avg(k6_http_req_duration_p95{testid=~\"$testid\"})", "legendFormat": "p95", "refId": "B" },
-        { "expr": "avg(k6_http_req_duration_p99{testid=~\"$testid\"})", "legendFormat": "p99", "refId": "C" }
+        { "expr": "1000 * avg(k6_http_req_duration_avg{run_id=~\"$run_id\"})", "legendFormat": "avg", "refId": "A" },
+        { "expr": "1000 * avg(k6_http_req_duration_p95{run_id=~\"$run_id\"})", "legendFormat": "p95", "refId": "B" },
+        { "expr": "1000 * avg(k6_http_req_duration_p99{run_id=~\"$run_id\"})", "legendFormat": "p99", "refId": "C" }
       ]
     },
     {
@@ -56,7 +56,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } }, "overrides": [] },
-      "targets": [{ "expr": "max(k6_vus{testid=~\"$testid\"})", "legendFormat": "active VUs", "refId": "A" }]
+      "targets": [{ "expr": "max(k6_vus{testid=~\"$run_id\"})", "legendFormat": "active VUs", "refId": "A" }]
     },
     {
       "id": 4,
@@ -65,7 +65,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "color": { "mode": "palette-classic" } }, "overrides": [] },
-      "targets": [{ "expr": "100 * avg(k6_http_req_failed_rate{testid=~\"$testid\"})", "legendFormat": "failed requests %", "refId": "A" }]
+      "targets": [{ "expr": "100 * avg(k6_http_req_failed_rate{run_id=~\"$run_id\"})", "legendFormat": "failed requests %", "refId": "A" }]
     },
     {
       "id": 5,
@@ -74,7 +74,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "color": { "mode": "palette-classic" } }, "overrides": [] },
-      "targets": [{ "expr": "100 * (1 - avg(k6_http_req_failed_rate{testid=~\"$testid\"}))", "legendFormat": "successful requests %", "refId": "A" }]
+      "targets": [{ "expr": "100 * (1 - avg(k6_http_req_failed_rate{run_id=~\"$run_id\"}))", "legendFormat": "successful requests %", "refId": "A" }]
     },
     {
       "id": 6,
@@ -83,7 +83,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "color": { "mode": "palette-classic" } }, "overrides": [] },
-      "targets": [{ "expr": "avg(k6_checks_rate{testid=~\"$testid\"})", "legendFormat": "checks", "refId": "A" }]
+      "targets": [{ "expr": "avg(k6_checks_rate{testid=~\"$run_id\"})", "legendFormat": "checks", "refId": "A" }]
     }
   ]
 }

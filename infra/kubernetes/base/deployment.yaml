@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: orbi
     app.kubernetes.io/part-of: orbi-load-test-lab
 spec:
-  replicas: 1
+  replicas: 3
   revisionHistoryLimit: 3
   selector:
     matchLabels:

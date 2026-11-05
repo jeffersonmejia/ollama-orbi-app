@@ -16,8 +16,8 @@ public sealed class IdentityAccountApiContractTests
     [Fact]
     public void Profile_and_address_pages_keep_their_identity_routes()
     {
-        Assert.Contains("/Identity/Account/Manage", Routes<Profile>());
-        Assert.Contains("/Identity/Account/Manage/Index", Routes<Profile>());
+        AssertRazorPageRoute("Profile.cshtml", "/Identity/Account/Manage");
+        AssertRazorPageRoute("Index.cshtml", "/Identity/Account/Manage/Index");
         Assert.Contains("/Identity/Account/Manage/Addresses", Routes<Addresses>());
         Assert.Contains("/Identity/Account/Manage/PaymentMethods", Routes<PaymentMethods>());
         Assert.Contains("/Identity/Account/Login", Routes<Login>());
@@ -116,6 +116,13 @@ public sealed class IdentityAccountApiContractTests
 
     private static IEnumerable<string?> Routes<T>() =>
         typeof(T).GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>().Select(attribute => attribute.Template);
+
+    private static void AssertRazorPageRoute(string fileName, string route)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "IdentityAccountRoutes", fileName);
+        var source = File.ReadAllText(path);
+        Assert.Contains($"@page \"{route}\"", source, StringComparison.Ordinal);
+    }
 
     private static void AssertMutation<TController>(string methodName, Type httpVerbAttribute)
     {

@@ -1,0 +1,2234 @@
+{
+  "capturedAt": "2026-11-04T21:26:16-05:00",
+  "server": "http://127.0.0.1:9001",
+  "projectKey": "orbi-auditoria",
+  "branches": {
+    "name": "main",
+    "isMain": true,
+    "status": {
+      "qualityGateStatus": "ERROR"
+    }
+  },
+  "latestAnalysis": {
+    "key": "53a45bb3-3628-49aa-a429-1598938a681c",
+    "date": "2026-11-04T21:13:34-05:00",
+    "revision": null,
+    "projectVersion": "not provided"
+  },
+  "measures": [
+    {
+      "metric": "alert_status",
+      "value": "ERROR"
+    },
+    {
+      "metric": "bugs",
+      "value": "42",
+      "bestValue": false
+    },
+    {
+      "metric": "reliability_rating",
+      "value": "3.0",
+      "bestValue": false
+    },
+    {
+      "metric": "code_smells",
+      "value": "175",
+      "bestValue": false
+    },
+    {
+      "metric": "new_violations",
+      "period": {
+        "index": 1,
+        "value": "66",
+        "bestValue": false
+      }
+    },
+    {
+      "metric": "security_rating",
+      "value": "3.0",
+      "bestValue": false
+    },
+    {
+      "metric": "vulnerabilities",
+      "value": "24",
+      "bestValue": false
+    },
+    {
+      "metric": "sqale_rating",
+      "value": "1.0",
+      "bestValue": true
+    }
+  ],
+  "openIssueCount": 241,
+  "openIssues": [
+    {
+      "key": "71be3abc-9ab4-4363-8ba6-db595ad62f29",
+      "rule": "kubernetes:S6907",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:infra/kubernetes/base/deployment.yaml",
+      "line": 47,
+      "message": "Resolve the duplication of this environment variable."
+    },
+    {
+      "key": "3530a6a2-4a65-459d-a911-5ef8d191f096",
+      "rule": "kubernetes:S6907",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:infra/kubernetes/base/deployment.yaml",
+      "line": 54,
+      "message": "Resolve the duplication of this environment variable."
+    },
+    {
+      "key": "cc55df5c-f7b1-4703-a76b-e161978ed250",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation.Client/Components/Delivery/OrdersList.razor",
+      "line": 239,
+      "message": "Await CancelAsync instead."
+    },
+    {
+      "key": "eff6b610-9223-475f-98bd-f814e29829a9",
+      "rule": "javascript:S3516",
+      "severity": "BLOCKER",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation.Client/MainLayout.razor.js",
+      "line": 27,
+      "message": "Refactor this function to not always return the same value."
+    },
+    {
+      "key": "311d1b7c-8557-4d4e-828a-b8d147e54984",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation.Client/Pages/Delivery/Catalog.razor",
+      "line": 275,
+      "message": "Await CancelAsync instead."
+    },
+    {
+      "key": "95a30dcb-c052-4e26-8e68-896863e37084",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation.Client/Pages/Delivery/Catalog.razor",
+      "line": 353,
+      "message": "Await CancelAsync instead."
+    },
+    {
+      "key": "c254f425-f569-4428-b8e1-466263bc39ac",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/WebApplicationExtensions.cs",
+      "line": 38,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "41db71a9-396c-4054-a88b-48e4d998f69b",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/WebApplicationExtensions.cs",
+      "line": 55,
+      "message": "The header 'X-Content-Type-Options' can be accessed using the XContentTypeOptions property"
+    },
+    {
+      "key": "39b45b0c-4b1f-42b6-9a8d-028c601c920d",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/WebApplicationExtensions.cs",
+      "line": 56,
+      "message": "The header 'X-Frame-Options' can be accessed using the XFrameOptions property"
+    },
+    {
+      "key": "095868e2-ee38-4fba-86bc-70c70068f896",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/WebApplicationExtensions.cs",
+      "line": 58,
+      "message": "The header 'Content-Security-Policy' can be accessed using the ContentSecurityPolicy property"
+    },
+    {
+      "key": "29af4f19-d865-4e71-b62b-0ed5b22a4283",
+      "rule": "css:S4649",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Core/Presentation/wwwroot/css/core/components/illustrations-icons.css",
+      "line": 52,
+      "message": "Missing generic font family"
+    },
+    {
+      "key": "5226d7a5-fad2-43f4-af12-da5e7bc1214d",
+      "rule": "javascript:S8786",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/wwwroot/js/m3.js",
+      "line": 199,
+      "message": "Simplify this regular expression to reduce its runtime, as it has super-linear performance due to backtracking."
+    },
+    {
+      "key": "8b67980d-d51e-4ccc-bcba-82ac9308b388",
+      "rule": "csharpsquid:S6932",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 51,
+      "message": "Use model binding instead of accessing the raw request data"
+    },
+    {
+      "key": "c0dbd829-3501-49e6-b0de-4e44648f48f2",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 51,
+      "message": "The header 'X-Requested-With' can be accessed using the XRequestedWith property"
+    },
+    {
+      "key": "6034b86b-5ac2-4403-a42e-918a3921d74f",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 56,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "56bccfb0-57a7-4d16-b87b-96b39aa59276",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 190,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "f8be5318-d153-4ccf-adab-1339182ff5c1",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 255,
+      "message": "Prefiera usar \"string.Equals(string, StringComparison)\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "00c06189-011f-494a-b36b-9f609bd91b08",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 258,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "33ff0cb2-0083-48fb-8262-975af3be47aa",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 265,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "0ab3ee3d-0b6d-4377-8205-be7141b3ab99",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 391,
+      "message": "The header 'X-Requested-With' can be accessed using the XRequestedWith property"
+    },
+    {
+      "key": "236f776d-4c29-4532-a931-078cbbb6215d",
+      "rule": "csharpsquid:S6932",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 391,
+      "message": "Use model binding instead of accessing the raw request data"
+    },
+    {
+      "key": "bdfdfe79-1cc2-4fc5-96c1-cea5954c261f",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Profile.cshtml",
+      "line": 21,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "992148e3-8f6e-4d53-9af0-ae038cc55ff7",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Profile.cshtml",
+      "line": 22,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "6c20f0f8-0a95-4951-a19a-b8406711a17e",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Controllers/IdentityAddressesApiController.cs",
+      "line": 76,
+      "message": "Prefiera usar \"string.Equals(string, StringComparison)\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "12c7a119-34fa-474c-a33b-5466c45129d4",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Controllers/IdentityAuthenticationApiController.cs",
+      "line": 77,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "abfb1412-2a09-473f-a98a-80f0bd69265e",
+      "rule": "csharpsquid:S6964",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Controllers/IdentityAuthenticationApiController.cs",
+      "line": 95,
+      "message": "Value type property used as input in a controller action should be nullable, required or annotated with the JsonRequiredAttribute to avoid under-posting."
+    },
+    {
+      "key": "0b0218e5-49a1-459d-a062-1df654ab9b7e",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Program.cs",
+      "line": 39,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "e32f51df-b4fb-4a6e-a4de-5354f10b1b33",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tests/LoadTestRunner/RunnerOptionsTests.cs",
+      "line": 13,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "fdb1f1dc-013a-4794-8bb8-f0c0d414593e",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tests/LoadTestRunner/RunnerOptionsTests.cs",
+      "line": 14,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "d09ae167-a26e-4330-949c-d5457bf4195a",
+      "rule": "external_roslyn:CA1869",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tests/Performance/PerformanceReport.cs",
+      "line": 26,
+      "message": "Evite crear una nueva instancia de \"JsonSerializerOptions\" para cada operación de serialización. En su lugar, almacene en caché y reutilice instancias."
+    },
+    {
+      "key": "3146b28f-4f35-4c36-9d92-16db777f0f48",
+      "rule": "csharpsquid:S3923",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs",
+      "line": 134,
+      "message": "This conditional operation returns the same value whether the condition is \"true\" or \"false\"."
+    },
+    {
+      "key": "1dfb19ec-2918-4803-b43a-7a137b20b721",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs",
+      "line": 146,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "9c68559f-66c8-46e5-8a9b-ab66c1796c20",
+      "rule": "csharpsquid:S5332",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs",
+      "line": 169,
+      "message": "Using http protocol is insecure. Use https instead."
+    },
+    {
+      "key": "d01634c9-3cea-4c41-afba-25c3aae8eb06",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs",
+      "line": 170,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "09f63628-090a-49b4-bac5-b56ae88ad94d",
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EnvironmentValidator.cs",
+      "line": 258,
+      "message": "Cambiar el tipo de valor devuelto del método 'ComposeArguments' de 'System.Collections.Generic.IReadOnlyList<string>' a 'System.Collections.Generic.List<string>' para mejorar el rendimiento"
+    },
+    {
+      "key": "6c7794ab-904e-4770-8379-74cc923ce415",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EventPublisher.cs",
+      "line": 19,
+      "message": "Await WriteLineAsync instead."
+    },
+    {
+      "key": "f6b507cc-53e2-4aef-b8c4-6fdf313ba96e",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EventPublisher.cs",
+      "line": 23,
+      "message": "Await WriteLineAsync instead."
+    },
+    {
+      "key": "b2064fe8-9c69-4cd5-b5cb-e3489a000bbf",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/EventPublisher.cs",
+      "line": 27,
+      "message": "Await WriteLineAsync instead."
+    },
+    {
+      "key": "01de2c93-f3e6-4ed0-9682-86fa6013fa98",
+      "rule": "external_roslyn:CA2016",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 85,
+      "message": "Reenviar el parámetro \"cancellationToken\" al método \"PublishAsync\" o pasar \"CancellationToken.None\" de forma explícita para indicar que no se propagó el token intencionalmente"
+    },
+    {
+      "key": "97aa1a91-a926-4826-9414-dbd0302d6eb1",
+      "rule": "csharpsquid:S8949",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 85,
+      "message": "Pass the 'cancellationToken' to this method to allow cancellation of the operation, or use 'CancellationToken.None' to opt out explicitly."
+    },
+    {
+      "key": "57f1202e-cfd2-4a3d-8230-98dd68f29fb6",
+      "rule": "external_roslyn:CA2016",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 119,
+      "message": "Reenviar el parámetro \"cancellationToken\" al método \"PublishAsync\" o pasar \"CancellationToken.None\" de forma explícita para indicar que no se propagó el token intencionalmente"
+    },
+    {
+      "key": "68241b93-e43e-4fe5-b64a-5506901df1f3",
+      "rule": "csharpsquid:S8949",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 119,
+      "message": "Pass the 'cancellationToken' to this method to allow cancellation of the operation, or use 'CancellationToken.None' to opt out explicitly."
+    },
+    {
+      "key": "78f811df-8c26-4a13-8fe3-4891b8afd926",
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 166,
+      "message": "Cambiar el tipo de campo 'Profiles' de 'System.Collections.Generic.IReadOnlyDictionary<string, (string Script, string Target)>' a 'System.Collections.Generic.Dictionary<string, (string Script, string Target)>' para mejorar el rendimiento"
+    },
+    {
+      "key": "18016e74-3151-4e9a-aa8d-12f6a4f91ea0",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 188,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "8616fdcc-d386-479a-b516-c1cd97b5345d",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 188,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "7f739189-e28e-430f-bdae-af3005779bb5",
+      "rule": "csharpsquid:S4036",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 200,
+      "message": "Use an absolute path for this command."
+    },
+    {
+      "key": "d2d87caa-9eb4-4fd5-9ef1-64a6b50bafcb",
+      "rule": "csharpsquid:S5332",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 221,
+      "message": "Using http protocol is insecure. Use https instead."
+    },
+    {
+      "key": "874a6209-0a7e-40e8-ad54-649832865432",
+      "rule": "csharpsquid:S5332",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 231,
+      "message": "Using http protocol is insecure. Use https instead."
+    },
+    {
+      "key": "24c67c5e-df87-4d55-9c99-a20d380f2ee1",
+      "rule": "external_roslyn:CA2016",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 249,
+      "message": "Reenviar el parámetro \"cancellationToken\" al método \"PublishAsync\" o pasar \"CancellationToken.None\" de forma explícita para indicar que no se propagó el token intencionalmente"
+    },
+    {
+      "key": "51e5d12d-bc1d-4387-8ccb-90bef81af39b",
+      "rule": "csharpsquid:S8949",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/K6Executor.cs",
+      "line": 249,
+      "message": "Pass the 'cancellationToken' to this method to allow cancellation of the operation, or use 'CancellationToken.None' to opt out explicitly."
+    },
+    {
+      "key": "20d90446-1f79-49de-8411-6e31fbe9c252",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/KubernetesController.cs",
+      "line": 219,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "81886c01-bd80-4d3b-9712-7e994f1c74fe",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/KubernetesController.cs",
+      "line": 219,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "d1d1d5c6-1bd2-4cf1-9d89-dcd0a00bdfe0",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/LabSecretManager.cs",
+      "line": 38,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "f32fbbcb-e758-4d94-9105-aa980aac1d72",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/LabSecretManager.cs",
+      "line": 38,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "261ea84e-7263-4d3b-8da3-e22afd0013a9",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/LabSecretManager.cs",
+      "line": 39,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "8f827ecb-8505-4e6b-9f64-deb215932373",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/LabSecretManager.cs",
+      "line": 39,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "1c559cc1-2396-4e2c-9414-081032565a1f",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 54,
+      "message": "Await WriteLineAsync instead."
+    },
+    {
+      "key": "dda269b4-effa-4df5-8eae-2c236212e374",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 55,
+      "message": "Await WriteLineAsync instead."
+    },
+    {
+      "key": "254037f4-44ac-4a85-8458-338da6ca563e",
+      "rule": "external_roslyn:CS8620",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 279,
+      "message": "El argumento de tipo \"HashSet<string?>\" no se puede usar para el parámetro \"initialPodUids\" de tipo \"HashSet<string>\" en \"Task<(string PodName, double RecoverySeconds, DateTimeOffset RecoveredAtUtc)> Program.WaitForPodRecoveryAsync(KubernetesController kube, DeploymentSnapshot deployment, string deletedPodUid, HashSet<string> initialPodUids, DateTimeOffset deletionStarted, TimeSpan timeout, CancellationToken token)\" debido a las diferencias en la nulabilidad de los tipos de referencia."
+    },
+    {
+      "key": "15ad83a4-6ab3-4ae9-9600-7852954da9ab",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 448,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "d2a06115-642b-4fb4-bbb4-73d8678b9a8e",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 448,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "334eb972-4fba-425b-b66b-81f1f61f9067",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 452,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "fe58ca43-6c84-46d7-a653-e133b60cc44f",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/Program.cs",
+      "line": 452,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "4aa3c85a-4e4b-4698-b054-b6a5646fd4de",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/PrometheusClient.cs",
+      "line": 12,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "81673f9a-9c26-4f9f-9741-a6a08b0123bc",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/PrometheusClient.cs",
+      "line": 12,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "aa63cc22-48c4-40f2-bf31-d0f660258c06",
+      "rule": "external_roslyn:CA1869",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.LoadTestRunner/ReportWriter.cs",
+      "line": 14,
+      "message": "Evite crear una nueva instancia de \"JsonSerializerOptions\" para cada operación de serialización. En su lugar, almacene en caché y reutilice instancias."
+    },
+    {
+      "key": "d06eee5d-776f-4f04-af1b-bfc39f5a98c2",
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/Configuration/FeatureViewLocationExpander.cs",
+      "line": 7,
+      "message": "Cambiar el tipo de campo 'FeatureByController' de 'System.Collections.Generic.IReadOnlyDictionary<string, string>' a 'System.Collections.Generic.Dictionary<string, string>' para mejorar el rendimiento"
+    },
+    {
+      "key": "d26295a3-6cf5-4dda-aae3-01ef365d0954",
+      "rule": "javascript:S7773",
+      "severity": "MINOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Core/Presentation/wwwroot/js/m3.js",
+      "line": 174,
+      "message": "Prefer `Number.parseInt` over `parseInt`."
+    },
+    {
+      "key": "b36ba5f8-a30a-43ba-b466-33030921fa54",
+      "rule": "external_roslyn:CA1860",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Commerce/Presentation/Controllers/StoreController.cs",
+      "line": 102,
+      "message": "Es preferible comparar \"Count\" con 0 en lugar de usar \"Any()\", tanto por claridad como por rendimiento."
+    },
+    {
+      "key": "9b7e69e9-22ee-45e7-a13e-7fe8f7661476",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Commerce/Presentation/Views/Store/index.cshtml",
+      "line": 48,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "99f97fa5-af88-4e4d-a62a-75d3e1aee0dd",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 43,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "9c75f168-e972-457e-9b99-a5a3481d6bbc",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 43,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "af557f83-7bbb-4a5b-996b-56c26fdc6c6f",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 69,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "f8affbde-fb68-4ca4-808d-5629f00e9a05",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 69,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "4c79b6c1-a7f2-45f9-babb-9df977e1a28f",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 74,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "c4bb9340-0765-4ea6-855e-f158220d780e",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 74,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "7e5fc163-7064-49b7-a866-119d77e383ec",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 137,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "a86ff405-6b5c-4626-a03c-b9db6b6e9c57",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 137,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "641c2dff-a222-4e09-9a44-0f280a8db72c",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 138,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "968013ee-3727-48a8-8bc8-bca4d155b398",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Delivery/Infrastructure/ExternalMarketPriceService.cs",
+      "line": 138,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "27147798-36b0-428a-a9a7-53d69f95ce7b",
+      "rule": "external_roslyn:CA1860",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 514,
+      "message": "Es preferible comparar \"Count\" con 0 en lugar de usar \"Any()\", tanto por claridad como por rendimiento."
+    },
+    {
+      "key": "b7133f38-dfea-42f8-a565-4020e9436e6a",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 1070,
+      "message": "Prefiera la sobrecarga de método de comparación de cadenas de \"string.Contains(string)\" que toma un valor de enumeración \"StringComparison\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "dd60f04a-fbf4-4002-9454-3974ee0fc20f",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 1070,
+      "message": "Prefiera la sobrecarga de método de comparación de cadenas de \"string.Contains(string)\" que toma un valor de enumeración \"StringComparison\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "e083ee06-0f84-4051-a478-e13a7680a176",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Controllers/DeliveryController.cs",
+      "line": 1074,
+      "message": "Prefiera la sobrecarga de método de comparación de cadenas de \"string.Contains(string)\" que toma un valor de enumeración \"StringComparison\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "11d14024-05d0-45fe-a626-bfda3e250f92",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminAuditLog.cshtml",
+      "line": 24,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "f6e95cb2-3671-40d1-8557-dd23b01d917d",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminAuditLog.cshtml",
+      "line": 25,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "2e51aaad-d7ad-42a9-8641-7bbe20ff35ed",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminInventory.cshtml",
+      "line": 27,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "f5cc81e8-714a-45cb-8733-952c748d382d",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminInventory.cshtml",
+      "line": 28,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "05c529aa-099d-4da5-ba1b-5db17ca4e922",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 24,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "368ca3a7-3b12-4373-897f-f913a8a6c2b0",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 24,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "71e54bfc-9029-4b15-b1b5-a55ce0f57f18",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 25,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "f41eaf4f-01bc-4c53-8a7f-5d6b24279c87",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 25,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "2ff00322-3199-4cf4-b4a8-d963c35f0db3",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 26,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "7ba21d05-b819-49d8-b5ce-025d9caecefc",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 26,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "a0a95a0c-b5a6-4840-9d9c-ace32feeec9e",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 36,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "c0418b21-484c-4512-802b-3f1effbac7c8",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 36,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "22a661da-d82e-4b80-aa35-5090251f1d3b",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 37,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "d71b9124-58b5-4a17-9766-f5695b644aa5",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 37,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "96e359f0-4bdc-4010-90e3-b70291a16bd4",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 47,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "a4f5753a-e394-437f-96a7-04cb6a8acf51",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminLocations.cshtml",
+      "line": 48,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "f1366788-1158-4c64-ad80-4229708b2eb0",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminPayments.cshtml",
+      "line": 19,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "1a7cb1d9-29b0-4511-9605-b1d704d2fe57",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminPayments.cshtml",
+      "line": 20,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "eab46287-bebb-46b5-bbed-888e641f104d",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 58,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "bcab9ba9-805d-4eda-82ca-0c6048c03792",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 59,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "6e2c5363-a919-4de3-8355-6ff7430b7a05",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 62,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "9d1a95fc-8c53-42ab-8cc0-aa6d25bdb7ea",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 63,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "461e2d52-7acd-4bb3-8aba-22b1238ddb4d",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 72,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "63c4b5b8-ac63-4836-97a5-e7b227c33318",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminStores.cshtml",
+      "line": 73,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "758d38a4-e9dc-4d4e-9b16-f5a6186f1f76",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/AdminUsers.cshtml",
+      "line": 22,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "9508fb2d-dad3-474d-8ccb-4f9451e7e184",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 23,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "442fc81e-3d27-486d-b648-05864f8d0ce7",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 24,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "49e6361a-1b31-4171-8a92-b5682129a10a",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 27,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "d751c3c0-70da-4dde-9f99-d33061b2aa78",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 28,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "f563750c-5c75-4f7d-95e8-3da248e36dbd",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 31,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "9ca7e5e0-dced-458e-9f2a-5f4935c4c657",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 32,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "e971d61c-e088-4e67-9add-641830f3a899",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 35,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "b6ab33a7-c20b-4369-97b3-5b1d388caaf5",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 36,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "13448fb8-a063-423b-982a-9b60177acead",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 39,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "b9cb9523-cfe6-4b15-a518-acf3893c4082",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 40,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "66b6c67e-9995-411c-a06b-d3deb88758d6",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 43,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "ae9e8960-ea4f-427a-a650-fd16e024c184",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 44,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "25eb46f8-34d2-4633-9a1f-acc6a108987e",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 52,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "c4c02836-5517-464a-82c3-e6e56181ca72",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 53,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "012977cb-567b-4f3f-a568-2a2379a32ab5",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 61,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "0b98d331-f9cd-4f31-8bf1-ea20d61fbdc5",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/Profile.cshtml",
+      "line": 62,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "f9439f2d-79c2-4aed-80db-222fa6079f03",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 32,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "b901d92e-487c-481f-86a2-55b877e9712b",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 33,
+      "message": "Associate a valid label to this input field."
+    },
+    {
+      "key": "a3c1a1b7-ef55-4cb4-968a-60d991279c26",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 36,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "ea5e683a-d1b8-4180-9aec-cc20d845f8ee",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 37,
+      "message": "Associate a valid label to this input field."
+    },
+    {
+      "key": "a698e38b-727f-446a-af7c-6dfcdf978c6e",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 40,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "a36bee18-bace-4183-ae6f-ea45dc8342c2",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 41,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "d174260e-2edc-4327-8798-58cfa92d0623",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 44,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "f93b9115-a7d1-446e-b45f-5882f20b25b4",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 45,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "558c49f1-2565-4048-a18b-35a4fc6cdfbb",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 95,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "50771533-cffb-42d0-b92b-6a3d2b434827",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 96,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "809046d2-9d00-4ae4-bd14-a550a59d6092",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 97,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "4ad7aac9-0843-46b1-be42-9e4dc58b41a0",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 150,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "7a5ac2d5-d86f-4a05-819a-c33c3e893cc7",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 150,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "172b894c-1210-4388-aa82-949fc1380fdd",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 151,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "6cd642a6-0d35-4a10-ae39-7dacbd2cdd2e",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 151,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "c7c115e3-0809-47db-a596-b5e1cc60c2bf",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 152,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "cf9564cf-336d-40be-bf3f-cf713397f80c",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 152,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "80c2736b-87b6-4865-b4bf-ccafc7bd32dd",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 153,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "e097349f-15f6-480d-ad3e-65ddef06a330",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Delivery/Presentation/Views/Delivery/SellerInventory.cshtml",
+      "line": 153,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "d82ab4fd-9dc8-4898-ba7c-7f0b737c7a20",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 497,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "f615928b-9796-4020-a67f-24ea891316fb",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 497,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "4c2d0514-63a8-499c-9abb-95f69bccf6d4",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 504,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "5ac07c29-fdd7-40d2-b673-b8594ebef736",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 504,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "94814dd1-437e-4424-a651-581196f2a256",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 541,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "cc3e2591-802d-4618-bf0a-8cae87242792",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 541,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "0bce45a3-c6c7-4067-af0b-cee81f71685e",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 543,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "a13015e5-ecd8-44c2-8d90-c4391b4099f6",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 543,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "a042418c-0186-441a-8153-5aac57d8e757",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 546,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "b916716a-40c5-4560-9ead-56518e60eb48",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 546,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "7dc44a47-fe4e-4e24-97a9-7f8026d94341",
+      "rule": "external_roslyn:SYSLIB1045",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 547,
+      "message": "Use 'GeneratedRegexAttribute' para generar la implementación de expresiones regulares en tiempo de compilación."
+    },
+    {
+      "key": "d18f3385-3a0d-4525-8fa6-0e0e460b3329",
+      "rule": "csharpsquid:S6444",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Home/Presentation/Controllers/HomeController.cs",
+      "line": 547,
+      "message": "Pass a timeout to limit the execution time."
+    },
+    {
+      "key": "1f497b93-06fd-4bfa-b72b-532f9532a211",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Infrastructure/Persistence/IdentitySeeder.cs",
+      "line": 36,
+      "message": "Await ToListAsync instead."
+    },
+    {
+      "key": "93813226-2f04-4204-a576-74569cb75f80",
+      "rule": "external_roslyn:CA1862",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Infrastructure/Persistence/IdentitySeeder.cs",
+      "line": 151,
+      "message": "Prefiera usar \"string.Equals(string, StringComparison)\" para realizar una comparación sin distinción de mayúsculas y minúsculas, pero tenga en cuenta que esto puede provocar cambios sutiles en el comportamiento, por lo que asegúrese de realizar pruebas exhaustivas después de aplicar la sugerencia, o si no se requiere una comparación culturalmente confidencial, considere la posibilidad de usar \"StringComparison.OrdinalIgnoreCase\""
+    },
+    {
+      "key": "3a5a3cdc-c04f-4f4d-a0ae-6a8fa10c798e",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs",
+      "line": 143,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "0715acc7-6027-4db5-baac-7fcfa5ac5846",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs",
+      "line": 197,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "f6b5f817-f1c0-43cc-973a-cdc73808e5cb",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/ExternalLogin.cshtml.cs",
+      "line": 358,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "42e78ebc-fab1-4087-b934-ed7b58fc7bd2",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/DeletePersonalData.cshtml.cs",
+      "line": 98,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "620da63c-bdaa-474c-afda-6fc95deae14a",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Disable2fa.cshtml.cs",
+      "line": 64,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "429ba496-7b7c-48f3-a461-b59623f522a4",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/DownloadPersonalData.cshtml.cs",
+      "line": 44,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "1c63a14b-f702-436c-8201-d65cdc6d3712",
+      "rule": "Web:S6853",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Email.cshtml",
+      "line": 18,
+      "message": "A form label must be associated with a control and have accessible text."
+    },
+    {
+      "key": "b52de0ed-d702-4092-b565-ecf926dda88e",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/EnableAuthenticator.cshtml",
+      "line": 29,
+      "message": "Associate a valid label to this input field."
+    },
+    {
+      "key": "de3aabd0-1ac5-41d3-8fd8-39b9aabc0676",
+      "rule": "Web:S5725",
+      "severity": "MINOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/EnableAuthenticator.cshtml",
+      "line": 41,
+      "message": "Add integrity and crossorigin=\"anonymous\" attributes to this element to enforce integrity checks."
+    },
+    {
+      "key": "ae6c3faa-897e-4301-bd17-02b83db88c0a",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/EnableAuthenticator.cshtml.cs",
+      "line": 129,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "8eef859d-9d46-4520-bfe2-238c4dba129f",
+      "rule": "external_roslyn:CA1822",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/EnableAuthenticator.cshtml.cs",
+      "line": 161,
+      "message": "El miembro \"FormatKey\" no tiene acceso a los datos de la instancia y se puede marcar como static."
+    },
+    {
+      "key": "96e2621c-3a43-4f9d-bd81-ba10c58e1483",
+      "rule": "Web:S5256",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/ExternalLogins.cshtml",
+      "line": 12,
+      "message": "Add \"<th>\" headers to this \"<table>\"."
+    },
+    {
+      "key": "c0165a76-b19b-4b08-8f67-15b04d2ba241",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/GenerateRecoveryCodes.cshtml.cs",
+      "line": 77,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "cb668e76-971d-4096-8371-2f8cbe988def",
+      "rule": "external_roslyn:CA1873",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/ResetAuthenticator.cshtml.cs",
+      "line": 59,
+      "message": "La evaluación de este argumento puede ser costosa e innecesaria si el registro está deshabilitado"
+    },
+    {
+      "key": "01442bce-c231-4788-a5bd-440c36caa588",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/_Layout.cshtml",
+      "line": 16,
+      "message": "Await RenderSectionAsync instead."
+    },
+    {
+      "key": "fe076340-c460-4efe-bf6b-bec20ffded72",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Inventory/Presentation/Views/Inventory/index.cshtml",
+      "line": 45,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "8780ddfe-542a-4d28-aea3-d9a7b97fe2db",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Operations/Infrastructure/BackupService.cs",
+      "line": 192,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "1895783e-09ac-46a5-9d18-92a024465f55",
+      "rule": "external_roslyn:CA1822",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Operations/Infrastructure/BackupService.cs",
+      "line": 236,
+      "message": "El miembro \"CleanupOldBackups\" no tiene acceso a los datos de la instancia y se puede marcar como static."
+    },
+    {
+      "key": "369e7ebd-d37f-4b8b-95f8-985bb8ad4c19",
+      "rule": "csharpsquid:S6932",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Operations/Presentation/Controllers/OperationsController.cs",
+      "line": 418,
+      "message": "Use model binding instead of accessing the raw request data"
+    },
+    {
+      "key": "7cfe6f53-65dd-49fc-a223-3dba429ec913",
+      "rule": "external_roslyn:ASP0015",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Operations/Presentation/Controllers/OperationsController.cs",
+      "line": 418,
+      "message": "The header 'User-Agent' can be accessed using the UserAgent property"
+    },
+    {
+      "key": "3502c266-de54-449f-815a-f94fce400442",
+      "rule": "Web:InputWithoutLabelCheck",
+      "severity": "MAJOR",
+      "type": "BUG",
+      "component": "orbi-auditoria:src/Features/Operations/Presentation/Views/Operations/DeliveryIncidents.cshtml",
+      "line": 22,
+      "message": "Add an \"id\" attribute to this input field and associate it with a label."
+    },
+    {
+      "key": "5466fb93-4b95-4db3-bba8-9ba5445d0926",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 263,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "b29f6bb5-9d9a-4638-8c09-1df054a76111",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 268,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "abd22f55-78f3-4fba-be11-2a8370df60fb",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 283,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "f85f3907-9283-4667-bf1d-467ebac5939a",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 288,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "7ffecc16-4da5-4573-ad72-a80a7f4134e5",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 298,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "6294bbed-97d5-4337-9d97-8cca77113f01",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 313,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "61678281-698d-4274-b985-28500f88dcd1",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 323,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "0b8b372d-cd50-4493-8576-b366a9432e2e",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 333,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "faaa014b-f44e-4eca-bceb-21fa342804af",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 348,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "6cb57b5d-a2ae-4140-a252-be6d2b573bb5",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725141001_AgregarTablasOperativasOrbi.cs",
+      "line": 358,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "bf2bfb78-3e15-4a18-94da-91ae4ebd5b85",
+      "rule": "external_roslyn:CA1861",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Features/Shared/Infrastructure/Persistence/MigrationsIdentity/20260725151414_AgregarDireccionesUsuario.cs",
+      "line": 76,
+      "message": "Preferir campos \"static readonly\" frente a argumentos de matriz constantes si se llama repetidamente al método llamado y no muta la matriz pasada"
+    },
+    {
+      "key": "2f62d498-64be-4de8-b2f4-c5d92624781b",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:src/Program.cs",
+      "line": 46,
+      "message": "Await RunAsync instead."
+    },
+    {
+      "key": "188a0071-c8db-441f-ba92-3281b4089dba",
+      "rule": "external_roslyn:CA2208",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/GeneratorOptions.cs",
+      "line": 64,
+      "message": "El método Parse pasa \"--records\" como argumento paramName a un constructor ArgumentOutOfRangeException. Reemplace este argumento por uno de los nombres de parámetros del método. Tenga en cuenta que el nombre del parámetro debe corresponderse completamente (mayúsculas y minúsculas) con lo declarado en el método."
+    },
+    {
+      "key": "510d1f2c-699d-4794-9372-26b4aed20a6c",
+      "rule": "external_roslyn:CA2208",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/GeneratorOptions.cs",
+      "line": 66,
+      "message": "El método Parse pasa \"--batch-size\" como argumento paramName a un constructor ArgumentOutOfRangeException. Reemplace este argumento por uno de los nombres de parámetros del método. Tenga en cuenta que el nombre del parámetro debe corresponderse completamente (mayúsculas y minúsculas) con lo declarado en el método."
+    },
+    {
+      "key": "f28b0b65-3890-4e39-b238-0a3844cb76c8",
+      "rule": "external_roslyn:CS8622",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/GeneratorOptions.cs",
+      "line": 102,
+      "message": "La nulabilidad de los tipos de referencia del tipo de parámetro\"path\" de \"string Path.GetFullPath(string path)\" no coincide con el delegado de destino \"Func<string?, string>\" (posiblemente debido a los atributos de nulabilidad)."
+    },
+    {
+      "key": "c9642eca-05da-4f1f-9a2f-790674f90742",
+      "rule": "external_roslyn:CA1869",
+      "severity": "INFO",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/GeneratorOptions.cs",
+      "line": 110,
+      "message": "Evite crear una nueva instancia de \"JsonSerializerOptions\" para cada operación de serialización. En su lugar, almacene en caché y reutilice instancias."
+    },
+    {
+      "key": "755d9a8b-b5a8-4fc3-a36a-c41d346cb719",
+      "rule": "csharpsquid:S2245",
+      "severity": "MAJOR",
+      "type": "VULNERABILITY",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 168,
+      "message": "Use a cryptographically strong random number generator."
+    },
+    {
+      "key": "ab136945-9571-467c-ade5-effb2c73f2d4",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 393,
+      "message": "Await StartRowAsync instead."
+    },
+    {
+      "key": "63a72bcb-acac-4111-95fa-6e6f20bca269",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 394,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "dffcd7d9-2f94-498b-86ad-b81becdea5cd",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 395,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "87a443cd-d4e5-4cd0-883d-2973654025a8",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 396,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "03888c7a-32c9-4e38-bdc5-749d59822a8d",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 397,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "8084e802-e106-48f3-a236-ba9b1ed7b080",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 398,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "0ea8df98-2261-4ef0-82fc-8abe78b2a49f",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 399,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "ca3a8bed-221a-450e-8632-df0b78ca8b9b",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 400,
+      "message": "Await WriteNullAsync instead."
+    },
+    {
+      "key": "7c4962af-fbe6-4433-bfb5-7e98fedd4299",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 401,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "bc705d04-dbef-4758-bfbc-8e08ca1ad84d",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 402,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "583df83c-4317-4efc-be14-ed917b3e187e",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 403,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "07507dcf-f4c0-495d-b219-64fdabaef20f",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 404,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "0759dd0c-23ff-4db4-aa25-82bcf5b56dec",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 405,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "e7ce80be-4d7c-4652-bb15-77861d1232f3",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 406,
+      "message": "Await WriteNullAsync instead."
+    },
+    {
+      "key": "fe62938a-da83-4d25-bca1-d21ea1367951",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 407,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "5a132c9a-4134-4fdb-8741-9cddf727c184",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 408,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "67f9c89e-ba43-4258-bff5-567a2f0f3ffa",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 418,
+      "message": "Await StartRowAsync instead."
+    },
+    {
+      "key": "ba4237e0-60d4-412c-8c16-9757aa61aae3",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 419,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "186d349f-2c24-40a7-aa55-efb088210a5d",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 420,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "f7bd42c1-5f43-40a3-918b-ec569ee54715",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 421,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "8ad1333d-baa8-4c2d-9dca-b3f434335b8c",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 422,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "cfe09a82-4679-4d1e-8128-987c31f70de2",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 423,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "7161f526-1a12-4e27-99cd-4d2351ee8705",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 424,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "322a4c80-1d13-4a57-a57b-230362e562e5",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 425,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "aa9a8e60-884d-4488-b8f1-a2bfce444db7",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 426,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "6fdc6104-0a42-4380-8f40-3eb1f2f60d0e",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 427,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "aaf22fc4-8541-4c94-985f-73ab3d3b1b09",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 428,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "6d4480a6-a147-41c8-adbb-c08ceef9d828",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 478,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "b5f13282-3f03-4f9b-8d23-873a5f6cb675",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 478,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "c23dfe4d-ac10-403a-b9a1-3abd6526e815",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 478,
+      "message": "Await StartRowAsync instead."
+    },
+    {
+      "key": "d042a8bc-d0bd-4afe-ad9f-7d47fb93b2de",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 479,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "d9c53544-65b4-4704-b376-c8aa478796a1",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 480,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "efaf9644-60b3-4e1f-baee-94f2fe93690f",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 480,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "89ab2a74-8922-475a-b290-7db364b9af4d",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 481,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "cc0dc4c5-bdc7-40b2-8e77-d7c84c3162bc",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 481,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "4b2be2ca-6fd2-4c15-b1a8-e465b8f32cbb",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 489,
+      "message": "Await StartRowAsync instead."
+    },
+    {
+      "key": "4b6622a3-60e9-4245-a285-084547f410d3",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 489,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "f015a812-fc59-4735-83f8-52bc692b13bc",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 489,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "a92b8f4d-3f1e-421d-b8a3-e7d49a4ca89c",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 490,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "f778a0c0-eaf9-4348-bd2b-14e19b5230bd",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 490,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "10a11342-54a1-47be-9576-a5353777e4a0",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 491,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "61df95e1-91c4-4428-ac6f-21521655384e",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 491,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "7517832e-4eba-4d19-bcb8-4a4f6724d08b",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 491,
+      "message": "Await WriteAsync instead."
+    },
+    {
+      "key": "a1d2fbe0-5565-4927-846b-edea91200d4a",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/OrbiDataGenerator.cs",
+      "line": 571,
+      "message": "Await StartRowAsync instead."
+    },
+    {
+      "key": "fb19737c-ac3a-444a-bdc2-93c9b18c4f81",
+      "rule": "csharpsquid:S6966",
+      "severity": "MAJOR",
+      "type": "CODE_SMELL",
+      "component": "orbi-auditoria:tools/OrbiApp.DataGenerator/Program.cs",
+      "line": 17,
+      "message": "Await WriteLineAsync instead."
+    }
+  ]
+}

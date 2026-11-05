@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using OrbiApp.Presentation.Client;
 using OrbiApp.Presentation.Logging;
 using Serilog.Context;
@@ -50,20 +51,18 @@ public static class WebApplicationExtensions
 
         app.Use(async (context, next) =>
         {
+            var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(18));
+            context.Items[CspSecurityPolicy.NonceItemKey] = nonce;
+
             context.Response.OnStarting(() =>
             {
                 context.Response.Headers["X-Content-Type-Options"] = "nosniff";
                 context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
-
-                var contentSecurityPolicies = context.Response.Headers["Content-Security-Policy"];
-                var hasFrameAncestors = contentSecurityPolicies.Any(policy =>
-                    policy?.Split(';').Any(directive =>
-                        directive.TrimStart().StartsWith("frame-ancestors", StringComparison.OrdinalIgnoreCase)) == true);
-
-                if (!hasFrameAncestors)
-                {
-                    context.Response.Headers.Append("Content-Security-Policy", "frame-ancestors 'self'");
-                }
+                context.Response.Headers["Content-Security-Policy"] = CspSecurityPolicy.Build(nonce);
+                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                context.Response.Headers["Cross-Origin-Resource-Policy"] = "same-origin";
+                context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), usb=()";
+                context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
                 return Task.CompletedTask;
             });

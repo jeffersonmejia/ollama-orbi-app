@@ -701,7 +701,17 @@ private static readonly Dictionary<string, (string[] Products, decimal Min, deci
         return nine + ((10 - sum % 10) % 10).ToString(CultureInfo.InvariantCulture);
     }
 
-    private static Guid DeterministicGuid(int seed, int index) => new(MD5.HashData(Encoding.UTF8.GetBytes($"orbi:{seed}:{index}")));
+    internal static Guid DeterministicGuid(int seed, int index)
+    {
+        Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
+        SHA256.HashData(Encoding.UTF8.GetBytes($"orbi:{seed}:{index}"), hash);
+
+        Span<byte> uuid = stackalloc byte[16];
+        hash[..uuid.Length].CopyTo(uuid);
+        uuid[6] = (byte)((uuid[6] & 0x0F) | 0x80);
+        uuid[8] = (byte)((uuid[8] & 0x3F) | 0x80);
+        return new Guid(uuid, bigEndian: true);
+    }
     private static void WriteNullable(NpgsqlBinaryImporter writer, string? value, NpgsqlDbType type)
     {
         if (value is null) writer.WriteNull(); else writer.Write(value, type);

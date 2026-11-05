@@ -17,4 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Core/Presentation/Presentation.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Profile.cshtml" Link="IdentityAccountRoutes/Profile.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../src/Features/Identity/Presentation/Areas/Identity/Pages/Account/Manage/Index.cshtml" Link="IdentityAccountRoutes/Index.cshtml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

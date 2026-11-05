@@ -168,7 +168,7 @@ public sealed class EnvironmentValidator(
 
         var k6Url = Environment.GetEnvironmentVariable("ORBI_LAB_K6_BASE_URL") ?? "http://host.docker.internal:30083";
         Add("URL desde contenedor k6", TryValidateBaseUrl(k6Url, new[] { "host.docker.internal" }, out _, out issue) ? "PASS" : "FAIL",
-            issue ?? "host gateway de Docker Desktop y NodePort del Service");
+            issue ?? "host gateway de Docker Desktop; túnel al proxy estable del laboratorio y Service ClusterIP de Orbi");
     }
 
     private async Task CheckMonitoringAsync(CancellationToken cancellationToken)

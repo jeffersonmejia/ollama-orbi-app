@@ -260,6 +260,31 @@ dotnet build .\OrbiApp.slnx
 
 Los proyectos de dominio, aplicación e infraestructura se compilan como referencias del host. El generador de datos es independiente y se restaura/compila con `dotnet build .\src\OrbiApp.DataGenerator\OrbiApp.DataGenerator.csproj`.
 
+### Flujo de comprobaciones
+
+Desde la raíz del repositorio, ejecuta estos comandos en PowerShell para restaurar dependencias, compilar la solución y correr todas las pruebas:
+
+```powershell
+dotnet restore .\OrbiApp.slnx
+dotnet build .\OrbiApp.slnx --no-restore
+dotnet test .\OrbiApp.slnx --no-build
+```
+
+Las pruebas de integración y rendimiento requieren una base PostgreSQL local aislada. Inicia el servicio definido en Docker Compose y configura `ORBI_DATABASE_TEST_CONNECTION` con una base de pruebas dedicada antes de ejecutar `dotnet test`; las pruebas rechazan destinos que no sean locales o que no estén aislados. Por ejemplo, si ya tienes una base de pruebas en el puerto `5433`:
+
+```powershell
+$env:ORBI_DATABASE_TEST_CONNECTION = 'Host=localhost;Port=5433;Database=orbi_test;Username=orbi_app;Password=<CLAVE_LOCAL>'
+dotnet test .\OrbiApp.slnx --no-build
+Remove-Item Env:ORBI_DATABASE_TEST_CONNECTION
+```
+
+Las pruebas de contrato y del ejecutor de carga pueden correrse sin configurar PostgreSQL:
+
+```powershell
+dotnet test .\tests\Contract\OrbiApp.Contract.Tests.csproj
+dotnet test .\tests\LoadTestRunner\OrbiApp.LoadTestRunner.Tests.csproj
+```
+
 ### Navegación Blazor progresiva
 
 La interfaz conserva MVC y Razor Pages junto con módulos Blazor. `src/Core/Presentation/Components/App.razor` configura el enrutamiento con `InteractiveWebAssembly` y carga el cliente desde `src/Core/Presentation.Client`; los controladores, Identity y el acceso a PostgreSQL permanecen en el servidor. El cliente no referencia directamente las capas de dominio, aplicación ni infraestructura.

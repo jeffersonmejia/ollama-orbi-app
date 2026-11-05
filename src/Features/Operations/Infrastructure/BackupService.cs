@@ -63,6 +63,15 @@ public sealed class BackupService : BackgroundService, IBackupManager
         await OperationLock.WaitAsync();
         try
         {
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+            if (string.IsNullOrWhiteSpace(connectionString)) return;
+
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync();
+            await using var lockCommand = connection.CreateCommand();
+            lockCommand.CommandText = "SELECT pg_try_advisory_lock(728314904);";
+            if (await lockCommand.ExecuteScalarAsync() is not true) return;
+
             await RunBackupCoreAsync();
         }
         finally

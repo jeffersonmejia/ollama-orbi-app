@@ -1,0 +1,3 @@
+fecha,proyecto,scanner,puerto,url_count,medium,low,informational,cli_pass,cli_warn_new,cli_fail_new,evidencia
+2026-11-04,Orbi,OWASP ZAP Baseline,5176,82,5,4,4,63,4,0,audit/evidencias/zap/zap-antes-csp-5176.html
+2026-11-04,Orbi,OWASP ZAP Baseline,5176,82,1,1,4,65,2,0,audit/evidencias/zap/zap-figura18-verificada.html

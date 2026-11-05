@@ -50,3 +50,4 @@ backups/
 # Markdown files (keep the root README)
 *.md
 !/README.md
+docs/
